@@ -1,0 +1,15 @@
+# Voice ElevenLabs: Putra - Smooth, Clear and Engaging (sama dengan video ChillDev sebelumnya)
+# Durasi VO terekam: 49,16 detik (+1,4 detik end card) · 6 paragraf = 6 scene · beri jeda ±0,6 detik antar paragraf
+# "browser-use" = "browser yus" · "QA" = "kyu-ei" · "IDE" = "ai-di-i"
+
+Tiap hari cek harga di tiga puluh toko online, isi form yang sama, klik tombol yang sama. Jempol pegel, mata juling.
+
+QA manual juga gitu. Lima puluh tombol diklik satu satu, besok diulang lagi dari awal. Capek, dan pasti ada yang kelewat.
+
+Kenalin browser-use. Library open source buat bikin AI agent yang bisa buka browser sendiri. Udah seratus dua puluh ribu bintang di GitHub.
+
+Caranya, tiap tombol dan input di halaman dikasih nomor. AI tinggal mutusin: ketik di nomor satu, klik nomor tiga, terus cek hasilnya.
+
+Lo cukup nulis tugasnya pakai bahasa manusia di Antigravity IDE. Agent yang jalanin, lo tinggal ngopi.
+
+Mau contoh script agent-nya? Ketik AGENT di kolom komentar. Gas!

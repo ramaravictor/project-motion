@@ -1,0 +1,65 @@
+JUDUL (pilih satu)
+AI Lo Masih Nulis Kode Zaman Batu? Colok Context7! #shorts
+Biar AI Nggak Halu Docs Lama: Context7 MCP #shorts
+Antigravity IDE + Context7 = Kode Nggak Deprecated #shorts
+
+DESKRIPSI
+Minta AI bikin fitur pakai Next.js 15, yang keluar malah pages router sama getInitialProps 🦴 Kode zaman batu.
+
+Bukan AI-nya bego. Memorinya berhenti di knowledge cutoff, sementara dokumentasi library update terus tiap bulan. Jadi dia ngarang dari ingatan lama, hasilnya fungsi deprecated, import nggak nyambung, terminal merah semua.
+
+Obatnya: Context7 dari Upstash (60k+ ⭐, MIT). MCP server yang nyuapin dokumentasi versi terbaru langsung ke prompt.
+
+Cara pakai:
+1. Colok Context7 ke Antigravity IDE (config di komentar pin)
+2. Tambahin "use context7" di akhir prompt lo
+3. Agen ambil docs yang relevan, kodenya pakai API yang beneran ada
+
+Ketik "DOCS" di komentar 👇
+
+#vibecoding #antigravityide #context7 #mcp #nextjs #ai #llm #webdev #programmer #ngoding #shorts
+
+KOMENTAR PIN
+Config Context7 MCP buat Antigravity IDE 👇
+
+Antigravity IDE → MCP Servers → edit mcp_config.json:
+
+{
+  "mcpServers": {
+    "context7": {
+      "serverUrl": "https://mcp.context7.com/mcp"
+    }
+  }
+}
+
+API key opsional (buat rate limit lebih tinggi), tambahin header:
+"Authorization": "Bearer API_KEY_LO"
+
+Terus di prompt tulis "use context7" di akhir, contoh:
+bikin halaman blog Next.js 15 pakai app router. use context7
+
+Agen bakal manggil resolve-library-id lalu query-docs ✅
+
+BALASAN KOMENTAR
+
+[Yang ketik "DOCS"]
+Gas! Config-nya ada di komentar pin 📌 Tempel di mcp_config.json Antigravity, terus akhiri prompt pakai "use context7". AI lo langsung baca docs terbaru 📚
+
+[Variasi]
+Siap, cek pin ya 📌 Habis colok, coba tanya soal fitur library yang baru rilis, bedanya kerasa 😎
+Mantap! Config ada di komentar pin, cuma satu serverUrl doang 🔌
+
+["Bayar nggak?"]
+Bisa dipakai tanpa API key. API key gratis di context7.com cuma buat rate limit lebih tinggi.
+
+["Bisa di Cursor / Claude Code / VS Code?"]
+Bisa, Context7 itu MCP server biasa. Server URL-nya sama, cuma format config tiap editor agak beda. Cek README repo upstash/context7.
+
+["Harus ngetik use context7 terus?"]
+Nggak harus. Tambahin aturan di rules/instructions agen lo: "Always use Context7 when I need library/API documentation." Nanti dipanggil otomatis.
+
+["Library gue nggak ada?"]
+Coba cari di context7.com dulu. Kalau belum ada, library-nya bisa di-submit ke sana.
+
+["Tool-nya nggak muncul?"]
+Restart Antigravity setelah edit mcp_config.json, terus cek di panel MCP Servers kalau resolve-library-id dan query-docs udah kebaca ✅

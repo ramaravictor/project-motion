@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Thumbnail · UI Ketahuan AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=JetBrains+Mono:wght@700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #0E0E11; --bone: #F2EDE4; --accent: #C6FF3D; --red: #EF4444; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+  #c { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .glow { position: absolute; border-radius: 50%; }
+  .gp { left: -380px; top: 380px; width: 1300px; height: 1300px; background: radial-gradient(circle, rgba(124,58,237,.5) 0%, rgba(124,58,237,0) 62%); }
+  .ga { left: 380px; top: 900px; width: 1200px; height: 1200px; background: radial-gradient(circle, rgba(198,255,61,.28) 0%, rgba(198,255,61,0) 62%); }
+  .grain { position: absolute; inset: 0; opacity: .14; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); }
+
+  /* judul besar (di dalam safe zone 80-950 / 180-1470) */
+  .title { position: absolute; left: 80px; top: 200px; width: 870px; font: 800 150px/0.9 'Bricolage Grotesque', sans-serif; letter-spacing: -0.04em; color: var(--bone); }
+  .title b { color: var(--accent); }
+
+  /* sebelum vs sesudah */
+  .card { position: absolute; border-radius: 30px; overflow: hidden; box-shadow: 0 40px 80px -30px rgba(0,0,0,.9); }
+  .bad { left: 70px; top: 700px; width: 470px; height: 600px; transform: rotate(-6deg); background: linear-gradient(160deg, #4F46E5 0%, #7C3AED 48%, #DB2777 100%); color: #fff; padding: 26px; }
+  .bad .n { font: 800 20px 'Plus Jakarta Sans'; opacity: .9; }
+  .bad .h { margin-top: 70px; text-align: center; font: 800 44px/1.05 'Plus Jakarta Sans'; letter-spacing: -0.02em; }
+  .bad .btn { display: block; width: 300px; margin: 34px auto 0; text-align: center; background: #fff; color: #6D28D9; font: 800 24px 'Plus Jakarta Sans'; padding: 16px 0; border-radius: 99px; }
+  .bad .f { position: absolute; left: 22px; right: 22px; bottom: 26px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .bad .f i { height: 110px; border-radius: 18px; background: rgba(255,255,255,.18); border: 2px solid rgba(255,255,255,.3); }
+  .good { left: 520px; top: 760px; width: 480px; height: 600px; transform: rotate(5deg); background: #000; border: 5px solid var(--accent); }
+  .good img { display: block; width: 100%; object-fit: cover; }
+  .good .i1 { height: 300px; } .good .i2 { height: 290px; }
+  .stamp { position: absolute; font: 800 64px 'JetBrains Mono', monospace; padding: 8px 26px; border: 8px solid; border-radius: 18px; letter-spacing: .04em; white-space: nowrap; }
+  .s-bad { left: 120px; top: 1170px; color: var(--red); border-color: var(--red); background: rgba(20,8,8,.85); transform: rotate(-12deg); }
+  .s-good { left: 640px; top: 1210px; color: var(--accent); border-color: var(--accent); background: rgba(10,14,4,.88); transform: rotate(8deg); }
+  .arrow { position: absolute; left: 470px; top: 960px; width: 150px; height: 150px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font: 800 80px 'Bricolage Grotesque'; color: #141619; box-shadow: 0 0 0 14px rgba(198,255,61,.18); }
+  .badge { position: absolute; left: 80px; top: 1380px; font: 800 38px 'JetBrains Mono', monospace; color: #141619; background: var(--accent); padding: 14px 26px; border-radius: 18px; white-space: nowrap; }
+
+  /* Rama */
+  .rama { position: absolute; left: 520px; top: 1290px; width: 560px; height: 560px; -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 100%); mask-image: linear-gradient(to bottom, #000 80%, transparent 100%); }
+  .rama img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .rama .p { filter: drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
+</style>
+</head>
+<body>
+<div id="c">
+  <div class="glow gp"></div><div class="glow ga"></div><div class="grain"></div>
+  <div class="title">UI lo<br>ketahuan<br>bikinan <b>AI?</b></div>
+
+  <div class="card bad"><div class="n">✨ NexusAI 🚀</div><div class="h">Supercharge Your Workflow 🚀✨</div><span class="btn">Get Started Free 🚀</span><div class="f"><i></i><i></i><i></i></div></div>
+  <div class="card good"><img class="i1" src="assets/21st/g-waitlist-hero.png" alt=""><img class="i2" src="assets/21st/g-card-stack.png" alt=""></div>
+  <div class="arrow">→</div>
+  <div class="stamp s-bad">KAKU ✕</div>
+  <div class="stamp s-good">RAPI ✓</div>
+  <div class="badge">pakai 21st MCP</div>
+
+  <div class="rama">
+    <img class="p" src="../_shared/rama/rama_pose_shocked.png" alt="">
+    <img src="../_shared/rama/mouth_v5_shock.png" alt="">
+  </div>
+</div>
+</body>
+</html>

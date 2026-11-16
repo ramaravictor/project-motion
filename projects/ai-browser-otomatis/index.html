@@ -1,0 +1,801 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Browser Otomatis · ChillDev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root {
+    --bg: #F4EFE8; --text-main: #141619; --orange: #FF5500; --card-bg: #FFFFFF; --card-border: #DFD8CE;
+    --indigo: #2563EB; --danger: #DC2626; --emerald: #059669;
+    --t-ui: #FF5500; --t-logic: #141619; --t-data: #6E6A63; --t-util: #C4B9AA;
+    --radius-card: 28px; --shadow-soft: 0 20px 48px -12px rgba(20, 22, 25, 0.09);
+    --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif; --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+  html, body { width: 100%; height: 100%; background: #0A0A0B; overflow: hidden; font-family: var(--font-sans); }
+  body { display: flex; align-items: center; justify-content: center; gap: 24px; }
+  body.render { display: block; }
+
+  /* ---------- Kanvas 1080 x 1920 ---------- */
+  #stage-wrap { position: relative; flex-shrink: 0; }
+  #viewport { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background: var(--bg); overflow: hidden; transform-origin: 0 0; }
+  .bg-grid { position: absolute; inset: 0; pointer-events: none; background-size: 48px 48px;
+    background-image: linear-gradient(to right, rgba(20,22,25,0.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,22,25,0.035) 1px, transparent 1px); }
+
+  /* ---------- Safe zone (acuan fullstack-explainer) ---------- */
+  /* safe zone: top 180, left 80, right 130, bottom 450 */
+  #safe { position: absolute; top: 180px; left: 80px; width: 870px; height: 1290px; z-index: 20; }
+
+  /* Zona 1: header (y 180 - 230, clean single row tanpa progress bar) */
+  .brand-header { position: absolute; top: 0; left: 0; right: 0; height: 50px; display: flex; flex-direction: column; justify-content: center; }
+  .brand-top-row { display: flex; justify-content: space-between; align-items: center; }
+  .brand-logo-badge { display: flex; align-items: center; gap: 14px; }
+  .brand-monogram { width: 56px; height: 42px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 6px 14px rgba(255,0,0,0.22)); }
+  .brand-monogram img { width: 100%; height: 100%; object-fit: contain; }
+  .brand-text-col { display: flex; flex-direction: column; line-height: 1.08; }
+  .brand-title { font-size: 25px; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em; }
+  .brand-sub { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--orange); }
+  .header-right-group { display: flex; align-items: center; gap: 10px; }
+  .scene-tag-pill { font-family: var(--font-mono); font-size: 14px; font-weight: 800; color: #fff; background: var(--orange); padding: 8px 14px; border-radius: 99px; white-space: nowrap; max-width: 470px; overflow: hidden; text-overflow: ellipsis; }
+  .brand-handle { font-family: var(--font-mono); font-size: 17px; font-weight: 700; color: var(--text-main); background: rgba(255,255,255,0.9); border: 1.5px solid var(--card-border); padding: 7px 14px 7px 10px; border-radius: 99px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .handle-ig-icon { width: 24px; height: 24px; display: flex; flex-shrink: 0; }
+  .handle-ig-icon img { width: 100%; height: 100%; object-fit: contain; }
+
+  /* Zona 2: kartu (y 270 - 790) */
+  #top-card-container { position: absolute; top: 90px; left: 0; width: 870px; height: 520px; }
+  article.mockup-card { position: absolute; inset: 0; container-type: inline-size; background: var(--card-bg); border-radius: var(--radius-card);
+    border: 2px solid var(--card-border); box-shadow: var(--shadow-soft); padding: 26px 32px; display: flex; flex-direction: column; gap: 16px;
+    opacity: 0; visibility: hidden; transform: translateY(24px); translate: 0px; rotate: 0deg; scale: 1; }
+  .win-bar { display: flex; align-items: center; gap: 14px; height: 40px; flex-shrink: 0; }
+  .win-dots { display: flex; gap: 8px; }
+  .win-dot { width: 14px; height: 14px; border-radius: 50%; }
+  .dot-r { background: #FF5F57; } .dot-y { background: #FEBC2E; } .dot-g { background: #28C840; }
+  .win-path { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .win-badge { font-family: var(--font-mono); font-size: 13px; font-weight: 800; padding: 7px 12px; border-radius: 99px; white-space: nowrap; background: #FFF1E8; color: var(--orange); }
+  .win-badge.err { background: #FEF2F2; color: var(--danger); }
+  .win-badge.ok { background: #ECFDF5; color: var(--emerald); }
+  .mono { font-family: var(--font-mono); }
+  .banner { background: #141619; color: #A7F3D0; padding: 12px 18px; border-radius: 14px; font-family: var(--font-mono); font-size: 15px; font-weight: 800;
+    display: flex; justify-content: space-between; gap: 12px; white-space: nowrap; flex-shrink: 0; }
+  .banner.err { background: var(--danger); color: #fff; }
+
+  /* Kartu: tambahkan CSS kartu project di sini (desain dari topik, jangan salin dari project lain) */
+  .card-placeholder { flex: 1; min-height: 0; border: 2.5px dashed #DFD8CE; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    font-family: var(--font-mono); font-size: 18px; font-weight: 800; color: #A39B90; text-align: center; white-space: nowrap; }
+  .card-placeholder b { font-size: 28px; color: #6E6A63; }
+
+  /* ---------- Bang Motion: kerangka panggung (kartu transparan di atas #world) ---------- */
+  .mockup-card { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; display: block !important; transform: none !important; overflow: hidden; border-radius: 28px; }
+  #world { position: absolute; inset: 0; overflow: hidden; -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 90%, transparent); -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent), linear-gradient(to bottom, transparent, #000 7%, #000 90%, transparent); mask-composite: intersect; }
+  #headline-text .w { display: inline-block; }
+
+  /* 04 · Flat pop · medan warna bergantian · Unbounded */
+  /* PENGECUALIAN disetujui user (khusus video ini): latar full-bleed flat pop seperti thumbnail, bukan krem bergrid */
+  #viewport { background: #FFD23F !important; }
+  .bg-grid { display: none; }
+  #bgfull { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: #FFD23F; }
+  #bgfull .fb { position: absolute; inset: 0; }
+  #bgfull .fb2 { background: #FF8FB1; } #bgfull .fb3 { background: #7DD3FC; } #bgfull .fb4 { background: #FFE066; }
+  #bgfull .fb5 { background: #A7F3D0; } #bgfull .fb6 { background: #FF9A3C; }
+  #bgfull .g { position: absolute; border-radius: 50%; border: 6px solid rgba(20,22,25,0.9); }
+  #bgfull .g1 { width: 620px; height: 620px; right: -230px; top: -120px; background: #FF8FB1; }
+  #bgfull .g2 { width: 420px; height: 420px; left: -150px; top: 1080px; background: #7DD3FC; }
+  #bgfull .g3 { width: 260px; height: 260px; left: 600px; top: 1000px; background: #A7F3D0; }
+  #bgfull .g4 { width: 160px; height: 160px; left: -40px; top: 120px; background: #fff; }
+  #world { background: transparent; }
+  #world .field, #world .blob { display: none; }
+  #world .field { position: absolute; inset: 0; }
+  #world .f2 { background: radial-gradient(70% 60% at 30% 20%, rgba(255,255,255,0.3), transparent 60%), #FF8FB1; }
+  #world .f3 { background: radial-gradient(70% 60% at 30% 20%, rgba(255,255,255,0.3), transparent 60%), #7DD3FC; }
+  #world .f4 { background: radial-gradient(70% 60% at 30% 20%, rgba(255,255,255,0.3), transparent 60%), #FFE066; }
+  #world .f5 { background: radial-gradient(70% 60% at 30% 20%, rgba(255,255,255,0.3), transparent 60%), #A7F3D0; }
+  #world .f6 { background: radial-gradient(70% 60% at 30% 20%, rgba(255,255,255,0.3), transparent 60%), #FF9A3C; }
+  #world .blob { position: absolute; border-radius: 50%; }
+  #world .b1 { width: 380px; height: 380px; right: -110px; top: -150px; background: rgba(255,255,255,0.35); }
+  #world .b2 { width: 260px; height: 260px; left: -70px; bottom: -110px; background: rgba(20,22,25,0.07); }
+  #ghost { position: absolute; left: 20px; bottom: 10px; font: 800 200px/1 'Unbounded'; letter-spacing: -0.06em; color: rgba(20,22,25,0.08); white-space: nowrap; }
+  #bot { position: absolute; left: 600px; top: 120px; width: 200px; height: 200px; filter: drop-shadow(8px 10px 0 rgba(20,22,25,0.9)); }
+  .win { position: absolute; background: #fff; border: 5px solid #141619; border-radius: 22px; box-shadow: 8px 10px 0 #141619; overflow: hidden; }
+  .win .top { height: 40px; border-bottom: 5px solid #141619; display: flex; align-items: center; padding: 0 14px; font: 800 14px 'Unbounded'; white-space: nowrap; }
+  .win .bd { padding: 16px 18px; }
+  .price { font: 800 30px 'Unbounded'; letter-spacing: -0.03em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .lbl { font: 700 15px var(--font-sans); color: #6B7280; white-space: nowrap; }
+  .pill { position: absolute; white-space: nowrap; border-radius: 99px; font: 800 15px 'Unbounded'; padding: 10px 18px; border: 4px solid #141619; background: #fff; color: #141619; }
+  .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; }
+  .grid i { height: 34px; border-radius: 10px; border: 3px solid #141619; background: #fff; }
+  .grid i.done { background: #141619; }
+  .grid i.miss { background: #FF5500; }
+  .big { font: 800 50px/1 'Unbounded'; letter-spacing: -0.04em; white-space: nowrap; font-variant-numeric: tabular-nums; color: #141619; }
+  .cur { position: absolute; left: 0; top: 0; width: 46px; height: 46px; }
+  .name { font: 800 40px 'Unbounded'; letter-spacing: -0.04em; white-space: nowrap; }
+  .tags { margin-top: 14px; display: flex; gap: 8px; }
+  .tg { display: inline-block; font: 700 15px var(--font-mono); border: 3px solid #141619; border-radius: 99px; padding: 5px 12px; white-space: nowrap; background: #FFE066; }
+  .srch { height: 48px; border-radius: 12px; border: 3px solid #141619; font: 600 18px var(--font-sans); display: flex; align-items: center; padding: 0 14px; white-space: nowrap; color: #374151; }
+  .prods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  .prods i { height: 110px; border-radius: 14px; border: 3px solid #141619; background: linear-gradient(160deg, #FFE7EF, #FFF7F1); }
+  .buy { margin-top: 16px; height: 50px; width: 200px; border-radius: 14px; background: #141619; color: #FFD23F; font: 800 17px 'Unbounded'; display: flex; align-items: center; justify-content: center; }
+  .box { position: absolute; border: 4px solid; border-radius: 12px; }
+  .box b { position: absolute; left: -4px; top: -30px; font: 800 14px var(--font-mono); color: #fff; padding: 3px 9px; border-radius: 7px 7px 7px 0; white-space: nowrap; }
+  .log { position: absolute; background: #141619; border-radius: 20px; padding: 18px; font: 600 16px/1.8 var(--font-mono); color: #E5E7EB; box-shadow: 8px 10px 0 rgba(20,22,25,0.35); }
+  .log .ln { min-height: 29px; white-space: nowrap; }
+  .log .hd { color: #FFB38A; }
+  .log .gd { color: #A7F3D0; }
+  .code { position: absolute; background: #141619; border-radius: 20px; padding: 20px 22px; font: 500 15px/1.75 var(--font-mono); color: #E5E7EB; box-shadow: 8px 10px 0 rgba(20,22,25,0.35); }
+  .code div { white-space: nowrap; min-height: 26px; }
+  .code .k { color: #FF8FB1; } .code .s { color: #FFD23F; } .code .p { color: #A7F3D0; } .code .c5-hd { color: #FFB38A; font-weight: 700; }
+  .c4-hl { position: absolute; left: 0; top: 0; width: 10px; height: 10px; z-index: 2; }
+  .c4-hl i { position: absolute; width: 26px; height: 26px; border: 0 solid #FF5500; }
+  .c4-hl .tl { left: 0; top: 0; border-width: 6px 0 0 6px; border-top-left-radius: 9px; }
+  .c4-hl .tr { right: 0; top: 0; border-width: 6px 6px 0 0; border-top-right-radius: 9px; }
+  .c4-hl .bl { left: 0; bottom: 0; border-width: 0 0 6px 6px; border-bottom-left-radius: 9px; }
+  .c4-hl .br { right: 0; bottom: 0; border-width: 0 6px 6px 0; border-bottom-right-radius: 9px; }
+  .cmt { position: absolute; border-radius: 24px; background: #fff; border: 5px solid #141619; color: #141619; padding: 22px 24px; box-shadow: 8px 10px 0 #141619; }
+  .cmt .who { display: flex; align-items: center; gap: 12px; font: 700 17px var(--font-sans); color: #6B7280; white-space: nowrap; }
+  .cmt .who i { width: 42px; height: 42px; border-radius: 50%; background: #7DD3FC; border: 3px solid #141619; }
+  .cmt .txt { font: 800 56px/1.1 'Unbounded'; letter-spacing: -0.04em; margin-top: 12px; min-height: 66px; white-space: nowrap; }
+  .cmt .txt::after { content: ''; display: inline-block; width: 5px; height: 50px; background: #FF5500; margin-left: 6px; vertical-align: -6px; }
+
+  .brand-logo-badge { background: #fff; border: 3px solid #141619; border-radius: 16px; padding: 4px 14px 4px 8px; box-shadow: 4px 5px 0 #141619; }
+  .brand-monogram { filter: none !important; }
+  .scene-tag-pill { border: 3px solid #141619; box-shadow: 3px 4px 0 #141619; }
+  .brand-handle { background: #fff !important; border: 3px solid #141619 !important; box-shadow: 3px 4px 0 #141619; }
+  /* Zona 3: headline (y 806 - 1026) */
+  #headline-dock { position: absolute; top: 626px; left: 0; width: 870px; height: 220px; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 0 6px; }
+  .headline-main { font-size: 48px; font-weight: 800; line-height: 1.1; letter-spacing: -0.035em; color: var(--text-main); }
+  .highlight-orange { color: var(--orange); }
+  #headline-text .highlight-orange .w { background: #141619; padding: 0 0.14em 0.04em; border-radius: 0.2em; }
+  .genz-caption-pill { background: #fff; border: 3px solid #141619; padding: 12px 20px; border-radius: 16px; font-size: 20px; font-weight: 600; line-height: 1.35; color: #141619; box-shadow: 6px 7px 0 #141619; }
+
+  /* Zona 4: karakter (y 1050 - 1790, di luar #safe, kaki boleh lewat batas 1470) */
+  #character-stage { position: absolute; left: 80px; width: 870px; bottom: 130px; height: 740px; display: flex; justify-content: center; align-items: flex-end; z-index: 10; }
+  #character-rig { position: relative; width: 740px; height: 740px; transform-origin: bottom center; will-change: transform; contain: layout paint; z-index: 5; translate: 0px; rotate: 0deg; scale: 1;
+    -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); } /* badan memudar, tidak terpotong lurus */
+  .char-pose { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(12px 16px 0 rgba(20,22,25,0.2)); opacity: 0; visibility: hidden; z-index: 1; }
+  .char-viseme, .char-eye-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; opacity: 0; visibility: hidden; z-index: 3; }
+  .char-pose.active, .char-viseme.active, .char-eye-overlay.active { opacity: 1; visibility: visible; }
+  .char-ground-shadow { position: absolute; bottom: 20px; width: 500px; height: 44px; background: rgba(20,22,25,0.16); border-radius: 50%; pointer-events: none; z-index: 1; }
+
+  /* ---------- Overlay garis bantu (tidak ikut render) ---------- */
+  #guides { position: absolute; inset: 0; z-index: 90; pointer-events: none; display: none; }
+  #viewport.show-guides #guides { display: block; }
+  .g-unsafe { position: absolute; background: repeating-linear-gradient(45deg, rgba(220,38,38,0.16) 0 14px, rgba(220,38,38,0.06) 14px 28px); }
+  .g-safe { position: absolute; left: 80px; top: 180px; width: 870px; height: 1290px; outline: 3px dashed #059669; }
+  .g-zone { position: absolute; left: 80px; width: 870px; border: 2px solid rgba(37,99,235,0.7); }
+  .g-zone.char { border-color: rgba(147,51,234,0.8); border-style: dashed; }
+  .g-label { position: absolute; font: 800 16px var(--font-mono); color: #fff; background: rgba(20,22,25,0.82); padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
+
+  /* ---------- Panel cek (di luar kanvas) ---------- */
+  #panel { width: 420px; max-height: 96vh; overflow: auto; background: #16181C; color: #E5E7EB; border-radius: 16px; padding: 18px; font: 500 13px var(--font-mono); display: flex; flex-direction: column; gap: 12px; }
+  body.render #panel { display: none; }
+  #panel h2 { font: 800 16px var(--font-sans); color: #fff; }
+  .ctrl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ctrl button { font: 700 13px var(--font-mono); background: #FF5500; color: #fff; border: 0; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  .ctrl button.sec { background: #2A2D33; }
+  #scrub { width: 100%; accent-color: #FF5500; }
+  #tread { color: #9CA3AF; }
+  .chk { display: grid; grid-template-columns: 22px 1fr; gap: 4px 6px; padding: 7px 0; border-top: 1px solid #2A2D33; line-height: 1.45; }
+  .chk .ic { font-weight: 800; }
+  .chk.pass .ic { color: #34D399; } .chk.fail .ic { color: #F87171; } .chk.warn .ic { color: #FBBF24; }
+  .chk .dt { grid-column: 2; color: #9CA3AF; font-size: 12px; }
+  #summary { font: 800 14px var(--font-sans); padding: 10px 12px; border-radius: 10px; background: #2A2D33; }
+</style>
+</head>
+<body>
+
+<div id="stage-wrap">
+<div id="viewport">
+  <div class="bg-grid"></div>
+  <div id="bgfull"><div class="fb fb2"></div><div class="fb fb3"></div><div class="fb fb4"></div><div class="fb fb5"></div><div class="fb fb6"></div><div class="g g1"></div><div class="g g2"></div><div class="g g3"></div><div class="g g4"></div></div>
+
+  <div id="safe">
+    <!-- Zona 1 -->
+    <header class="brand-header">
+      <div class="brand-top-row">
+        <div class="brand-logo-badge">
+          <div class="brand-monogram"><img src="../_shared/brand/logo-youtube.svg" alt="YouTube"></div>
+          <div class="brand-text-col"><span class="brand-title">ChillDev</span><span class="brand-sub">@chilldevibe</span></div>
+        </div>
+        <div class="header-right-group">
+          <div class="scene-tag-pill" id="scene-tag-pill">ANTIGRAVITY IDE</div>
+          <div class="brand-handle"><span class="handle-ig-icon"><img src="../_shared/brand/logo-instagram.svg" alt="Instagram"></span><span>@ramarvctr_</span></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Zona 2 -->
+    <section id="top-card-container">
+      <!-- ==========================================================================
+           EDIT DI SINI: kartu ilustrasi. Template ini SENGAJA tanpa kartu contoh.
+           Desain kartu dari topik video; jangan salin kartu dari project lain.
+           Satu <article class="mockup-card" id="..."> per kartu, isi 870 × 520.
+           Hapus placeholder (data-placeholder) setelah kartu dibuat.
+           ========================================================================== -->
+      <div id="world">
+        <div class="field f2"></div><div class="field f3"></div><div class="field f4"></div><div class="field f5"></div><div class="field f6"></div>
+        <div class="blob b1"></div><div class="blob b2"></div>
+        <div id="ghost">ULANG</div>
+        <svg id="bot" viewBox="0 0 120 120"><g id="bot-face"><circle cx="60" cy="62" r="54" fill="#fff" stroke="#141619" stroke-width="6"/><rect x="30" y="40" width="60" height="44" rx="16" fill="#A7F3D0" stroke="#141619" stroke-width="5"/><ellipse class="be" cx="47" cy="62" rx="6" ry="7" fill="#141619"/><ellipse class="be" cx="73" cy="62" rx="6" ry="7" fill="#141619"/><path d="M60 8 V22" stroke="#141619" stroke-width="5"/><circle cx="60" cy="8" r="6" fill="#FF5500" stroke="#141619" stroke-width="4"/><path d="M48 96 Q60 104 72 96" fill="none" stroke="#141619" stroke-width="5" stroke-linecap="round"/></g></svg>
+      </div>
+
+      <article class="mockup-card" id="card-01">
+        <div class="win" style="left:40px;top:50px;width:250px;rotate:-6deg"><div class="top" style="background:#7DD3FC">toko-a.id</div><div class="bd"><div class="lbl">laptop 14 inci</div><div class="price" id="p1">Rp 8,9 jt</div></div></div>
+        <div class="win" style="left:310px;top:120px;width:250px;rotate:4deg"><div class="top" style="background:#FF8FB1">toko-b.id</div><div class="bd"><div class="lbl">laptop 14 inci</div><div class="price" id="p2">Rp 9,4 jt</div></div></div>
+        <div class="win" style="left:580px;top:50px;width:250px;rotate:-3deg"><div class="top" style="background:#A7F3D0">toko-c.id</div><div class="bd"><div class="lbl">laptop 14 inci</div><div class="price" id="p3">Rp 7,4 jt</div></div></div>
+        <div class="pill c1-cnt" id="c1-cnt" style="left:40px;top:400px">cek toko 1/30</div>
+        <svg class="cur" id="c1-cur" viewBox="0 0 24 24"><path d="M3 2 L20 12 L12 13.5 L8 21 Z" fill="#141619" stroke="#fff" stroke-width="1.5"/></svg>
+      </article>
+
+      <article class="mockup-card" id="card-02">
+        <div class="win c2-w" style="left:40px;top:40px;width:560px"><div class="top" style="background:#FFD23F">QA manual · checkout flow</div><div class="bd"><div class="grid" id="c2-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+        <div class="c2-num" style="position:absolute;left:630px;top:60px"><div class="big" id="c2-n">0/50</div><div class="lbl" style="margin-top:8px">tombol diklik manual</div></div>
+        <div class="pill c2-tom" style="left:630px;top:200px;background:#141619;color:#FFD23F">besok ulang lagi</div>
+        <div class="pill c2-miss" style="left:640px;top:290px;background:#FF5500;color:#fff;rotate:-6deg">1 kelewat!</div>
+        <svg class="cur" id="c2-cur" viewBox="0 0 24 24"><path d="M3 2 L20 12 L12 13.5 L8 21 Z" fill="#141619" stroke="#fff" stroke-width="1.5"/></svg>
+      </article>
+
+      <article class="mockup-card" id="card-03">
+        <div class="win c3-w" style="left:40px;top:50px;width:470px"><div class="top" style="background:#141619;color:#FFD23F;font:800 14px var(--font-mono)">github.com/browser-use/browser-use</div><div class="bd"><div class="name">browser-use</div><div class="big" id="c3-star" style="font-size:44px;margin-top:6px">0,0k ★</div><div class="tags"><span class="tg">open source</span><span class="tg">MIT</span><span class="tg">Python</span></div></div></div>
+        <div class="pill c3-p" style="left:560px;top:400px;background:#141619;color:#fff">AI agent + browser</div>
+        <div class="code c3-sh" style="left:40px;top:356px;width:470px"><div id="c3-cmd"></div></div>
+      </article>
+
+      <article class="mockup-card" id="card-04">
+        <div class="win c4-w" style="left:40px;top:40px;width:500px"><div class="top" style="background:#7DD3FC">tokokompetitor.id</div><div class="bd" style="height:300px;overflow:hidden"><div class="srch" id="c4-q">Cari laptop…</div><div class="prods"><i></i><i></i><i></i></div><div class="buy">Checkout</div></div></div>
+        <div class="box" style="left:57px;top:95px;width:466px;height:60px;border-color:#2563EB"><b style="background:#2563EB">[1] input</b></div>
+        <div class="box" style="left:212px;top:159px;width:156px;height:122px;border-color:#059669"><b style="background:#059669">[2] produk</b></div>
+        <div class="box" style="left:57px;top:285px;width:212px;height:62px;border-color:#FF5500"><b style="background:#FF5500">[3] tombol</b></div>
+        <div class="c4-hl" id="c4-hl"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+        <div class="log c4-log" style="left:560px;top:40px;width:270px"><div class="ln hd">agent ▸ cek harga</div><div class="ln" id="c4-l1"></div><div class="ln" id="c4-l2"></div><div class="ln gd" id="c4-l3"></div></div>
+        <svg class="cur" id="c4-cur" viewBox="0 0 24 24"><path d="M3 2 L20 12 L12 13.5 L8 21 Z" fill="#141619" stroke="#fff" stroke-width="1.5"/></svg>
+      </article>
+
+      <article class="mockup-card" id="card-05">
+        <div class="code c5-code" style="left:40px;top:50px;width:590px"><div class="c5-hd">Antigravity IDE</div><div id="c5-l0"></div><div id="c5-l1"></div><div id="c5-l2"></div><div id="c5-l3"></div></div>
+        <div class="pill c5-prog" id="c5-prog" style="left:40px;top:300px;background:#141619;color:#A7F3D0">toko ✓ 0/3</div>
+        <svg class="c5-mug" style="position:absolute;left:640px;top:330px;width:140px;height:150px" viewBox="0 0 140 150"><g id="c5-steam" stroke="#141619" stroke-width="5" fill="none" stroke-linecap="round" opacity=".55"><path d="M45 40 q-10 -14 0 -28"/><path d="M70 40 q-10 -14 0 -28"/></g><path d="M20 50 H100 V120 Q100 140 80 140 H40 Q20 140 20 120 Z" fill="#fff" stroke="#141619" stroke-width="6"/><path d="M100 70 h12 q16 0 16 18 q0 18 -16 18 h-12" fill="none" stroke="#141619" stroke-width="6"/><rect x="34" y="78" width="52" height="16" rx="8" fill="#FF8FB1"/></svg>
+      </article>
+
+      <article class="mockup-card" id="card-06">
+        <div class="cmt c6-cmt" style="left:420px;top:70px;width:410px"><div class="who"><i></i>@kamu · baru aja</div><div class="txt" id="c6-type"></div></div>
+        <div class="pill c6-p" style="left:430px;top:300px;background:#141619;color:#FFD23F">script agent cek harga</div>
+      </article>
+
+    </section>
+
+    <!-- Zona 3 -->
+    <section id="headline-dock">
+      <h1 class="headline-main" id="headline-text"></h1>
+      <div class="genz-caption-pill" id="caption-text"></div>
+    </section>
+  </div>
+
+  <!-- Zona 4 -->
+  <section id="character-stage">
+    <div class="char-ground-shadow"></div>
+    <div id="character-rig">
+      <img class="char-pose active" id="pose-present" src="../_shared/rama/rama_pose_presenting.png" alt="Rama Presenting">
+      <img class="char-pose" id="pose-shocked" src="../_shared/rama/rama_pose_shocked.png" alt="Rama Shocked">
+      <img class="char-pose" id="pose-point" src="../_shared/rama/rama_pose_point_up.png" alt="Rama Point Up">
+      <img class="char-pose" id="pose-thumbs" src="../_shared/rama/rama_pose_thumbsup.png" alt="Rama Thumbs Up">
+      <img class="char-viseme active" id="viseme-v0" src="../_shared/rama/mouth_v0_closed.png" alt="">
+      <img class="char-viseme" id="viseme-v1" src="../_shared/rama/mouth_v1_teeth.png" alt="">
+      <img class="char-viseme" id="viseme-v2" src="../_shared/rama/mouth_v2_small.png" alt="">
+      <img class="char-viseme" id="viseme-v3" src="../_shared/rama/mouth_v3_med.png" alt="">
+      <img class="char-viseme" id="viseme-v4" src="../_shared/rama/mouth_v4_wide.png" alt="">
+      <img class="char-viseme" id="viseme-v5" src="../_shared/rama/mouth_v5_shock.png" alt="">
+      <img class="char-eye-overlay" id="eye-blink" src="../_shared/rama/eye_blink_both.png" alt="">
+      <img class="char-eye-overlay" id="eye-wink" src="../_shared/rama/eye_wink_right.png" alt="">
+    </div>
+  </section>
+
+  <!-- Garis bantu safe zone & zona -->
+  <div id="guides">
+    <div class="g-unsafe" style="left:0;top:0;width:1080px;height:180px;"></div>
+    <div class="g-unsafe" style="left:0;top:1470px;width:1080px;height:450px;"></div>
+    <div class="g-unsafe" style="left:0;top:180px;width:80px;height:1290px;"></div>
+    <div class="g-unsafe" style="left:950px;top:180px;width:130px;height:1290px;"></div>
+    <div class="g-safe"></div>
+    <div class="g-zone" style="top:180px;height:74px;"></div>
+    <div class="g-zone" style="top:270px;height:520px;"></div>
+    <div class="g-zone" style="top:806px;height:220px;"></div>
+    <div class="g-zone char" style="top:1050px;height:740px;"></div>
+    <span class="g-label" style="left:8px;top:8px;">TOP 180 · status bar / notch</span>
+    <span class="g-label" style="left:8px;top:1478px;">BOTTOM 450 · caption, username, audio platform</span>
+    <span class="g-label" style="left:956px;top:190px;">R 130</span>
+    <span class="g-label" style="left:84px;top:1030px;">Z3 berakhir y=1026</span>
+    <span class="g-label" style="left:84px;top:1756px;">Z4 karakter y=1050–1790</span>
+  </div>
+</div>
+</div>
+
+<aside id="panel">
+  <h2>Cek Aturan Video</h2>
+  <div class="ctrl">
+    <button id="btn-play">▶ Play</button>
+    <button class="sec" id="btn-guides">Garis bantu: ON</button>
+    <button class="sec" id="btn-recheck">Cek ulang</button>
+  </div>
+  <input type="range" id="scrub" min="0" max="1" step="0.01" value="0">
+  <div id="tread">0.00 / 0.00 s</div>
+  <div id="summary">Menjalankan cek…</div>
+  <div id="checks"></div>
+</aside>
+
+<audio id="vo" src="vo.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+  const Q = new URLSearchParams(location.search);
+  const RENDER = Q.get('render') === '1';
+  if (RENDER) document.body.classList.add('render');
+
+  /* ---------- Envelope lip-sync: JANGAN edit manual. Isi lewat: node projects/_shared/scripts/envelope.mjs projects/<nama> ---------- */
+  const AUDIO_ENV = /*ENV*/[0.007,0.002,0.013,0.025,0.385,0.68,1,1,0.337,0.057,0.236,0.316,0.536,0.921,1,0.92,0.698,0.524,0.452,0.452,0.42,0.09,0.024,0.025,0.42,0.776,0.373,0.108,0.167,0.289,0.383,0.752,0.991,0.548,0.478,0.149,0.131,0.488,0.846,0.67,0.153,0.378,0.486,0.068,0.019,0.016,0.008,0.18,0.254,0.195,0.125,0.136,0.131,0.593,1,0.799,0.095,0.067,0.091,0.55,0.683,0.51,0.322,0.149,0.035,0.337,0.723,0.127,0.065,0.319,0.716,0.492,0.484,0.71,0.681,0.248,0.269,0.328,0.375,0.449,0.327,0.334,0.244,0.061,0.066,0.042,0.031,0.008,0.002,0.001,0.001,0.001,0.001,0.001,0.003,0.165,0.226,0.187,0.171,0.164,0.329,0.418,0.119,0.082,0.069,0.446,0.797,0.546,0.405,0.265,0.266,0.33,0.312,0.171,0.193,0.133,0.149,0.133,0.655,0.588,0.454,0.352,0.161,0.168,0.202,0.387,0.485,0.601,0.539,0.518,0.469,0.321,0.117,0.033,0.016,0.004,0.001,0.001,0.001,0.001,0.116,0.58,0.447,0.46,0.047,0.012,0.01,0.003,0.533,0.968,0.529,0.298,0.259,0.686,1,0.902,0.691,0.794,0.364,0.219,0.202,0.168,0.165,0.292,0.524,0.48,0.421,0.407,0.358,0.363,0.353,0.587,0.482,0.283,0.178,0.127,0.091,0.042,0.01,0.002,0.002,0.001,0.001,0.001,0.001,0.001,0.015,0.037,0.154,0.337,0.239,0.212,0.051,0.019,0.164,0.598,0.757,0.657,0.541,0.081,0.016,0.007,0.17,0.691,0.409,0.126,0.139,0.127,0.134,0.122,0.123,0.143,0.772,1,0.905,0.957,0.967,0.884,0.428,0.218,0.177,0.137,0.11,0.086,0.069,0.041,0.023,0.067,0.16,0.19,0.261,0.247,0.027,0.013,0.298,0.47,0.363,0.134,0.124,0.087,0.127,0.308,0.373,0.312,0.316,0.45,0.489,0.617,0.495,0.407,0.531,0.455,0.292,0.297,0.31,0.191,0.106,0.059,0.026,0.005,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.106,0.12,0.565,0.747,0.679,0.484,0.477,0.899,0.978,0.451,0.334,0.798,0.819,0.423,0.375,0.51,0.587,0.688,0.897,1,1,0.622,0.194,0.257,0.486,0.195,0.244,0.933,0.994,0.336,0.137,0.125,0.18,0.25,0.306,0.379,0.043,0.017,0.013,0.003,0.338,0.527,0.517,0.475,0.381,0.189,0.073,0.014,0.004,0.002,0.001,0.001,0.001,0.001,0.001,0.129,0.447,0.652,0.265,0.321,0.927,1,0.206,0.081,0.155,0.755,0.796,0.836,0.495,0.113,0.043,0.056,1,1,0.807,0.245,0.267,0.277,0.208,1,1,1,1,0.621,0.18,0.188,0.606,0.188,0.022,0.011,0.005,0.006,0.289,0.397,0.494,0.324,0.127,0.209,0.155,0.537,0.774,0.242,0.046,0.224,0.304,0.166,0.137,0.572,0.586,0.476,0.031,0.019,0.01,0.089,0.198,0.119,0.092,0.064,0.046,0.018,0.006,0.001,0.002,0.001,0.001,0.014,0.058,0.14,0.297,0.272,0.292,0.171,0.184,0.166,0.146,0.839,1,0.491,0.08,0.027,0.098,0.143,0.305,0.256,0.298,0.476,0.557,0.606,0.723,0.157,0.2,0.328,0.499,0.652,0.82,0.756,0.678,0.159,0.151,0.179,0.319,0.385,0.138,0.601,0.924,0.647,0.351,0.3,0.355,0.296,0.334,0.388,0.415,0.307,0.296,0.257,0.291,0.229,0.161,0.127,0.086,0.046,0.02,0.005,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.002,0.081,0.193,0.273,0.263,0.265,0.256,0.226,0.046,0.014,0.005,0.003,0.001,0.01,0.524,0.691,0.564,0.503,0.356,0.112,0.019,0.115,0.208,0.139,0.079,0.048,0.032,0.022,0.016,0.006,0.076,0.097,0.373,0.555,0.259,0.235,0.144,0.016,0.005,0.001,0.331,0.44,0.485,0.323,0.235,0.209,0.182,0.141,0.031,0.013,0.025,0.328,0.341,0.83,0.871,0.459,0.145,0.519,0.599,0.495,0.27,0.182,0.097,0.084,0.396,0.377,0.43,0.344,0.298,0.266,0.274,0.3,0.252,0.128,0.013,0.005,0.002,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.007,0.574,0.357,0.379,0.86,1,1,0.918,0.73,0.706,0.624,0.321,0.119,0.123,0.07,0.054,0.037,0.015,0.004,0.025,0.046,0.058,0.082,0.137,0.512,0.812,1,1,0.823,0.567,0.203,0.175,0.751,0.977,0.517,0.498,0.443,0.268,0.306,0.579,0.625,0.412,0.211,0.116,0.113,0.228,0.171,0.155,0.128,0.093,0.064,0.024,0.004,0.001,0.001,0.001,0.001,0.001,0.001,0.106,0.328,0.866,1,1,0.962,0.208,0.208,0.565,1,0.872,0.466,0.476,0.554,0.685,1,1,0.61,0.054,0.122,0.747,0.327,0.378,0.202,0.197,0.197,0.169,0.597,0.563,0.631,0.641,0.458,0.26,0.191,0.204,0.129,0.175,0.187,0.537,0.949,0.846,0.112,0.054,0.129,0.158,0.371,0.095,0.011,0.074,0.377,0.472,0.312,0.127,0.017,0.022,0.479,0.66,0.569,0.416,0.424,0.854,0.881,0.561,0.396,0.193,0.347,0.534,0.478,0.316,0.125,0.073,0.069,0.267,0.693,0.711,0.237,0.277,0.264,0.266,0.393,0.57,0.528,0.358,0.388,0.347,0.156,0.149,0.157,0.302,0.275,0.289,0.222,0.159,0.151,0.135,0.726,0.743,0.747,0.188,0.171,0.267,0.548,0.204,0.011,0.164,0.59,0.768,0.379,0.132,0.48,0.517,0.669,0.611,0.342,0.152,0.136,0.599,0.41,0.283,0.128,0.109,0.272,0.368,0.387,0.282,0.435,0.422,0.608,0.589,0.302,0.337,0.289,0.219,0.108,0.067,0.03,0.02,0.005,0.001,0.001,0.001,0.001,0.001,0.001,0.002,0.394,0.605,0.169,0.584,0.92,0.52,0.225,0.185,0.124,0.429,0.397,0.544,0.661,0.75,0.701,0.072,0.038,0.031,0.302,0.478,0.302,0.292,0.127,0.119,0.267,0.945,0.922,0.6,0.069,0.027,0.201,0.613,0.608,0.619,0.566,0.403,0.413,0.329,0.152,0.299,0.586,0.345,0.13,0.125,0.275,0.307,0.243,0.234,0.246,0.181,0.042,0.018,0.959,0.857,0.321,0.337,0.461,0.2,0.389,0.103,0.097,0.263,0.548,0.044,0.076,0.17,0.235,0.45,0.264,0.212,0.037,0.018,0.007,0.001,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.002,0.113,0.705,0.893,0.749,0.474,0.55,0.524,0.388,0.183,0.238,0.26,0.353,0.464,0.506,0.633,0.611,0.455,0.204,0.036,0.013,0.005,0.001,0.001,0.001,0.001,0.001,0.001,0.286,0.483,1,1,0.561,0.068,0.045,0.047,0.316,1,1,0.479,0.291,0.302,0.261,0.873,1,1,1,0.557,0.166,0.717,1,0.777,0.275,0.121,0.154,0.369,0.486,0.385,0.211,0.059,0.024,0.527,0.5,0.046,0.061,0.113,0.676,0.461,0.355,0.578,0.719,0.637,0.597,0.666,0.602,0.192,0.17,0.172,0.249,0.315,0.431,0.256,0.256,0.295,0.204,0.336,0.184,0.103,0.325,0.403,0.162,0.118,0.132,0.337,0.218,0.183,0.296,0.562,0.745,0.6,0.22,0.23,0.724,0.755,0.503,0.335,0.188,0.155,0.13,0.072,0.025,0.008,0.002,0.001,0.001,0.001,0.001,0.001,0.219,0.716,0.846,0.674,0.182,0.032,0.345,0.958,1,0.944,0.508,0.136,0.035,0.162,0.379,0.372,0.43,0.826,1,0.802,0.277,0.363,0.48,0.442,0.053,0.179,0.668,0.6,0.203,0.18,0.22,0.534,0.479,0.301,0.108,0.112,0.057,0.037,0.018,0.006,0.001,0.001,0.001,0.001,0.001,0.001,0.003,0.383,0.462,0.047,0.014,0.007,0.547,0.49,0.069,0.047,0.119,0.224,0.665,0.406,0.349,0.608,0.49,0.306,0.623,0.407,0.205,0.148,0.566,0.828,0.711,0.078,0.029,0.024,0.288,0.373,0.216,0.123,0.081,0.047,0.018,0.005,0.002,0.001,0.001,0.001,0.001,0.001,0.024,0.247,0.379,0.598,0.411,0.031,0.023,0.193,0.373,0.464,0.278,0.304,0.514,0.21,0.045,0.015,0.284,0.38,0.175,0.129,0.128,0.64,1,0.638,0.279,0.154,0.129,0.057,0.018,0.003,0.001,0.001,0.001,0.001,0.045,0.316,0.259,0.528,0.728,0.821,0.225,0.221,0.178,0.089,0.011,0.004,0.001,0.076,0.794,0.701,0.069,0.113,0.158,0.365,0.64,0.188,0.112,0.1,0.341,0.381,0.357,0.21,0.153,0.172,0.223,0.192,0.119,0.068,0.024,0.019,0.009,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.238,0.604,0.949,1,0.66,0.041,0.101,0.621,0.424,0.05,0.239,0.896,0.099,0.093,0.272,0.362,0.651,0.694,0.619,0.677,0.258,0.169,0.023,0.057,0.582,0.244,0.124,0.495,0.946,0.903,0.404,0.158,0.108,0.115,0.267,0.55,0.671,0.416,0.066,0.067,0.773,0.28,0.033,0.107,0.548,0.525,0.191,0.248,0.656,0.445,0.381,0.429,0.231,0.124,0.103,0.616,0.479,0.308,0.368,0.457,0.294,0.262,0.314,0.307,0.165,0.161,0.164,0.153,0.238,0.206,0.256,0.381,0.511,0.628,0.673,0.478,0.123,0.131,0.324,0.269,0.116,0.016,0.007,0.022,0.472,0.829,0.537,0.264,0.16,0.029,0.017,0.365,0.418,0.158,0.094,0.116,0.48,0.593,0.791,0.782,0.292,0.08,0.151,0.385,0.279,0.029,0.011,0.115,0.304,0.325,0.302,0.17,0.029,0.005,0.061,0.402,0.565,0.494,0.385,0.298,0.095,0.093,0.196,0.221,0.238,0.152,0.039,0.016,0.152,0.262,0.258,0.2,0.137,0.079,0.032,0.017,0.005,0.003,0.001,0.001,0.001,0.001,0.001,0.016,0.338,0.562,0.573,0.273,0.116,0.133,0.629,0.814,0.419,0.418,0.426,0.44,0.342,0.405,0.292,0.299,0.679,0.61,0.524,0.476,0.382,0.303,0.255,0.173,0.197,0.304,0.471,0.453,0.277,0.242,0.202,0.131,0.011,0.003,0.001,0.002,0.006,0.059,0.207,0.561,0.82,0.227,0.029,0.408,0.355,0.393,0.284,0.446,0.373,0.353,0.128,0.213,0.595,0.899,0.739,0.058,0.022,0.009,0.187,0.329,0.345,0.314,0.212,0.08,0.012,0.003,0.001,0.001,0.001,0.001,0.001,0.001,0.082,0.441,0.902,0.91,0.839,0.108,0.13,0.862,1,0.38,0.166,0.103,0.95,0.696,0.21,0.21,0.109,0.125,0.397,0.794,0.529,0.042,0.384,0.595,0.842,0.324,0.149,0.281,0.881,0.385,0.346,0.309,0.356,0.53,0.641,0.722,0.515,0.244,0.059,0.021,0.007,0.001,0.001,0.001,0.001,0.001,0.001,0.011,0.639,0.291,0.033,0.022,0.642,0.461,0.072,0.021,0.052,0.011,0.006,0.204,0.774,0.979,0.483,0.345,0.199,0.145,0.234,0.737,0.865,0.296,0.154,0.129,0.059,0.029,0.018,0.103,0.13,0.346,0.165,0.098,0.347,0.732,0.736,0.652,0.706,0.276,0.303,0.165,0.226,0.593,0.251,0.324,0.341,0.275,0.195,0.105,0.018,0.298,0.316,0.288,0.189,0.119,0.057,0.055,0.038,0.013,0.003,0.002,0.001,0.001,0.001,0.001,0.005,0.028,0.07,0.113,0.751,1,1,0.571,0.433,0.431,0.132,0.167,0.144,0.139,0.12,0.098,0.077,0.066,0.052,0.035,0.02,0.011,0.004,0.001,0.001,0.001]/*ENV*/;
+
+  /* ==========================================================================
+     EDIT DI SINI: daftar scene.
+     t0/t1 = detik di vo.mp3, ambil dari jeda kalimat (silencedetect).
+     pose  = present | shocked | point | thumbs
+     card  = id <article class="mockup-card"> yang tampil (jumlah scene & kartu bebas, sesuai VO)
+     Contoh di bawah hanya placeholder agar template bisa diputar dengan vo.mp3 demo.
+     subState = kunci yang dibaca updateSubStates()
+     ========================================================================== */
+  const SCENES = [
+    { idx: 1, id: 's01', t0: 0.00, t1: 8.78, card: '#card-01', subState: 's01', pose: 'present', tag: 'CEK HARGA MANUAL',
+      headline: 'Cek harga <span class="highlight-orange">30 toko</span> satu-satu?',
+      caption: 'Isi form yang sama, klik tombol yang sama. Jempol pegel, mata juling.' },
+    { idx: 2, id: 's02', t0: 8.78, t1: 18.07, card: '#card-02', subState: 's02', pose: 'shocked', tag: 'QA MANUAL',
+      headline: 'QA manual: <span class="highlight-orange">50 tombol</span> diklik manual',
+      caption: 'Besok diulang lagi dari awal. Capek, dan pasti ada yang kelewat.' },
+    { idx: 3, id: 's03', t0: 18.07, t1: 27.71, card: '#card-03', subState: 's03', pose: 'point', tag: 'BROWSER-USE',
+      headline: 'Kenalin <span class="highlight-orange">browser-use</span>',
+      caption: 'Library open source buat bikin AI agent yang bisa buka browser sendiri. 120 ribu bintang di GitHub.' },
+    { idx: 4, id: 's04', t0: 27.71, t1: 37.20, card: '#card-04', subState: 's04', pose: 'present', tag: 'DOM BERNOMOR',
+      headline: 'Tiap tombol dikasih <span class="highlight-orange">nomor</span>, AI tinggal mutusin',
+      caption: 'Ketik di nomor satu, klik nomor tiga, terus cek hasilnya.' },
+    { idx: 5, id: 's05', t0: 37.20, t1: 44.43, card: '#card-05', subState: 's05', pose: 'point', tag: 'ANTIGRAVITY IDE',
+      headline: 'Tulis tugasnya pakai <span class="highlight-orange">bahasa manusia</span>',
+      caption: 'Di Antigravity IDE, agent yang jalanin. Lo tinggal ngopi.' },
+    { idx: 6, id: 's06', t0: 44.43, t1: 50.60, card: '#card-06', subState: 's06', pose: 'thumbs', tag: 'KETIK AGENT',
+      headline: 'Ketik <span class="highlight-orange">AGENT</span> di kolom komentar',
+      caption: 'Gue kirim contoh script agent cek harga yang siap jalan.' }
+  ];
+  const DURATION = SCENES[SCENES.length - 1].t1;
+
+  /* poseSwitchTime deterministik: t0 scene pertama yang posenya beda dari scene sebelumnya */
+  const POSE_SWITCH = [];
+  SCENES.forEach((s, i) => {
+    if (i === 0) POSE_SWITCH.push(-10);
+    else POSE_SWITCH.push(s.pose !== SCENES[i - 1].pose ? s.t0 : POSE_SWITCH[i - 1]);
+  });
+
+  const $ = (q) => document.querySelector(q);
+
+  /* ---------- Bangun progress bar (opsional) ---------- */
+  const prog = $('#story-progress-bar');
+  if (prog) {
+    prog.style.gridTemplateColumns = `repeat(${SCENES.length}, 1fr)`;
+    SCENES.forEach((_, i) => { const d = document.createElement('div'); d.className = 'story-seg'; d.id = 'prog-seg-' + i; prog.appendChild(d); });
+  }
+
+  /* ---------- Karakter ---------- */
+  const poses = { present: $('#pose-present'), shocked: $('#pose-shocked'), point: $('#pose-point'), thumbs: $('#pose-thumbs') };
+  const visemes = {}; ['v0', 'v1', 'v2', 'v3', 'v4', 'v5'].forEach(k => visemes[k] = $('#viseme-' + k));
+  const eyeBlink = $('#eye-blink'), eyeWink = $('#eye-wink');
+  const charRig = $('#character-rig');
+
+  const SYLLABLE_PATTERN = ['v3', 'v4', 'v1', 'v3', 'v2', 'v4', 'v0', 'v3', 'v1', 'v4', 'v2', 'v3'];
+  function computeVisemeForFrame(frameIdx, vol, poseKey) {
+    if (vol < 0.14) return 'v0';
+    const step = Math.floor(frameIdx / 2);
+    if (vol < 0.32) return (step % 2 === 0) ? 'v2' : 'v1';
+    const patViseme = SYLLABLE_PATTERN[step % SYLLABLE_PATTERN.length];
+    if (poseKey === 'shocked' && patViseme === 'v4' && vol > 0.72) return 'v5';
+    return patViseme;
+  }
+  const only = (map, key) => Object.keys(map).forEach(k => map[k].classList.toggle('active', k === key));
+
+  /* ==========================================================================
+     EDIT DI SINI: transisi antar kartu. Fade + geser di bawah HANYA default darurat.
+     Ganti dengan bahasa gerak style Bang Motion yang dipilih user (whip, push-through,
+     objek yang berlanjut ke scene berikutnya). Tetap lewat tl agar terikat ke curT.
+     ========================================================================== */
+  const tl = gsap.timeline({ paused: true });
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  const typeTo = (el, str, lt, start, cps) => { el.textContent = str.slice(0, Math.max(0, Math.floor((lt - start) * (cps || 26)))); };
+  const countTo = (el, a, b, lt, start, dur, fmt) => { const p = clamp01((lt - start) / dur); el.textContent = fmt(a + (b - a) * (1 - Math.pow(1 - p, 3))); };
+  const GL = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+  const scramble = (el, a, b, lt, start, dur) => { const p = clamp01((lt - start) / dur); if (p <= 0) { el.textContent = a; return; } const n = b.length, k = Math.floor(p * n), f = Math.floor(lt * 24); let s = b.slice(0, k); for (let i = k; i < n; i++) s += GL[(i * 7 + f) % GL.length]; el.textContent = s; };
+  /* masuk pelan-tegas + blur berarah, keluar cepat (ritme asimetris) */
+  const IN = (sel, t, o = {}) => tl.fromTo(sel, { autoAlpha: 0, x: o.x ?? 0, y: o.y ?? 36, scale: o.s ?? 1, filter: 'blur(10px)' }, { autoAlpha: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)', duration: o.d ?? 0.85, ease: o.e ?? 'power4.out', stagger: o.st ?? 0.1 }, t);
+  const POP = (sel, t, o = {}) => tl.fromTo(sel, { autoAlpha: 0, scale: o.s ?? 0.4, rotate: o.r ?? 0 }, { autoAlpha: 1, scale: 1, rotate: 0, duration: o.d ?? 0.6, ease: o.e ?? 'back.out(2)', stagger: o.st ?? 0.08 }, t);
+  /* keluar per scene: whip (blur berarah) atau push-through kamera ke titik aksi (kedalaman) */
+  const EXIT = [
+    { x: -340, ease: 'power3.in' },                    /* s1 -> s2: whip kiri */
+    { scale: 2.4, ease: 'power2.in', at: [234, 237] }, /* s2 -> s3: tembus ke tombol yang kelewat */
+    { y: -300, ease: 'power3.in' },                    /* s3 -> s4: whip ke atas */
+    { scale: 2.6, ease: 'power2.in', at: [163, 316] }, /* s4 -> s5: tembus ke tombol Checkout [3] */
+    { x: 340, ease: 'power3.in' }                      /* s5 -> s6: whip kanan */
+  ];
+  SCENES.forEach((s, i) => {
+    tl.set(s.card, { autoAlpha: 1 }, i === 0 ? 0.01 : s.t0);
+    if (i < SCENES.length - 1) {
+      const X = EXIT[i], v = { autoAlpha: 0, filter: 'blur(12px)', duration: 0.36, ease: X.ease, stagger: X.at ? 0 : 0.025 };
+      if (X.x) v.x = X.x; if (X.y) v.y = X.y;
+      if (X.at) { v.scale = X.scale; v.transformOrigin = (k, el) => (X.at[0] - (parseFloat(el.style.left) || 0)) + 'px ' + (X.at[1] - (parseFloat(el.style.top) || 0)) + 'px'; }
+      tl.to(s.card + ' > *', v, s.t1 - 0.38);
+      tl.set(s.card, { autoAlpha: 0 }, s.t1);
+    }
+  });
+  /* ---------- Gerak dunia per project ---------- */
+const S = SCENES;
+  /* medan warna berganti lewat lingkaran yang mekar (dipicu bot / aksi), robot = benang merah sejak scene 3 */
+  const WIPE = (sel, t, at) => { const f = '#bgfull .fb' + sel.slice(-1), q = at.split(' ').map(parseFloat), o = ((80 + q[0] * 8.7) / 10.8).toFixed(1) + '% ' + ((270 + q[1] * 5.2) / 19.2).toFixed(1) + '%';
+    return tl.fromTo(f, { clipPath: 'circle(0% at ' + o + ')' }, { clipPath: 'circle(150% at ' + o + ')', duration: 0.6, ease: 'power3.in' }, t); };
+  ['.fb2', '.fb3', '.fb4', '.fb5', '.fb6'].forEach((f) => tl.set('#bgfull ' + f, { clipPath: 'circle(0% at 50% 50%)' }, 0));
+  tl.set('#bot', { autoAlpha: 0 }, 0);
+  POP('#card-01 .win', 0.2, { s: 0.5, st: 0.25, e: 'back.out(2.4)' });
+  POP('#card-01 .c1-cnt', 1.2);
+  WIPE('#world .f2', S[1].t0 - 0.35, '50% 40%');
+  IN('#card-02 .c2-w', S[1].t0 + 0.15, { y: 60 });
+  IN('#card-02 .c2-num', S[1].t0 + 0.9, { x: 40, y: 0 });
+  POP('#card-02 .c2-tom', S[1].t0 + 4.0, { s: 1.5, r: -8 });
+  POP('#card-02 .c2-miss', S[1].t0 + 8.1, { s: 1.8, r: 10 });
+  WIPE('#world .f3', S[2].t0 - 0.35, '27% 46%');
+  IN('#card-03 .c3-w', S[2].t0 + 0.15, { x: 0, y: 0, s: 0.6 });
+  IN('#card-03 .c3-sh', S[2].t0 + 5.0, { y: 30 });
+  tl.fromTo('#bot', { autoAlpha: 0, x: 0, y: 40, scale: 0.2 }, { autoAlpha: 1, x: 0, y: 40, scale: 1, duration: 0.7, ease: 'back.out(2.2)' }, S[2].t0 + 1.0);
+  POP('#card-03 .c3-p', S[2].t0 + 4.0, { s: 1.4 });
+  POP('#card-03 .tg', S[2].t0 + 2.5, { st: 0.15 });
+  WIPE('#world .f4', S[3].t0 - 0.35, '85% 85%');
+  tl.to('#bot', { x: 100, y: 210, scale: 0.55, duration: 0.8, ease: 'power3.inOut' }, S[3].t0 - 0.3);
+  IN('#card-04 .c4-w', S[3].t0 + 0.15, { y: 60 });
+  IN('#card-04 .c4-log', S[3].t0 + 0.6, { x: 50, y: 0 });
+  POP('#card-04 .box', S[3].t0 + 3.3, { s: 1.3, st: 0.4 });
+  WIPE('#world .f5', S[4].t0 - 0.35, '19% 61%');
+  tl.to('#bot', { x: 60, y: -30, scale: 0.8, duration: 0.8, ease: 'power3.inOut' }, S[4].t0 - 0.3);
+  IN('#card-05 .c5-code', S[4].t0 + 0.15, { x: 0, y: 0, s: 0.6 });
+  POP('#card-05 .c5-mug', S[4].t0 + 6.3, { s: 0.4 });
+  POP('#card-05 .c5-prog', S[4].t0 + 4.9);
+  WIPE('#world .f6', S[5].t0 - 0.35, '20% 50%');
+  tl.to('#bot', { x: -480, y: 20, scale: 1.15, duration: 0.9, ease: 'power3.inOut' }, S[5].t0 - 0.3);
+  IN('#card-06 .c6-cmt', S[5].t0 + 0.4, { x: 60, y: 0 });
+  POP('#card-06 .c6-p', S[5].t0 + 3.0, { s: 1.4 });
+
+  const headlineEl = $('#headline-text'), captionEl = $('#caption-text'), tagEl = $('#scene-tag-pill');
+
+  /* ==========================================================================
+     EDIT DI SINI: sub-state per kartu (hanya ganti kelas/teks, tanpa CSS transition).
+     lt = detik sejak scene mulai.
+     ========================================================================== */
+  function updateSubStates(sc, lt) {
+    const T = sc.t0 + lt;
+    /* headline kinetik: per kata naik + blur berarah, keluar cepat di akhir scene */
+    if (!headlineEl.querySelector('.w')) {
+      const walk = (n) => [...n.childNodes].forEach((c) => {
+        if (c.nodeType === 3) {
+          const f = document.createDocumentFragment();
+          c.textContent.split(/(\s+)/).forEach((p) => { if (!p) return; if (/^\s+$/.test(p)) f.appendChild(document.createTextNode(p)); else { const w = document.createElement('span'); w.className = 'w'; w.textContent = p; f.appendChild(w); } });
+          c.replaceWith(f);
+        } else walk(c);
+      });
+      walk(headlineEl);
+    }
+    const out = sc.idx === SCENES.length ? 1 : clamp01((sc.t1 - T) / 0.3);
+    headlineEl.querySelectorAll('.w').forEach((w, i) => {
+      const e = 1 - Math.pow(1 - clamp01((lt - 0.12 - i * 0.07) / 0.45), 4);
+      const v = e * out;
+      w.style.opacity = v.toFixed(3);
+      w.style.transform = 'translateY(' + ((1 - e) * 30 - (1 - out) * 14).toFixed(1) + 'px)';
+      w.style.filter = 'blur(' + ((1 - v) * 8).toFixed(1) + 'px)';
+    });
+    const ce = 1 - Math.pow(1 - clamp01((lt - 0.55) / 0.5), 3);
+    captionEl.style.opacity = (ce * out).toFixed(3);
+    captionEl.style.transform = 'translateY(' + ((1 - ce) * 16).toFixed(1) + 'px)';
+    /* butiran hidup deterministik (12x per detik) */
+    const g = document.getElementById('grain-layer');
+    if (g) { const k = Math.floor(T * 12); g.style.transform = 'translate(' + (k * 37 % 60 - 30) + 'px,' + (k * 61 % 60 - 30) + 'px)'; }
+    SUB(T);
+  }
+  const mv = (t, K) => { if (t <= K[0][0]) return [K[0][1], K[0][2]]; for (let i = 1; i < K.length; i++) if (t < K[i][0]) { const f = (t - K[i - 1][0]) / (K[i][0] - K[i - 1][0]), e = f * f * (3 - 2 * f); return [K[i - 1][1] + (K[i][1] - K[i - 1][1]) * e, K[i - 1][2] + (K[i][2] - K[i - 1][2]) * e]; } const z = K[K.length - 1]; return [z[1], z[2]]; };
+  const placeCur = (q, p, lt, clickAt) => { const el = $(q); const k = clickAt.some((c) => lt >= c && lt < c + 0.15) ? 0.82 : 1; el.style.transform = 'translate(' + p[0].toFixed(1) + 'px,' + p[1].toFixed(1) + 'px) scale(' + k + ')'; el.style.opacity = clamp01((lt - 0.8) / 0.2).toFixed(2); };
+  const esc = (x) => x.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const typeSeg = (el, segs, lt, start, cps) => { let n = Math.max(0, Math.floor((lt - start) * cps)), h = ''; for (const [c, t] of segs) { if (n <= 0) break; const p = t.slice(0, n); n -= p.length; h += c ? '<span class="' + c + '">' + esc(p) + '</span>' : esc(p); } el.innerHTML = h; };
+  const CMD = [['p', '$ '], ['', 'uv add browser-use']];
+  const PY1 = [['k', 'from'], ['', ' browser_use '], ['k', 'import'], ['', ' Agent']];
+  const ASK = [['p', '› '], ['s', 'cek harga laptop di 3 toko']];
+  const RUN = [['p', '$ '], ['', 'uv run cek_harga.py']];
+  const PY2 = [['', 'result = Agent('], ['s', "'Cek harga laptop di 3 toko'"], ['', ').run_sync()']];
+  const GH = ['ULANG', '50×', '120K', '[1][2][3]', 'NGOPI', 'AGENT'];
+  const PR = [['Rp 8,9 jt', 'Rp 9,2 jt', 'Rp 8,7 jt'], ['Rp 9,4 jt', 'Rp 9,1 jt', 'Rp 9,6 jt'], ['Rp 7,4 jt', 'Rp 7,9 jt', 'Rp 7,6 jt']];
+  function SUB(T) {
+    const L = (i) => T - SCENES[i].t0;
+    let idx = SCENES.findIndex((s) => T >= s.t0 && T < s.t1); if (idx < 0) idx = SCENES.length - 1;
+    $('#ghost').textContent = GH[idx];
+    $('#ghost').style.transform = 'translateX(' + (-(T - SCENES[idx].t0) * 6).toFixed(1) + 'px)';
+    $('#world .b1').style.transform = 'translate(' + (Math.sin(T * 0.5) * 50).toFixed(1) + 'px,' + (Math.cos(T * 0.4) * 40).toFixed(1) + 'px)';
+    [[0.31, 0.27, 60, 50], [0.37, 0.29, 50, 60], [0.43, 0.33, 40, 30], [0.5, 0.41, 30, 40]].forEach((k, i) => { $('#bgfull .g' + (i + 1)).style.transform = 'translate(' + (Math.sin(T * k[0] + i) * k[2]).toFixed(1) + 'px,' + (Math.cos(T * k[1] + i * 2) * k[3]).toFixed(1) + 'px)'; });
+    $('#world .b2').style.transform = 'translate(' + (Math.cos(T * 0.45) * 40).toFixed(1) + 'px,' + (Math.sin(T * 0.35) * 40).toFixed(1) + 'px)';
+    $('#bot-face').setAttribute('transform', 'rotate(' + (Math.sin(T * 2.4) * 6).toFixed(2) + ' 60 64)');
+    const blink = (T % 2.7) < 0.12;
+    document.querySelectorAll('#bot .be').forEach((e) => e.setAttribute('ry', blink ? '1.5' : '7'));
+    /* s1: kursor lompat antar toko, harga dicek terus */
+    const a = L(0), ka = Math.floor(Math.max(0, a - 0.8) / 1.4);
+    const ptsA = [[150, 150], [420, 215], [690, 150]];
+    const pa = mv(Math.max(0, a - 0.8) - ka * 1.4, [[0, ...ptsA[(ka + 2) % 3]], [0.55, ...ptsA[ka % 3]]]);
+    placeCur('#c1-cur', pa, a, [0.8, 2.2, 3.6, 5.0, 6.4, 7.8].map((c) => c + 0.55));
+    ['#p1', '#p2', '#p3'].forEach((q, i) => { $(q).textContent = PR[i][(ka + i) % 3]; });
+    countTo($('#c1-cnt'), 1, 30, a, 0.8, 7.4, (v) => 'cek toko ' + Math.round(v) + '/30');
+    /* s2: 50 tombol diklik satu per satu */
+    const b = L(1), n = Math.floor(clamp01((b - 1.9) / 5.7) * 50);
+    const cl = $('#c2-grid').children;
+    for (let i = 0; i < 50; i++) cl[i].className = i < n ? (i === 33 ? 'miss' : 'done') : '';
+    $('#c2-n').textContent = n + '/50';
+    const m = Math.min(49, n);
+    placeCur('#c2-cur', [63 + (m % 10) * 52.2 + 14, 101 + Math.floor(m / 10) * 42 + 10], b, []);
+    countTo($('#c3-star'), 0, 120.7, L(2), 7.2, 1.3, (v) => v.toFixed(1).replace('.', ',') + 'k ★');
+    /* s4: kursor agent ke [1] lalu [3] */
+    typeSeg($('#c3-cmd'), CMD, L(2), 5.2, 22);
+    const d = L(3);
+    placeCur('#c4-cur', mv(d, [[4.6, 430, 440], [5.3, 290, 125], [6.1, 290, 125], [6.6, 163, 316]]), d, [5.4, 6.65]);
+    $('#c4-q').textContent = d < 5.6 ? 'Cari laptop…' : 'laptop'.slice(0, Math.floor((d - 5.6) * 12));
+    typeTo($('#c4-l1'), '▸ ketik [1] "laptop"', d, 5.5, 24);
+    typeTo($('#c4-l2'), '▸ klik [3]', d, 6.65, 24);
+    typeTo($('#c4-l3'), '▸ cek hasil ✓', d, 8.4, 24);
+    /* highlight sudut oranye (seperti browser-use) ikut aksi di log: ketik [1] lalu klik [3] */
+    { const A = [49, 85, 482, 80], B = [49, 275, 228, 82], f = clamp01((d - 6.65) / 0.3), q = f * f * (3 - 2 * f);
+      const r = A.map((v, k) => v + (B[k] - v) * q), ph = d >= 6.65 ? d - 6.65 : d - 5.4, pk = ph >= 0 && ph < 0.35 ? Math.sin(ph / 0.35 * Math.PI) * 0.1 : 0;
+      const hl = $('#c4-hl'); hl.style.left = r[0].toFixed(1) + 'px'; hl.style.top = r[1].toFixed(1) + 'px'; hl.style.width = r[2].toFixed(1) + 'px'; hl.style.height = r[3].toFixed(1) + 'px';
+      hl.style.opacity = clamp01((d - 5.4) / 0.12).toFixed(2); hl.style.transform = 'scale(' + (1 + pk).toFixed(3) + ')'; }
+    const e = L(4);
+    typeSeg($('#c5-l0'), ASK, e, 0.7, 18);
+    typeSeg($('#c5-l1'), PY1, e, 2.7, 34);
+    typeSeg($('#c5-l2'), PY2, e, 3.3, 45);
+    typeSeg($('#c5-l3'), RUN, e, 4.6, 30);
+    countTo($('#c5-prog'), 0, 3, e, 5.0, 1.2, (v) => 'toko ✓ ' + Math.round(v) + '/3');
+    $('#c5-steam').setAttribute('transform', 'translate(0 ' + (Math.sin(T * 3) * 3).toFixed(1) + ')');
+    typeTo($('#c6-type'), 'AGENT', L(5), 1.6, 6);
+  }
+
+  /* ---------- Timeline utama: semuanya dari curT ---------- */
+  let lastIdx = -1;
+  function seekTimeline(t) {
+    const curT = Math.max(0, Math.min(DURATION, t));
+    tl.seek(curT, false);
+
+    let idx = SCENES.findIndex(s => curT >= s.t0 && curT < s.t1);
+    if (idx === -1) idx = SCENES.length - 1;
+    const sc = SCENES[idx];
+    const lt = curT - sc.t0;
+
+    if (idx !== lastIdx) {
+      lastIdx = idx;
+      headlineEl.innerHTML = sc.headline;
+      captionEl.textContent = sc.caption;
+      tagEl.textContent = sc.tag;
+      if (prog) SCENES.forEach((_, i) => { const el = document.getElementById('prog-seg-' + i); if (el) el.className = 'story-seg' + (i < idx ? ' done' : (i === idx ? ' current' : '')); });
+    }
+    only(poses, sc.pose);
+    updateSubStates(sc, lt);
+
+    // volume dari envelope asli, dipetakan ke waktu sumber
+    const srcT = curT;
+    const frameIdx = Math.min(AUDIO_ENV.length - 1, Math.max(0, Math.floor(srcT * 30)));
+    const vol = AUDIO_ENV[frameIdx] || 0;
+    only(visemes, computeVisemeForFrame(frameIdx, vol, sc.pose));
+
+    const isWinking = (curT >= DURATION - 5.5 && curT <= DURATION - 4.4);
+    const blinkMod = (curT + 1.2) % 3.4;
+    const isBlinking = !isWinking && (blinkMod >= 0 && blinkMod < 0.13);
+    eyeWink.classList.toggle('active', isWinking);
+    eyeBlink.classList.toggle('active', isBlinking);
+
+    const poseSwitchTime = POSE_SWITCH[idx];
+    const dtSwitch = Math.max(0, curT - poseSwitchTime);
+    const switchPop = dtSwitch < 0.25 ? Math.sin((dtSwitch / 0.25) * Math.PI) * 0.025 : 0;
+    const talkBobY = vol > 0.15 ? -Math.abs(Math.sin(curT * 18)) * (2.0 + vol * 3.5) : 0;
+    const breatheY = Math.sin(curT * 2.8) * 2.5;
+    const subtleTilt = Math.sin(curT * 2.2) * (0.6 + vol * 0.8);
+    const subtleSwayX = Math.sin(curT * 1.6) * 2.5;
+    const posX = subtleSwayX.toFixed(2);
+    const posY = (breatheY + talkBobY).toFixed(2);
+    const rot = subtleTilt.toFixed(2);
+    const scaleVal = (1 + switchPop + vol * 0.008).toFixed(4);
+    charRig.style.transform = 'translate(' + posX + 'px, ' + posY + 'px) rotate(' + rot + 'deg) scale(' + scaleVal + ')';
+
+    if (!RENDER) { $('#scrub').value = curT; $('#tread').textContent = curT.toFixed(2) + ' / ' + DURATION.toFixed(2) + ' s · ' + sc.pose + ' · vol ' + vol.toFixed(2); }
+    return { idx, srcT };
+  }
+
+  let currentT = 0;
+  window.seekTo = (sec) => { currentT = sec; return seekTimeline(sec); };
+  /* ==========================================================================
+     EDIT DI SINI: SFX (dicampur oleh render.mjs, file di projects/_shared/sfx, volume 0.14–0.16).
+     ========================================================================== */
+  const sx = (k, t, file, vol) => ({ t: +(SCENES[k].t0 + t).toFixed(2), file: 'sfx_' + file + '.wav', vol: vol || 0.15 });
+  const SFX = [
+    /* s1: 3 jendela toko meletup, kursor klik pindah toko */
+    sx(0, 0.2, 'pop'), sx(0, 0.45, 'pop', 0.14), sx(0, 0.7, 'pop', 0.14), sx(0, 1.2, 'pop', 0.14),
+    ...[1.35, 2.75, 4.15, 5.55, 6.95].map((t) => sx(0, t, 'click', 0.14)),
+    /* transisi: whip / push-through + medan warna mekar */
+    ...[1, 2, 3, 4, 5].map((k) => sx(k, -0.35, 'whoosh')),
+    /* s2: grid 50 tombol, klik jarang saat counter jalan, "kelewat" = glitch */
+    sx(1, 0.15, 'pop', 0.14), ...[2.0, 3.2, 4.4, 5.6, 6.8].map((t) => sx(1, t, 'click', 0.14)),
+    sx(1, 4.0, 'pop', 0.14), sx(1, 8.1, 'glitch', 0.16),
+    /* s3: kartu repo, robot, tag, terminal uv add */
+    sx(2, 0.15, 'pop', 0.14), sx(2, 1.0, 'pop', 0.16), sx(2, 2.5, 'pop', 0.14), sx(2, 4.0, 'pop', 0.14),
+    sx(2, 5.0, 'pop', 0.14), sx(2, 5.4, 'click', 0.14), sx(2, 5.9, 'click', 0.14),
+    /* s4: halaman, label nomor, klik [1] lalu [3], log cek hasil */
+    sx(3, 0.15, 'pop', 0.14), sx(3, 3.3, 'pop'), sx(3, 5.4, 'click'), sx(3, 5.8, 'click', 0.14),
+    sx(3, 6.65, 'click', 0.16), sx(3, 8.4, 'click', 0.14),
+    /* s5: panel, prompt diketik, script ditulis, enter di terminal, progress, mug */
+    sx(4, 0.15, 'pop', 0.14), sx(4, 0.9, 'click', 0.14), sx(4, 1.6, 'click', 0.14), sx(4, 2.9, 'click', 0.14),
+    sx(4, 3.7, 'click', 0.14), sx(4, 4.6, 'click', 0.16), sx(4, 4.9, 'pop', 0.14), sx(4, 6.3, 'pop'),
+    /* s6: kolom komentar, ketik AGENT, CTA */
+    sx(5, 0.4, 'pop', 0.14), sx(5, 1.7, 'click', 0.14), sx(5, 2.1, 'click', 0.14), sx(5, 2.4, 'click', 0.14),
+    sx(5, 3.0, 'pop', 0.14), sx(5, 3.0, 'success', 0.16)
+  ];
+  window.OPENER = { ready: true, DURATION, FPS: 30, WIDTH: 1080, HEIGHT: 1920, SCENES, SFX, seek: (s) => window.seekTo(s) };
+
+  /* ---------- Skala tampilan ---------- */
+  const vp = $('#viewport'), wrap = $('#stage-wrap');
+  function fit() {
+    const s = RENDER ? 1 : Math.min((innerHeight - 24) / 1920, (innerWidth - 480) / 1080);
+    vp.style.transform = `scale(${s})`;
+    wrap.style.width = (1080 * s) + 'px'; wrap.style.height = (1920 * s) + 'px';
+  }
+  addEventListener('resize', fit); fit();
+
+  /* ---------- Preview: play + audio ---------- */
+  const vo = $('#vo');
+  let playing = false, t0Wall = 0, t0Pos = 0;
+  function loop(now) {
+    if (!playing) return;
+    const t = t0Pos + (now - t0Wall) / 1000;
+    if (t >= DURATION) { playing = false; vo.pause(); $('#btn-play').textContent = '▶ Play'; window.seekTo(DURATION); return; }
+    const { srcT } = window.seekTo(t);
+    if (Math.abs(vo.currentTime - srcT) > 0.15) vo.currentTime = srcT; // lompat ke potongan suara scene
+    requestAnimationFrame(loop);
+  }
+  if (!RENDER) {
+    $('#scrub').max = DURATION;
+    $('#btn-play').onclick = () => {
+      playing = !playing;
+      $('#btn-play').textContent = playing ? '❚❚ Pause' : '▶ Play';
+      if (playing) { if (currentT >= DURATION - 0.05) currentT = 0; t0Wall = performance.now(); t0Pos = currentT; vo.play().catch(() => {}); requestAnimationFrame(loop); }
+      else vo.pause();
+    };
+    $('#scrub').oninput = (e) => { if (playing) { playing = false; vo.pause(); $('#btn-play').textContent = '▶ Play'; } window.seekTo(+e.target.value); };
+    const setGuides = (on) => { vp.classList.toggle('show-guides', on); $('#btn-guides').textContent = 'Garis bantu: ' + (on ? 'ON' : 'OFF'); };
+    setGuides(Q.get('guides') !== '0');
+    $('#btn-guides').onclick = () => setGuides(!vp.classList.contains('show-guides'));
+    addEventListener('keydown', (e) => { if (e.key === 'g') $('#btn-guides').click(); if (e.key === ' ') { e.preventDefault(); $('#btn-play').click(); } });
+  }
+
+  /* ---------- Cek aturan otomatis ---------- */
+  function rectIn(el) {
+    const v = vp.getBoundingClientRect(), r = el.getBoundingClientRect(), s = v.width / 1080;
+    return { x: (r.left - v.left) / s, y: (r.top - v.top) / s, w: r.width / s, h: r.height / s };
+  }
+  const SAFE = { x0: 80, y0: 180, x1: 950, y1: 1470 };
+  const inside = (r) => r.x >= SAFE.x0 - 0.5 && r.y >= SAFE.y0 - 0.5 && r.x + r.w <= SAFE.x1 + 0.5 && r.y + r.h <= SAFE.y1 + 0.5;
+  const f1 = (n) => Math.round(n);
+
+  function runChecks() {
+    const out = [];
+    const add = (status, title, detail) => out.push({ status, title, detail });
+    const keepT = currentT;
+    const wasGuides = vp.classList.contains('show-guides');
+
+    // 1. Kanvas
+    add(vp.offsetWidth === 1080 && vp.offsetHeight === 1920 ? 'pass' : 'fail', 'Kanvas 1080 × 1920', `terukur ${vp.offsetWidth} × ${vp.offsetHeight}`);
+
+    // 2. #safe
+    const sr = rectIn($('#safe'));
+    const okSafe = f1(sr.x) === 80 && f1(sr.y) === 180 && f1(sr.w) === 870 && f1(sr.h) === 1290;
+    add(okSafe ? 'pass' : 'fail', 'Safe zone 80 / 180 / 130 / 450', `#safe = x${f1(sr.x)} y${f1(sr.y)} ${f1(sr.w)}×${f1(sr.h)}`);
+
+    // 3. Zona
+    const zones = [['Zona 1 header', '.brand-header', 180, 50], ['Zona 2 kartu', '#top-card-container', 270, 520], ['Zona 3 headline', '#headline-dock', 806, 220], ['Zona 4 karakter', '#character-stage', 1050, 740]];
+    zones.forEach(([n, q, y, h]) => { const r = rectIn($(q)); add(f1(r.y) === y && f1(r.h) === h ? 'pass' : 'fail', n, `y ${f1(r.y)}–${f1(r.y + r.h)} (target ${y}–${y + h})`); });
+
+    // 4. Semua teks di dalam safe zone, untuk tiap scene
+    let outside = [], dockOverflow = [], headLines = [], capLines = [], cardOverflow = [];
+    SCENES.forEach((s) => {
+      window.seekTo(s.t0 + Math.min(9.5, (s.t1 - s.t0) - 0.4)); // akhir scene: semua sub-state aktif
+      const card = $(s.card);
+      [...card.querySelectorAll('*'), ...document.querySelectorAll('.brand-header *, #headline-dock *')].forEach(el => {
+        if (!el.childNodes.length || ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+        const r = rectIn(el); if (r.w === 0) return;
+        if (!inside(r)) outside.push(`${s.tag.slice(0, 2)} "${el.textContent.trim().slice(0, 24)}" (x${f1(r.x)}–${f1(r.x + r.w)}, y${f1(r.y)}–${f1(r.y + r.h)})`);
+      });
+      const cr = rectIn(card);
+      card.querySelectorAll('*').forEach(el => { const r = rectIn(el); if (r.w === 0 || r.h === 0) return; if (r.x < cr.x - 1 || r.y < cr.y - 1 || r.x + r.w > cr.x + cr.w + 1 || r.y + r.h > cr.y + cr.h + 1) cardOverflow.push(`${s.id} ${el.className || el.tagName} (+${f1(Math.max(r.y + r.h - cr.y - cr.h, r.x + r.w - cr.x - cr.w, cr.y - r.y, cr.x - r.x))}px)`); });
+      card.querySelectorAll('*').forEach(el => { const cs = getComputedStyle(el); if (!el.children.length || cs.overflow !== 'visible' || !['block', 'flex', 'grid'].includes(cs.display)) return; const over = el.scrollHeight - el.clientHeight; if (over > 2) cardOverflow.push(`${s.id} .${el.className || el.tagName} isi tertutup (+${over}px)`); });
+      const dock = $('#headline-dock'); if (dock.scrollHeight > dock.clientHeight + 1) dockOverflow.push(`${s.tag.slice(0, 2)} (+${dock.scrollHeight - dock.clientHeight}px)`);
+      const hl = Math.round($('#headline-text').offsetHeight / (48 * 1.1)); if (hl > 2) headLines.push(`${s.tag.slice(0, 2)}: ${hl} baris`);
+      const cp = $('#caption-text'); const cl = Math.round((cp.offsetHeight - 27) / 27); if (cl > 3) capLines.push(`${s.tag.slice(0, 2)}: ${cl} baris`); else capLines.push(null);
+    });
+    add(outside.length ? 'fail' : 'pass', 'Semua teks & UI di dalam safe zone', outside.length ? outside.slice(0, 6).join('<br>') + (outside.length > 6 ? `<br>…+${outside.length - 6} lagi` : '') : 'tidak ada teks di luar x 80–950 / y 180–1470');
+    add(cardOverflow.length ? 'fail' : 'pass', 'Isi kartu tidak meluap keluar kartu', cardOverflow.slice(0, 6).join('<br>') || 'semua isi di dalam kartu');
+    add(headLines.length ? 'fail' : 'pass', 'Headline maksimal 2 baris', headLines.join(', ') || 'semua scene ≤ 2 baris');
+    const capBad = capLines.filter(Boolean);
+    add(capBad.length ? 'fail' : 'pass', 'Caption maksimal 3 baris', capBad.join(', ') || 'semua scene ≤ 3 baris');
+    add(dockOverflow.length ? 'warn' : 'pass', 'Headline + caption muat di 220px', dockOverflow.length ? 'meluap di scene ' + dockOverflow.join(', ') : 'tidak ada yang meluap');
+
+    // 5. Karakter tidak masuk kolom tombol kanan
+    const rr = rectIn(charRig);
+    add(rr.x >= 80 && rr.x + rr.w <= 950 ? 'pass' : 'fail', 'Rig karakter 740 di tengah kolom aman', `x ${f1(rr.x)}–${f1(rr.x + rr.w)} (batas 80–950)`);
+
+    // 6. Teks nowrap tidak terpotong / turun baris
+    const clipped = [];
+    document.querySelectorAll('.win-badge, .scene-tag-pill, .brand-handle, .pill, [data-nowrap]').forEach(el => {
+      const cs = getComputedStyle(el);
+      if (cs.whiteSpace !== 'nowrap') clipped.push(`${el.className}: white-space ${cs.whiteSpace}`);
+      else if (el.scrollWidth > el.clientWidth + 1) clipped.push(`"${el.textContent.trim()}" terpotong`);
+    });
+    add(clipped.length ? 'fail' : 'pass', 'Badge / pill tidak terpotong (nowrap)', clipped.join('<br>') || 'semua aman');
+
+    // 7. Kartu didesain dari topik, bukan placeholder / salinan
+    const ph = document.querySelectorAll('[data-placeholder]').length;
+    add(ph ? 'fail' : 'pass', 'Kartu sudah didesain (placeholder dihapus)', ph ? `${ph} placeholder masih ada di Zona 2` : 'tidak ada placeholder');
+    const OLD = ['c1-chat', 'c1-files', 'c1-term', 'spag-grid', 'spag-file', 'spag-wire', 'xray-files', 'xray-ast', 'gh-card', 'gh-topic', 'graph-area', 'net-node', 'net-edge', 'cmt-panel', 'dm-card', 'share-row', 'cringe-grid'];
+    const copied = OLD.filter(c => document.querySelector('.mockup-card .' + c));
+    add(copied.length ? 'fail' : 'pass', 'Kartu bukan salinan project lain', copied.length ? `struktur kartu lama ditemukan: .${copied.join(', .')}. Desain kartu baru dari topik video.` : 'tidak ada struktur kartu lama');
+
+    // 8. Panggung Motion Graphic Dinamis (Bang Motion)
+    const hasMotionStage = !!document.querySelector('#world, #motion-stage, #webgl-canvas, #dynamic-stage, #top-card-container');
+    add(hasMotionStage ? 'pass' : 'fail', 'Panggung Motion Graphic (Bang Motion)', 'panggung visual aktif beranimasi');
+
+    // 9. Tanpa CSS transition
+    const withTr = [...document.querySelectorAll('.mockup-card *, #character-rig, #character-rig *, .story-seg')].filter(el => getComputedStyle(el).transitionDuration.split(',').some(d => parseFloat(d) > 0));
+    add(withTr.length ? 'fail' : 'pass', 'Tidak ada CSS transition pada state', withTr.length ? `${withTr.length} elemen masih punya transition` : '0 elemen');
+
+    // 10. Header bersih (tanpa progress bar slide deck)
+    const hasProgBar = !!document.querySelector('.story-progress-bar');
+    add(!hasProgBar ? 'pass' : 'fail', 'Header bersih tanpa urutan slide', !hasProgBar ? 'bebas dari kesan deck PPT' : 'masih ada progress bar slide');
+
+    // 11. Header branding
+    const hb = $('.brand-title').textContent === 'ChillDev' && $('.brand-sub').textContent === '@chilldevibe' && $('.brand-handle').textContent.includes('@ramarvctr_');
+    add(hb ? 'pass' : 'fail', 'Header: ChillDev / @chilldevibe / @ramarvctr_', hb ? 'lengkap' : 'ada yang hilang');
+
+    // 12. Deterministik: seek acak harus memberi hasil sama
+    const snap = () => [charRig.style.transform, ...Object.keys(poses).filter(k => poses[k].classList.contains('active')), ...Object.keys(visemes).filter(k => visemes[k].classList.contains('active')),
+      eyeBlink.classList.contains('active'), eyeWink.classList.contains('active'), headlineEl.textContent,
+      [...document.querySelectorAll('.mockup-card')].map(c => getComputedStyle(c).opacity + c.textContent).join('')].join('|');
+    let mismatch = 0; const probes = [0.5, DURATION - 5, ...SCENES.flatMap(s => [s.t0 + 0.12, (s.t0 + s.t1) / 2])];
+    probes.forEach(p => { window.seekTo(p); const a = snap(); window.seekTo(DURATION * 0.37); window.seekTo(0); window.seekTo(p); if (snap() !== a) mismatch++; });
+    add(mismatch ? 'fail' : 'pass', 'seekTo() deterministik (termasuk pop ganti pose)', `${probes.length - mismatch}/${probes.length} titik identik setelah seek acak`);
+
+    // 13. Pose & mata
+    const poseList = [...new Set(SCENES.map(s => s.pose))];
+    add(poseList.length === 4 ? 'pass' : 'warn', 'Keempat pose terpakai', poseList.join(', '));
+    window.seekTo(DURATION - 5); const winkOn = eyeWink.classList.contains('active');
+    window.seekTo(2.2); const blinkOn = eyeBlink.classList.contains('active');
+    add(winkOn && blinkOn ? 'pass' : 'fail', 'Kedip (3.4s) & wink (DURATION−5.5)', `kedip @2.2s: ${blinkOn ? 'ya' : 'tidak'} · wink @${(DURATION - 5).toFixed(1)}s: ${winkOn ? 'ya' : 'tidak'}`);
+    let vset = new Set(); for (let t = 0; t < DURATION; t += 1 / 30) { const sc = SCENES.find(s => t >= s.t0 && t < s.t1) || SCENES[SCENES.length - 1]; const fi = Math.floor(t * 30); vset.add(computeVisemeForFrame(fi, AUDIO_ENV[fi] || 0, sc.pose)); }
+    add(vset.size >= 5 ? 'pass' : 'warn', 'Lip-sync memakai banyak viseme', [...vset].sort().join(', ') + (vset.has('v5') ? '' : ' (v5 tidak muncul: butuh shocked + vol > 0.72 pas pola v4)'));
+    add(AUDIO_ENV.length > 0 ? 'pass' : 'fail', 'Envelope audio ter-inline', `${AUDIO_ENV.length} frame (${(AUDIO_ENV.length / 30).toFixed(1)} s)`);
+
+    // tampilkan
+    window.seekTo(keepT); vp.classList.toggle('show-guides', wasGuides);
+    const nP = out.filter(o => o.status === 'pass').length, nF = out.filter(o => o.status === 'fail').length, nW = out.filter(o => o.status === 'warn').length;
+    const sum = $('#summary'); sum.textContent = `${nP} lolos · ${nF} gagal · ${nW} peringatan`; sum.style.color = nF ? '#F87171' : (nW ? '#FBBF24' : '#34D399');
+    $('#checks').innerHTML = out.map(o => `<div class="chk ${o.status}"><span class="ic">${o.status === 'pass' ? '✓' : o.status === 'fail' ? '✕' : '!'}</span><span>${o.title}</span><span class="dt">${o.detail}</span></div>`).join('');
+    window.RULE_CHECKS = out;
+  }
+
+  window.seekTo(Number(Q.get('t')) || 0);
+  if (!RENDER) {
+    $('#btn-recheck').onclick = runChecks;
+    Promise.all([document.fonts.ready, ...[...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))]).then(() => setTimeout(runChecks, 80));
+  }
+})();
+</script>
+</body>
+</html>

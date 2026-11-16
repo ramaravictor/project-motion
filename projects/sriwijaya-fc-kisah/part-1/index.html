@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lampu Menyala · Part 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DotGothic16&family=IBM+Plex+Mono:wght@600&family=Playfair+Display:wght@900&family=Old+Standard+TT:wght@700&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../_world/stadium.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="../_world/stadium.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;background:#000;overflow:hidden}
+  #stage{position:absolute;left:50%;top:50%;width:1080px;height:1920px;overflow:hidden;background:#070b18;transform-origin:50% 50%}
+  body.render #stage{left:0;top:0;transform:none!important}
+  /* kantong teks: scrim gelap supaya kontras (latar ≤25% luminance) */
+  #scrim{position:absolute;left:0;right:0;top:700px;height:520px;background:radial-gradient(70% 55% at 50% 50%,rgba(4,6,14,.72),rgba(4,6,14,0) 72%);pointer-events:none;opacity:0}
+  #hud{position:absolute;inset:0;pointer-events:none}
+  .say{position:absolute;left:70px;width:940px;top:790px;font:600 108px/1.02 'Cormorant Garamond',serif;color:#e9e2cf;letter-spacing:-.01em;text-shadow:0 4px 30px rgba(0,0,0,.6)}
+  .say i{font-style:italic;color:#f0c35a}
+  .say .w{display:inline-block;white-space:nowrap;opacity:0}
+  .lbl{position:absolute;left:74px;top:1060px;font:600 36px 'IBM Plex Mono',monospace;color:#b8c2dc;letter-spacing:.08em;white-space:nowrap;opacity:0}
+  #tag{position:absolute;left:60px;right:60px;top:1640px;text-align:center;font:600 34px 'IBM Plex Mono',monospace;color:#9aa6c4;letter-spacing:.12em;opacity:0}
+  #logo{position:absolute;left:390px;top:250px;width:300px;height:300px;object-fit:contain;opacity:0;filter:drop-shadow(0 0 40px rgba(245,196,0,.45))}
+  #grain{position:absolute;inset:-60px;opacity:.08;mix-blend-mode:overlay;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+  #vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(85% 60% at 50% 48%,transparent 55%,rgba(0,0,0,.55) 100%)}
+  #dbg{position:fixed;left:10px;right:10px;bottom:10px;display:none;gap:10px;align-items:center;font:600 13px monospace;color:#ccc;z-index:99}
+  #dbg input{flex:1}
+  body.debug #dbg{display:flex}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="world">
+    <canvas id="cv" width="1080" height="1920"></canvas>
+    <div id="board"><div class="row"></div><div class="row"></div><div class="row"></div></div>
+    <div id="clips"></div>
+  </div>
+  <div id="scrim"></div>
+  <div id="hud"></div>
+  <img id="logo" src="../_world/logo-sfc.png" alt="" onerror="this.remove()">
+  <div id="tag">@ramarvctr_ · PART 1/4</div>
+  <div id="grain"></div>
+  <div id="vig"></div>
+</div>
+<div id="dbg"><button id="pp">▶</button><input id="scr" type="range" min="0" step="0.01"><span id="tt"></span></div>
+<audio id="vo" src="vo.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+  const S = window.Stadium, Q = new URLSearchParams(location.search);
+  const RENDER = Q.get('render') === '1', DEBUG = Q.get('debug') === '1';
+  if (RENDER) document.body.classList.add('render');
+  if (DEBUG) document.body.classList.add('debug');
+  const $ = (q) => document.querySelector(q);
+
+  /* Batas adegan = titik tengah jeda paragraf di vo.mp3 (silencedetect -35dB) */
+  const SCENES = [
+    { id: 's01', t0: 0.00,  t1: 11.95, line: 'kota yang lapar juara' },
+    { id: 's02', t0: 11.95, t1: 22.37, line: 'double winner pertama' },
+    { id: 's03', t0: 22.37, t1: 30.98, line: 'tiga Copa' },
+    { id: 's04', t0: 30.98, t1: 43.65, line: '23.000 kursi kuning' },
+    { id: 's05', t0: 43.65, t1: 54.40, line: 'lampu bakal padam' },
+  ];
+  const DURATION = 54.4, FPS = 30;
+
+  /* ---------- lampu & penonton ---------- */
+  const LIGHTS = [
+    { i: 0, t: .45, type: 'on' }, { i: 1, t: 1.05, type: 'on' }, { i: 2, t: 1.65, type: 'on' }, { i: 3, t: 2.25, type: 'on' },
+    { i: 0, t: 49.9, type: 'flick' }, { i: 3, t: 51.1, type: 'flick' },
+  ];
+  const CONFETTI_T = 19.25;
+  function worldState(t) {
+    const crowd = t < 12 ? .18 : t < 17 ? S.lerp(.18, 1, S.EASE.io((t - 12) / 5)) : t < 44 ? 1 : S.lerp(1, .72, S.clamp((t - 44) / 6));
+    const cheer = t < CONFETTI_T ? 0 : t < CONFETTI_T + 6 ? 1 : S.clamp(1 - (t - CONFETTI_T - 6) / 3);
+    const cheer2 = t > 39 && t < 43.5 ? .6 * Math.sin(Math.PI * (t - 39) / 4.5) : 0;
+    const pm = t < 19.25 ? 'run' : t < 26 ? 'jump' : t < 31.5 ? 'run' : t < 38.5 ? 'trophy' : 'walk';
+    const pa = S.clamp((t - 2.4) / 1.2) * (t > 44 ? S.lerp(1, .35, S.clamp((t - 44) / 8)) : 1);
+    return { players: { mode: pm, a: pa }, lights: [0, 1, 2, 3].map(i => S.light(LIGHTS, i, t)), crowd, cheer: Math.max(cheer, cheer2), confetti: t >= CONFETTI_T ? 1 : 0, confettiT: CONFETTI_T };
+  }
+
+  /* ---------- kamera (koordinat dunia) ---------- */
+  const WIDE = { s: 1, x: 540, y: 960 };
+  const CAM0 = { s: 1.6, x: 540, y: 330 };
+  const MOVES = [
+    { t0: .3, t1: 4.6, to: WIDE },                                  // turun dari lampu ke stadion
+    { t0: 5.0, t1: 6.5, to: { s: 1.35, x: 540, y: 1410 } },          // lihat kliping 2004
+    { t0: 7.4, t1: 8.6, to: WIDE },
+    { t0: 13.5, t1: 14.7, to: { s: 1.45, x: 560, y: 1390 } },        // baca kliping double winner
+    { t0: 17.1, t1: 18.6, to: { s: 1.22, x: 540, y: 1520 } },     // ke lapangan: selebrasi
+    { t0: 22.37, cut: true, to: { s: 1.32, x: 540, y: 1360 } },      // cut ke tumpukan kliping
+    { t0: 26.0, t1: 27.0, to: WIDE },
+    { t0: 30.3, t1: 31.1, to: { s: 2.3, x: 540, y: 530 }, ease: 'in' },  // push-through ke papan skor
+    { t0: 31.1, t1: 32.2, to: { s: 1.25, x: 540, y: 600 }, ease: 'out' },
+    { t0: 37.9, t1: 39.1, to: WIDE },
+    { t0: 43.3, t1: 45.0, to: { s: 1.5, x: 540, y: 380 } },          // tilt ke lampu
+    { t0: 46.4, t1: 52.4, to: { s: 1.05, x: 540, y: 900 } },         // turun pelan
+  ];
+
+  /* ---------- kliping ---------- */
+  const CLIPS = [
+    { o: { mast: 'HARIAN SUMSEL', date: '23 OKTOBER 2004', head: 'Klub baru tiba di Palembang', w: 480 }, f: { t0: 1.8, x: 300, y: 1185, rot: -5, out: 11.3 } },
+    { o: { mast: 'OLAHRAGA', date: 'MUSIM 2007/08', head: 'Double winner pertama di Indonesia', photo: 'trophy' }, f: { t0: 12.05, dur: 1.1, x: 300, y: 1150, rot: 4, spin: 260, out: 17.0 } },
+    { o: { mast: 'COPA INDONESIA', date: 'MUSIM 2008/09', head: 'Copa lagi', w: 400 }, f: { t0: 23.0, x: 330, y: 1220, rot: -8, out: 25.0 } },
+    { o: { mast: 'COPA INDONESIA', date: '2010', head: 'Tiga kali Copa', w: 420, photo: 'two' }, f: { t0: 25.2, x: 330, y: 1190, rot: 7, out: 30.2 } },
+    { o: { mast: 'LIGA SUPER', date: 'MUSIM 2011/12', head: 'Juara Liga Super Indonesia', photo: 'trophy' }, f: { t0: 32.6, x: 290, y: 1135, rot: -3, out: 38.3 } },
+  ];
+  const clipBox = $('#clips');
+  CLIPS.forEach((c) => { c.el = S.clipping(c.o); clipBox.appendChild(c.el); });
+
+  /* ---------- papan skor: diketik dari waktu ---------- */
+  const BOARD = [
+    { t0: 0, rows: [['GELORA SRIWIJAYA', .8, ''], ['JAKABARING · 2004', 2.7, ''], ['KAPASITAS 23.000', 6.2, '']] },
+    { t0: 11.95, rows: [['LIGA INDONESIA 07/08', 12.4, 'g'], ['JUARA · SRIWIJAYA FC', 14.6, ''], ['COPA INDONESIA JUARA', 16.6, 'g']] },
+    { t0: 22.37, rows: [['COPA 2008/09 · JUARA', 23.2, ''], ['COPA 2010 · JUARA', 25.4, ''], ['SHIELD · INTER ISLAND', 27.8, 'g']] },
+    { t0: 30.98, rows: [['ISL 2011/12 · JUARA', 31.6, 'g'], ['KAYAMBA · ZAH RAHAN', 34.6, ''], ['PONARYO · FERRY R.', 36.6, '']] },
+    { t0: 43.65, rows: [['SRIWIJAYA FC', 44.2, ''], ['PUNCAK · 2012', 45.8, 'g'], ['BERSAMBUNG...', 51.4, 'r']] },
+  ];
+  const rowEls = [...document.querySelectorAll('#board .row')];
+  function board(t) {
+    let b = BOARD[0]; for (const x of BOARD) if (t >= x.t0) b = x;
+    b.rows.forEach(([txt, at, cls], k) => {
+      const n = t < at ? 0 : Math.min(txt.length, Math.floor((t - at) * 26) + 1);
+      const caret = n < txt.length && n > 0 && Math.floor(t * 6) % 2 ? '_' : '';
+      rowEls[k].textContent = txt.slice(0, n) + caret;
+      rowEls[k].className = 'row' + (cls ? ' ' + cls : '');
+    });
+  }
+
+  /* ---------- kalimat elegi (satu per adegan) ---------- */
+  const hud = $('#hud');
+  const tl = gsap.timeline({ paused: true });
+  const SCRIM = [];
+  function say(html, at, out, label) {
+    const top = S.pickTop((t) => S.cam(t, CAM0, MOVES), at, out);
+    const el = document.createElement('div'); el.className = 'say'; el.style.top = top + 'px';
+    el.innerHTML = html.split(/(<i>.*?<\/i>|\s+)/).filter(s => s && !/^\s+$/.test(s)).map(w => {
+      if (w.startsWith('<i>')) return w.replace(/<i>(.*?)<\/i>/, (m, inner) => inner.split(' ').map(x => `<span class="w"><i>${x}</i></span>`).join(' '));
+      return `<span class="w">${w}</span>`;
+    }).join(' ');
+    hud.appendChild(el);
+    const ws = el.querySelectorAll('.w');
+    tl.fromTo(ws, { opacity: 0, yPercent: 55, filter: 'blur(10px)' }, { opacity: 1, yPercent: 0, filter: 'blur(0px)', duration: .95, stagger: .1, ease: 'power4.out' }, at);
+    tl.fromTo(ws, { opacity: 1, yPercent: 0, filter: 'blur(0px)' }, { opacity: 0, yPercent: -30, filter: 'blur(8px)', duration: .4, stagger: .03, ease: 'power2.in', immediateRender: false }, out);
+    SCRIM.push([at - .2, out + .5, top]);
+    if (label) {
+      const lb = document.createElement('div'); lb.className = 'lbl'; lb.textContent = label; lb.style.top = (top + 270) + 'px'; hud.appendChild(lb);
+      tl.fromTo(lb, { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: .7, ease: 'power3.out' }, at + .7);
+      tl.fromTo(lb, { opacity: 1, x: 0 }, { opacity: 0, x: 0, duration: .3, ease: 'power2.in', immediateRender: false }, out);
+    }
+  }
+  say('Satu kota yang <i>lapar juara</i>', 8.9, 11.5);
+  say('Double winner <i>pertama</i> di Indonesia', 18.6, 22.0, 'MUSIM 2007/08 · LIGA + COPA');
+  say('Tiga kali <i>Copa</i>', 27.1, 30.2, '2007/08 · 2008/09 · 2010');
+  say('<i>23.000</i> kursi kuning bergemuruh', 39.3, 43.2, 'MAHKOTA LIGA SUPER · 2011/12');
+  say('Lampu-lampu itu bakal <i>padam</i>', 48.2, 52.6, 'SATU PER SATU');
+  tl.fromTo('#tag', { opacity: 0 }, { opacity: 1, duration: .8 }, 52.9);
+  tl.set({}, {}, DURATION);
+
+  /* angka 23.000 menghitung naik saat ditampilkan */
+  const numW = [...hud.querySelectorAll('.say')][3].querySelector('.w i');
+
+  /* ---------- seek: semua dari curT ---------- */
+  const cv = $('#cv'), ctx = cv.getContext('2d', { willReadFrequently: true }), world = $('#world'), grain = $('#grain');
+  function seek(t) {
+    const T = Math.max(0, Math.min(DURATION, t));
+    tl.pause(T, false);
+    S.render(ctx, T, worldState(T));
+    S.applyCam(world, T, S.cam(T, CAM0, MOVES));
+    CLIPS.forEach((c) => S.fall(c.el, T, c.f));
+    board(T);
+    let sc = 0, stop = 790; for (const [a, b, tp] of SCRIM) { const v = S.clamp((T - a) / .6) * S.clamp((b - T) / .5); if (v > sc) { sc = v; stop = tp; } }
+    $('#scrim').style.opacity = sc.toFixed(3); $('#scrim').style.top = (stop - 90) + 'px';
+    const lg = $('#logo'); if (lg) { const on = S.clamp((T - 44.3) / 1.2) * S.clamp((53.6 - T) / .8); const fl = (T > 49.9 && T < 50.6 && Math.floor(T * 14) % 2) ? .2 : 1; lg.style.opacity = (on * fl).toFixed(3); lg.style.transform = `scale(${(1 + .03 * Math.sin(T * 1.3)).toFixed(4)})`; }
+    const p = S.clamp((T - 39.3) / 1.6);
+    numW.textContent = Math.round(23000 * S.EASE.out(p)).toLocaleString('id-ID');
+    const gk = Math.floor(T * 12);
+    grain.style.transform = `translate(${((gk * 37) % 60) - 30}px,${((gk * 53) % 60) - 30}px)`;
+    if (DEBUG) { $('#scr').value = T; $('#tt').textContent = T.toFixed(2) + ' s'; }
+    return T;
+  }
+  window.seekTo = seek;
+
+  const SFX = [
+    ...[.45, 1.05, 1.65, 2.25].map(t => ({ t, file: 'sfx_click.wav', vol: .14 })),   // lampu menyala
+    { t: 2.75, file: 'sfx_pop.wav', vol: .14 },                                       // kliping 2004 mendarat
+    { t: 12.05, file: 'sfx_whoosh.wav', vol: .15 }, { t: 13.1, file: 'sfx_pop.wav', vol: .15 },
+    { t: CONFETTI_T, file: 'sfx_success.wav', vol: .16 },                             // konfeti double winner
+    { t: 22.37, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 23.95, file: 'sfx_pop.wav', vol: .14 }, { t: 26.15, file: 'sfx_pop.wav', vol: .14 },
+    { t: 30.3, file: 'sfx_whoosh.wav', vol: .15 },                                    // push-through papan skor
+    { t: 33.55, file: 'sfx_pop.wav', vol: .14 },
+    { t: 43.3, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 49.9, file: 'sfx_glitch.wav', vol: .14 }, { t: 51.1, file: 'sfx_glitch.wav', vol: .14 }, // lampu berkedip
+  ];
+  window.OPENER = { ready: true, DURATION, FPS, WIDTH: 1080, HEIGHT: 1920, SCENES, SFX, seek };
+
+  /* ---------- tampilan & pemutaran (bukan bagian render) ---------- */
+  const stage = $('#stage');
+  function fit() { if (RENDER) return; const s = Math.min(innerWidth / 1080, (innerHeight - (DEBUG ? 50 : 0)) / 1920); stage.style.transform = `translate(-50%,-50%) scale(${s})`; }
+  addEventListener('resize', fit); fit();
+  seek(Number(Q.get('t')) || 0);
+  if (RENDER || Q.get('clean') === '1') return;
+
+  const vo = $('#vo'); let playing = false, w0 = 0, p0 = 0;
+  vo.addEventListener('error', () => {});
+  function loop(now) {
+    if (!playing) return;
+    let t = p0 + (now - w0) / 1000;
+    if (t >= DURATION) { p0 = 0; w0 = now; t = 0; try { vo.currentTime = 0; } catch (e) {} }
+    seek(t);
+    if (vo.readyState >= 2 && t < vo.duration && Math.abs(vo.currentTime - t) > .15) vo.currentTime = t;
+    requestAnimationFrame(loop);
+  }
+  function play() { playing = true; w0 = performance.now(); p0 = +($('#scr').value || 0); if (p0 >= DURATION - .05) p0 = 0; vo.currentTime = p0; vo.play().catch(() => {}); requestAnimationFrame(loop); $('#pp').textContent = '❚❚'; }
+  function pause() { playing = false; vo.pause(); $('#pp').textContent = '▶'; }
+  $('#scr').max = DURATION;
+  $('#scr').oninput = (e) => { pause(); seek(+e.target.value); };
+  $('#pp').onclick = () => playing ? pause() : play();
+  addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); } if (e.key === 'r') { $('#scr').value = 0; pause(); play(); } });
+  document.fonts.ready.then(() => {
+    if (DEBUG) return;
+    vo.play().then(() => { vo.pause(); play(); }).catch(() => { addEventListener('pointerdown', play, { once: true }); addEventListener('keydown', play, { once: true }); });
+  });
+})();
+</script>
+</body>
+</html>

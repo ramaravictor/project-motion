@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Satu Tombol · ChillDev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  /* ==========================================================================
+     "SATU TOMBOL" — sinematik gelap + kinetic typography (Bang Motion).
+     Satu-satunya aturan tetap: safe zone top 180 / left 80 / right 130 / bottom 450.
+     Semua teks & UI di dalam #safe (870 x 1290). Latar boleh penuh kanvas.
+     ========================================================================== */
+  :root {
+    --ink: #0E0E11; --ink2: #18181C; --bone: #F2EDE4; --accent: #C6FF3D; --accent-dim: rgba(198,255,61,.14); --purple: #7C3AED; --red: #EF4444; --green: #34D399;
+    --f-display: 'Bricolage Grotesque', sans-serif; --f-mono: 'JetBrains Mono', monospace; --f-ui: 'Geist', sans-serif; --f-ai: 'Plus Jakarta Sans', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+  html, body { width: 100%; height: 100%; background: #050506; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; gap: 24px; font-family: var(--f-ui); }
+  body.render { display: block; }
+  #stage-wrap { position: relative; flex-shrink: 0; }
+  #viewport { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; overflow: hidden; background: var(--ink); }
+
+  /* ---------- Latar: dua cahaya bergeser + grain hidup (deterministik dari t) ---------- */
+  #bg { position: absolute; inset: 0; }
+  .glow { position: absolute; width: 1400px; height: 1400px; border-radius: 50%; translate: 0px; rotate: 0deg; scale: 1; }
+  .glow.p { left: -300px; top: 200px; background: radial-gradient(circle, rgba(124,58,237,.42) 0%, rgba(124,58,237,0) 62%); }
+  .glow.o { left: 0; top: 700px; background: radial-gradient(circle, rgba(198,255,61,.22) 0%, rgba(198,255,61,0) 62%); opacity: 0; }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 40%, rgba(0,0,0,.55) 100%); }
+  .grain { position: absolute; inset: -60px; opacity: .13; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); }
+
+  /* ---------- Safe zone ---------- */
+  /* safe zone: top 180, left 80, right 130, bottom 450 */
+  #safe { position: absolute; top: 180px; left: 80px; width: 870px; height: 1290px; }
+  #view { position: absolute; left: 0; top: 0; width: 870px; height: 1090px; overflow: hidden; /* kanvas y 180-1270 */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30px, #000 calc(100% - 40px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 30px, #000 calc(100% - 40px), transparent 100%); }
+  #cam { position: absolute; left: 0; top: 0; width: 870px; height: 1090px; transform-origin: 0 0; translate: 0px; rotate: 0deg; scale: 1; }
+  #world { position: absolute; inset: 0; }
+  .w { position: absolute; }
+
+  /* ---------- Sang tombol (subjek tetap) ---------- */
+  #hero { left: 435px; top: 545px; width: 0; height: 0; z-index: 20; translate: 0px; rotate: 0deg; scale: 1; }
+  .face { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); white-space: nowrap; display: flex; align-items: center; justify-content: center; }
+  .face > div { translate: 0px; rotate: 0deg; scale: 1; }
+  .f-ai, .f-fix { height: 86px; padding: 0 44px; border-radius: 99px; font: 800 30px var(--f-ai); color: #fff; letter-spacing: -0.01em; }
+  .f-ai { background: linear-gradient(135deg, #6366F1, #A855F7 60%, #EC4899); box-shadow: 0 18px 50px -12px rgba(168,85,247,.7); }
+  .f-fix { background: var(--red); opacity: 0; box-shadow: 0 18px 50px -12px rgba(239,68,68,.7); }
+  .f-ok { height: 84px; padding: 0 40px; border-radius: 16px; background: #141619; color: var(--bone); font: 600 30px var(--f-ui); letter-spacing: -0.02em; opacity: 0; box-shadow: 0 20px 40px -20px rgba(0,0,0,.6); }
+  .f-ok b { color: var(--accent); margin-left: 12px; }
+  .f-cta { display: flex; align-items: center; height: 96px; width: 600px; padding: 0 14px 0 34px; border-radius: 99px; background: var(--bone); border: 5px solid var(--accent); box-shadow: 0 0 0 10px var(--accent-dim); color: #141619; font: 700 32px var(--f-mono); justify-content: space-between; opacity: 0; }
+  .f-cta .send { width: 68px; height: 68px; border-radius: 50%; background: #141619; color: var(--accent); font: 800 30px var(--f-ui); display: flex; align-items: center; justify-content: center; }
+
+  /* ---------- s01: seribu kembaran ---------- */
+  .clone { position: absolute; width: 760px; height: 1040px; border-radius: 36px; background: linear-gradient(160deg, #4F46E5 0%, #7C3AED 48%, #DB2777 100%); opacity: 0; translate: 0px; rotate: 0deg; scale: 1; }
+  .clone i { position: absolute; display: block; background: rgba(255,255,255,.85); border-radius: 12px; }
+  .clone .n { left: 34px; right: 34px; top: 40px; height: 22px; background: rgba(255,255,255,.5); }
+  .clone .h { left: 90px; right: 90px; top: 210px; height: 56px; } .clone .h2 { left: 160px; right: 160px; top: 285px; height: 56px; }
+  .clone .b { left: 270px; right: 270px; top: 480px; height: 86px; border-radius: 99px; background: #fff; }
+  .clone .f1, .clone .f2, .clone .f3 { top: 645px; height: 170px; width: 220px; background: rgba(255,255,255,.22); border-radius: 22px; }
+  .clone .f1 { left: 30px; } .clone .f2 { left: 270px; } .clone .f3 { left: 510px; }
+  #land-ring { left: 30px; top: 0; width: 810px; height: 1090px; border: 28px solid var(--accent); border-radius: 56px; opacity: 0; z-index: 25; }
+  #counter { position: absolute; left: 50%; top: 880px; transform: translateX(-50%); font: 800 46px var(--f-mono); color: #141619; background: var(--accent); padding: 12px 28px; border-radius: 18px; white-space: nowrap; opacity: 0; z-index: 41; font-variant-numeric: tabular-nums; }
+  .wb { position: absolute; border: 4px dashed var(--accent); border-radius: 16px; background: rgba(198,255,61,.06); opacity: 0; z-index: 22; }
+  .wb span { position: absolute; left: 10px; top: -17px; font: 800 17px var(--f-mono); background: var(--accent); color: #141619; padding: 4px 9px; border-radius: 6px; white-space: nowrap; }
+  #pola { left: 165px; top: 1000px; font: 800 26px var(--f-mono); color: #141619; background: var(--accent); padding: 12px 22px; border-radius: 14px; white-space: nowrap; opacity: 0; z-index: 26; }
+
+  /* ---------- s02/s03: landing cetakan AI ---------- */
+  #ai-land { left: 55px; top: 25px; width: 760px; height: 1040px; border-radius: 36px; overflow: hidden; background: linear-gradient(160deg, #4F46E5 0%, #7C3AED 48%, #DB2777 100%); color: #fff; font-family: var(--f-ai); opacity: 0; translate: 0px; rotate: 0deg; scale: 1; }
+  #ai-land > div { position: absolute; translate: 0px; rotate: 0deg; scale: 1; }
+  .ai-nav { left: 34px; right: 34px; top: 34px; display: flex; justify-content: space-between; font-size: 24px; font-weight: 800; white-space: nowrap; }
+  .ai-nav span:last-child { font-weight: 600; opacity: .85; }
+  .ai-chip { left: 50%; top: 140px; margin-left: -175px; width: 350px; text-align: center; font: 700 17px var(--f-mono); background: rgba(255,255,255,.18); padding: 9px 0; border-radius: 99px; white-space: nowrap; }
+  .ai-h1 { left: 30px; right: 30px; top: 205px; text-align: center; font-size: 60px; font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+  .ai-sub { left: 60px; right: 60px; top: 370px; text-align: center; font-size: 24px; font-weight: 600; opacity: .85; line-height: 1.35; }
+  .ai-feat { left: 30px; right: 30px; top: 645px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .ai-feat div { height: 170px; border-radius: 22px; background: rgba(255,255,255,.15); border: 2px solid rgba(255,255,255,.3); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 22px; font-weight: 800; white-space: nowrap; translate: 0px; rotate: 0deg; scale: 1; }
+  .ai-feat div span { font-size: 44px; }
+  .ai-testi { left: 30px; right: 30px; top: 860px; text-align: center; font-size: 26px; font-weight: 700; line-height: 1.4; }
+  .ai-testi small { display: block; font-size: 19px; font-weight: 600; opacity: .75; }
+  .tag { font: 800 22px var(--f-mono); color: var(--bone); background: #0E0E11; border: 3px solid var(--accent); padding: 10px 16px; border-radius: 12px; white-space: nowrap; z-index: 22; opacity: 0; translate: 0px; rotate: 0deg; scale: 1; box-shadow: 0 14px 30px -10px rgba(0,0,0,.6); }
+  .tag i { font-style: normal; color: var(--accent); margin-right: 8px; }
+  .client { left: 70px; top: 70px; display: flex; align-items: center; gap: 16px; background: var(--bone); color: #141619; border-radius: 26px 26px 26px 6px; padding: 16px 24px 16px 16px; font: 700 27px var(--f-ui); white-space: nowrap; z-index: 23; opacity: 0; box-shadow: 0 24px 40px -18px rgba(0,0,0,.6); translate: 0px; rotate: 0deg; scale: 1; }
+  .client .av { width: 56px; height: 56px; border-radius: 50%; background: #3B82F6; color: #fff; font: 800 22px var(--f-ui); display: flex; align-items: center; justify-content: center; }
+  .client b { color: var(--red); }
+  .imp { font: 800 30px var(--f-mono); color: #fff; background: var(--red); padding: 8px 16px; border-radius: 10px; white-space: nowrap; z-index: 22; opacity: 0; translate: 0px; rotate: 0deg; scale: 1; }
+
+  /* ---------- s04/s05: monitor berisi 21st.dev asli ---------- */
+  #cable { left: 0; top: 0; width: 870px; height: 2200px; overflow: visible; pointer-events: none; z-index: 5; }
+  #monitor { left: 35px; top: 1230px; width: 800px; height: 600px; opacity: 0; z-index: 4; translate: 0px; rotate: 0deg; scale: 1; }
+  .bezel { position: absolute; left: 0; top: 0; width: 800px; height: 512px; border-radius: 26px; background: #1C1C21; border: 2px solid #33333B; box-shadow: 0 40px 80px -30px rgba(0,0,0,.8), 0 0 120px -20px rgba(198,255,61,.18); }
+  .scr { position: absolute; left: 16px; top: 16px; width: 768px; height: 480px; border-radius: 12px; overflow: hidden; background: #000; }
+  .scr img { position: absolute; left: 0; top: 0; width: 768px; display: block; opacity: 0; translate: 0px; rotate: 0deg; scale: 1; }
+  .scr-flash { position: absolute; inset: 0; background: #fff; opacity: 0; transform-origin: 50% 50%; translate: 0px; rotate: 0deg; scale: 1; }
+  .scr-glare { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 38%); pointer-events: none; }
+  .scr-url { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); font: 700 15px var(--f-mono); color: #A1A1AA; background: rgba(28,28,33,.9); padding: 6px 14px; border-radius: 99px; white-space: nowrap; z-index: 3; }
+  .neck { position: absolute; left: 350px; top: 512px; width: 100px; height: 64px; background: linear-gradient(#2A2A31, #1C1C21); }
+  .base { position: absolute; left: 230px; top: 572px; width: 340px; height: 22px; border-radius: 12px; background: #2A2A31; }
+  .mring { position: absolute; border: 4px solid var(--accent); border-radius: 12px; box-shadow: 0 0 0 8px var(--accent-dim); opacity: 0; z-index: 4; }
+  .mlabel { position: absolute; font: 800 17px var(--f-mono); color: #141619; background: var(--accent); padding: 6px 12px; border-radius: 8px; white-space: nowrap; opacity: 0; z-index: 5; }
+  .socket { left: 385px; top: 1196px; width: 100px; height: 54px; border-radius: 18px 18px 8px 8px; background: var(--accent); opacity: 0; z-index: 6; display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .socket i { width: 12px; height: 24px; border-radius: 4px; background: var(--ink); }
+  #agy { left: 75px; top: 1858px; width: 720px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font: 700 20px var(--f-mono); color: var(--bone); background: var(--ink2); border: 2px solid #33333B; border-radius: 20px; padding: 16px 20px; opacity: 0; white-space: nowrap; }
+  #agy .c { color: var(--green); opacity: 0; } #agy .tool { background: #26262D; padding: 6px 12px; border-radius: 9px; opacity: 0; }
+  #count21 { left: 75px; top: 1650px; font: 800 30px var(--f-mono); color: #141619; background: var(--accent); padding: 10px 20px; border-radius: 14px; white-space: nowrap; opacity: 0; z-index: 7; font-variant-numeric: tabular-nums; }
+
+  /* komponen nyata dari 21st.dev yang keluar dari layar */
+  .good { position: absolute; border-radius: 22px; overflow: hidden; border: 2px solid rgba(255,255,255,.14); box-shadow: 0 30px 60px -28px rgba(0,0,0,.85); opacity: 0; z-index: 8; translate: 0px; rotate: 0deg; scale: 1; }
+  .good img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #g0 { background: #fff; } #g0 img { object-fit: contain; }
+  .good .by { position: absolute; left: 12px; bottom: 12px; font: 700 17px var(--f-mono); color: var(--bone); background: rgba(14,14,17,.82); padding: 6px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; }
+  .good .by b { color: var(--accent); font-weight: 700; }
+
+  /* ---------- s06: end card ---------- */
+  #endcard { position: absolute; left: 0; top: 0; width: 870px; height: 1090px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; opacity: 0; z-index: 40; }
+  .ec-logo { display: flex; align-items: center; gap: 22px; }
+  .ec-logo img { width: 112px; height: 84px; object-fit: contain; }
+  .ec-name { font: 800 92px var(--f-display); color: var(--bone); letter-spacing: -0.05em; white-space: nowrap; }
+  .ec-sub { font: 700 30px var(--f-mono); color: var(--accent); white-space: nowrap; }
+  .ec-ig { display: flex; align-items: center; gap: 14px; font: 700 30px var(--f-ui); color: var(--bone); background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.16); padding: 14px 26px; border-radius: 99px; white-space: nowrap; }
+  .ec-ig img { width: 36px; height: 36px; }
+
+  /* ---------- Kinetic typography (pita bawah safe zone, kanvas y 1290-1470) ---------- */
+  #kw { position: absolute; left: 0; top: 1110px; width: 870px; height: 180px; }
+  .kwb { position: absolute; left: 0; width: 510px; bottom: 14px; font: 800 70px/0.98 var(--f-display); letter-spacing: -0.05em; color: var(--bone); }
+  .kwb o { color: var(--accent); }
+  .kwb .wd { display: inline-block; opacity: 0; translate: 0px; rotate: 0deg; scale: 1; }
+
+  /* ---------- Rama kecil (pojok kanan bawah, x 602-942 · y 1126-1466) ---------- */
+  #character-stage { position: absolute; left: 602px; top: 1126px; width: 340px; height: 340px; z-index: 30; pointer-events: none; }
+  #character-rig { position: relative; width: 340px; height: 340px; transform-origin: bottom center; will-change: transform; contain: layout paint; translate: 0px; rotate: 0deg; scale: 1;
+    -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); }
+  .char-pose { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 16px 30px rgba(0,0,0,0.45)); opacity: 0; visibility: hidden; z-index: 1; }
+  .char-viseme, .char-eye-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; visibility: hidden; z-index: 3; }
+  .char-pose.active, .char-viseme.active, .char-eye-overlay.active { opacity: 1; visibility: visible; }
+  .char-ground-shadow { position: absolute; left: 70px; bottom: 6px; width: 200px; height: 22px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.45) 0%, transparent 70%); }
+
+  /* ---------- Garis bantu & panel (tidak ikut render) ---------- */
+  #guides { position: absolute; inset: 0; pointer-events: none; display: none; z-index: 90; }
+  .show-guides #guides { display: block; }
+  .g-unsafe { position: absolute; background: repeating-linear-gradient(45deg, rgba(239,68,68,.16) 0 12px, rgba(239,68,68,.05) 12px 24px); }
+  .g-safe { position: absolute; left: 80px; top: 180px; width: 870px; height: 1290px; outline: 3px dashed rgba(52,211,153,.9); }
+  .g-label { position: absolute; font: 700 18px var(--f-mono); color: #fff; background: rgba(0,0,0,.7); padding: 3px 8px; border-radius: 6px; }
+  #panel { width: 420px; height: calc(100vh - 24px); overflow-y: auto; background: #111114; border: 1px solid #26262D; border-radius: 18px; padding: 18px; color: #E5E7EB; font: 500 14px var(--f-ui); }
+  #panel h2 { font: 700 18px var(--f-ui); margin-bottom: 12px; }
+  .ctrl { display: flex; gap: 8px; margin-bottom: 12px; }
+  .ctrl button { flex: 1; background: var(--accent); color: #141619; border: 0; border-radius: 10px; padding: 9px 0; font: 700 14px var(--f-mono); cursor: pointer; }
+  .ctrl button.sec { background: #26262D; }
+  #scrub { width: 100%; accent-color: var(--accent); }
+  #tread { font: 600 13px var(--f-mono); color: #9CA3AF; margin: 6px 0 12px; }
+  #summary { font: 700 16px var(--f-ui); background: #1B1B20; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+  .chk { display: grid; grid-template-columns: 22px 1fr; gap: 2px 8px; padding: 9px 0; border-top: 1px solid #222228; }
+  .chk .ic { grid-row: span 2; font-weight: 800; } .chk.pass .ic { color: var(--green); } .chk.fail .ic { color: var(--red); } .chk.warn .ic { color: #FBBF24; }
+  .chk .dt { font: 500 12px var(--f-mono); color: #8B8B95; }
+  body.render #panel { display: none; }
+</style>
+</head>
+<body>
+
+<div id="stage-wrap">
+<div id="viewport">
+  <div id="bg"><div class="glow p" id="glow-p"></div><div class="glow o" id="glow-o"></div><div class="vignette"></div><div class="grain" id="grain"></div></div>
+
+  <div id="safe">
+    <section id="view"><div id="cam"><div id="world">
+      <div id="clones"></div>
+
+      <!-- landing cetakan AI -->
+      <div class="w" id="ai-land">
+        <div class="ai-nav" id="ai-nav"><span>✨ NexusAI 🚀</span><span>Pricing · Login</span></div>
+        <div class="ai-chip" id="ai-chip">✨ NEXT-GEN AI POWERED</div>
+        <div class="ai-h1" id="ai-h1">Supercharge Your<br>Workflow 🚀✨</div>
+        <div class="ai-sub" id="ai-sub">Unlock seamless synergy and 10x productivity with AI.</div>
+        <div class="ai-feat" id="ai-feat"><div><span>⚡</span>Blazing Fast</div><div><span>✨</span>Smart AI</div><div><span>🔒</span>100% Secure</div></div>
+        <div class="ai-testi" id="ai-testi">⭐⭐⭐⭐⭐ “Total game changer!”<small>— CEO, Some Startup</small></div>
+      </div>
+      <div class="w" id="land-ring"></div>
+      <div class="w" id="wire">
+        <div class="wb" style="left:75px;top:45px;width:720px;height:56px"><span>NAVBAR</span></div>
+        <div class="wb" style="left:85px;top:150px;width:700px;height:280px"><span>HERO + EMOJI</span></div>
+        <div class="wb" style="left:270px;top:492px;width:330px;height:106px"><span>CTA</span></div>
+        <div class="wb" style="left:75px;top:660px;width:720px;height:190px"><span>3 FITUR KEMBAR</span></div>
+        <div class="wb" style="left:75px;top:872px;width:720px;height:110px"><span>TESTIMONI</span></div>
+      </div>
+      <div class="w" id="pola">pola paling umum = kaku</div>
+      <div class="w tag" id="tag-1" style="left:470px;top:300px"><i>●</i>emoji 🚀✨ lagi</div>
+      <div class="w tag" id="tag-2" style="left:470px;top:618px"><i>●</i>Get Started Free</div>
+      <div class="w tag" id="tag-3" style="left:80px;top:842px"><i>●</i>3 kotak kembar</div>
+      <div class="w tag" id="tag-4" style="left:80px;top:988px"><i>●</i>gradien ungu template</div>
+      <div class="w client" id="client"><span class="av">KL</span><span>“Tombolnya <b>merah</b>-in dong”</span></div>
+      <div class="w imp" id="imp-1" style="left:90px;top:470px">!important</div>
+      <div class="w imp" id="imp-2" style="left:540px;top:770px">z-index: 9999</div>
+      <div class="w imp" id="imp-3" style="left:150px;top:950px">margin: -40px</div>
+
+      <!-- kabel & monitor berisi 21st.dev asli (screenshot halaman resmi) -->
+      <svg class="w" id="cable" viewBox="0 0 870 2200"><path id="cable-path" d="M435 590 C 435 800, 300 900, 330 1050 S 435 1150, 435 1200" fill="none" stroke="#C6FF3D" stroke-width="10" stroke-linecap="round"/>
+        <circle id="pulse" r="16" fill="#F7FFE0" cx="435" cy="1200" opacity="0"/></svg>
+      <div class="w socket" id="socket"><i></i><i></i></div>
+      <div class="w" id="monitor">
+        <div class="bezel"><div class="scr">
+          <img id="scr-mcp" src="assets/21st/scr-mcp.jpg" alt="21st.dev/mcp">
+          <img id="scr-home" src="assets/21st/scr-home.jpg" alt="21st.dev">
+          <img id="scr-cat" src="assets/21st/scr-catalog.jpg" alt="21st.dev library">
+          <div class="mring" id="ring-json" style="left:42px;top:286px;width:486px;height:150px"></div>
+          <div class="mlabel" id="lbl-json" style="left:330px;top:246px">config resmi</div>
+          <div class="mring" id="ring-key" style="left:412px;top:142px;width:66px;height:34px"></div>
+          <div class="mlabel" id="lbl-key" style="left:488px;top:144px">API key gratis</div>
+          <div class="scr-flash" id="scr-flash"></div>
+          <div class="scr-glare"></div>
+          <div class="scr-url" id="scr-url">21st.dev/mcp</div>
+        </div></div>
+        <div class="neck"></div><div class="base"></div>
+      </div>
+      <div class="w" id="count21">12.000+ komponen</div>
+      <div class="w" id="agy"><span>Antigravity IDE › MCP Servers ›</span><span class="c" id="agy-ok">● 21st connected</span><span class="tool">search</span><span class="tool">generate</span><span class="tool">get_inspiration</span></div>
+
+      <!-- UI bagus: komponen nyata dari 21st.dev -->
+      <div class="good" id="g0" style="left:55px;top:25px;width:760px;height:120px"><img src="assets/21st/g-limelight-nav.png" alt=""><span class="by"><b>NAVBAR</b> · Limelight Nav</span></div>
+      <div class="good" id="g1" style="left:55px;top:160px;width:760px;height:330px"><img src="assets/21st/g-waitlist-hero.png" alt=""><span class="by"><b>HERO</b> · Waitlist Hero</span></div>
+      <div class="good" id="g2" style="left:55px;top:640px;width:370px;height:198px"><img src="assets/21st/g-background-paths.png" alt=""><span class="by"><b>BACKGROUND</b> · Background Paths</span></div>
+      <div class="good" id="g3" style="left:55px;top:852px;width:370px;height:198px"><img src="assets/21st/g-dotted-globe.png" alt=""><span class="by"><b>VISUAL</b> · Dotted Globe</span></div>
+      <div class="good" id="g4" style="left:445px;top:640px;width:370px;height:410px"><img src="assets/21st/g-card-stack.png" alt=""><span class="by"><b>CARD</b> · CardStack</span></div>
+
+      <!-- sang tombol -->
+      <div class="w" id="hero">
+        <div class="face"><div class="f-ai" id="f-ai">Get Started Free 🚀</div></div>
+        <div class="face"><div class="f-fix" id="f-fix">Get Started Free 🚀</div></div>
+        <div class="face"><div class="f-ok" id="f-ok">Coba gratis<b>→</b></div></div>
+        <div class="face"><div class="f-cta" id="f-cta"><span id="cta-text">Ketik: </span><span class="send">➤</span></div></div>
+      </div>
+          </div></div>
+
+      <div id="counter">× 1.000 website</div>
+      <div id="endcard">
+        <div class="ec-logo"><img src="../_shared/brand/logo-youtube.svg" alt="YouTube"><span class="ec-name">ChillDev</span></div>
+        <div class="ec-sub">@chilldevibe</div>
+        <div class="ec-ig"><img src="../_shared/brand/logo-instagram.svg" alt="Instagram">@ramarvctr_</div>
+      </div>
+    </section>
+
+    <section id="kw"></section>
+  </div>
+
+  <section id="character-stage">
+    <div class="char-ground-shadow"></div>
+    <div id="character-rig">
+      <img class="char-pose active" id="pose-present" src="../_shared/rama/rama_pose_presenting.png" alt="Rama">
+      <img class="char-pose" id="pose-shocked" src="../_shared/rama/rama_pose_shocked.png" alt="">
+      <img class="char-pose" id="pose-point" src="../_shared/rama/rama_pose_point_up.png" alt="">
+      <img class="char-pose" id="pose-thumbs" src="../_shared/rama/rama_pose_thumbsup.png" alt="">
+      <img class="char-viseme active" id="viseme-v0" src="../_shared/rama/mouth_v0_closed.png" alt="">
+      <img class="char-viseme" id="viseme-v1" src="../_shared/rama/mouth_v1_teeth.png" alt="">
+      <img class="char-viseme" id="viseme-v2" src="../_shared/rama/mouth_v2_small.png" alt="">
+      <img class="char-viseme" id="viseme-v3" src="../_shared/rama/mouth_v3_med.png" alt="">
+      <img class="char-viseme" id="viseme-v4" src="../_shared/rama/mouth_v4_wide.png" alt="">
+      <img class="char-viseme" id="viseme-v5" src="../_shared/rama/mouth_v5_shock.png" alt="">
+      <img class="char-eye-overlay" id="eye-blink" src="../_shared/rama/eye_blink_both.png" alt="">
+      <img class="char-eye-overlay" id="eye-wink" src="../_shared/rama/eye_wink_right.png" alt="">
+    </div>
+  </section>
+
+  <div id="guides">
+    <div class="g-unsafe" style="left:0;top:0;width:1080px;height:180px;"></div>
+    <div class="g-unsafe" style="left:0;top:1470px;width:1080px;height:450px;"></div>
+    <div class="g-unsafe" style="left:0;top:180px;width:80px;height:1290px;"></div>
+    <div class="g-unsafe" style="left:950px;top:180px;width:130px;height:1290px;"></div>
+    <div class="g-safe"></div>
+    <span class="g-label" style="left:8px;top:8px;">TOP 180</span>
+    <span class="g-label" style="left:8px;top:1478px;">BOTTOM 450 · caption & tombol platform</span>
+    <span class="g-label" style="left:956px;top:190px;">R 130</span>
+  </div>
+</div>
+</div>
+
+<aside id="panel">
+  <h2>Cek Video · Satu Tombol</h2>
+  <div class="ctrl"><button id="btn-play">▶ Play</button><button class="sec" id="btn-guides">Garis bantu</button><button class="sec" id="btn-recheck">Cek ulang</button></div>
+  <input type="range" id="scrub" min="0" max="1" step="0.01" value="0">
+  <div id="tread">0.00 s</div>
+  <div id="summary">Menjalankan cek…</div>
+  <div id="checks"></div>
+</aside>
+
+<audio id="vo" src="vo.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+  const Q = new URLSearchParams(location.search);
+  const RENDER = Q.get('render') === '1';
+  if (RENDER) document.body.classList.add('render');
+  const $ = (q) => document.querySelector(q);
+
+  /* Envelope VO (diisi envelope.mjs di Tahap 3). Dipakai untuk denyut cahaya latar. */
+  const AUDIO_ENV = /*ENV*/[0.001,0.006,0.146,0.281,0.617,0.828,0.611,0.079,0.048,0.03,0.213,0.458,0.464,0.322,0.109,0.097,0.059,0.017,0.008,0.002,0.001,0.001,0.001,0.011,0.089,0.183,0.355,0.469,0.412,0.258,0.097,0.026,0.026,0.44,0.96,0.964,0.862,0.86,0.64,0.473,0.312,0.359,0.682,0.656,0.176,0.132,0.383,0.68,0.706,0.41,0.072,0.082,0.832,0.883,0.62,0.046,0.035,0.056,0.18,0.828,1,0.151,0.153,0.32,0.446,0.238,0.271,0.239,0.23,0.522,0.527,1,0.7,0.072,0.021,0.011,0.003,0.005,0.631,0.457,0.407,0.488,0.195,0.205,0.193,0.045,0.011,0.01,0.354,0.502,0.396,0.384,0.479,0.842,0.495,0.476,0.103,0.104,0.104,0.138,0.325,0.37,0.145,0.162,0.174,0.126,0.073,0.049,0.032,0.015,0.005,0.003,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.022,0.037,0.166,0.302,0.688,0.854,0.796,0.17,0.166,0.336,0.437,0.718,0.75,0.317,0.273,0.086,0.326,0.579,0.537,0.336,0.297,0.35,0.445,0.744,0.584,0.602,0.625,0.469,0.397,0.253,0.029,0.011,0.004,0.002,0.001,0.001,0.017,0.054,0.078,0.198,0.487,0.624,0.279,0.167,0.415,0.593,0.623,0.712,0.296,0.028,0.326,0.692,0.295,0.618,0.444,0.548,0.317,0.334,0.57,0.385,0.363,0.608,0.708,0.671,0.187,0.113,0.125,0.231,0.364,0.348,0.321,0.3,0.31,0.175,0.144,0.039,0.012,0.003,0.001,0.001,0.001,0.001,0.002,0.287,0.415,0.162,0.129,0.244,1,0.984,0.442,0.08,0.139,0.947,0.328,0.036,0.381,0.793,0.101,0.041,0.067,0.092,0.512,0.093,0.024,0.377,0.69,0.395,0.093,0.117,0.483,0.267,0.364,0.371,0.273,0.461,0.554,0.541,0.546,0.524,0.434,0.425,0.182,0.131,0.029,0.01,0.002,0.001,0.001,0.001,0.002,0.428,0.796,0.626,0.224,0.248,0.153,0.794,0.778,0.704,0.544,0.429,0.109,0.066,0.068,0.071,0.182,0.758,0.94,0.081,0.056,0.15,0.175,0.102,0.019,0.046,0.827,0.943,0.579,0.169,0.028,0.063,0.469,0.196,0.026,0.045,0.07,0.073,0.097,0.207,0.343,0.353,0.245,0.156,0.077,0.035,0.034,0.026,0.013,0.007,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.009,0.041,0.09,0.665,1,0.85,0.382,0.258,0.506,0.703,0.773,0.19,0.625,0.857,0.337,0.164,0.161,0.308,0.613,0.478,0.485,0.351,0.382,0.46,0.416,0.199,0.206,0.364,0.578,0.605,0.731,1,1,0.888,0.227,0.153,0.2,0.226,0.594,0.832,0.655,0.249,0.037,0.29,0.6,0.768,0.868,0.719,0.635,0.613,0.448,0.266,0.306,0.398,0.597,0.341,0.35,0.28,0.279,0.712,0.133,0.165,0.042,0.396,0.3,0.017,0.025,0.176,0.334,0.583,0.13,0.026,0.011,0.003,0.36,0.525,0.578,0.42,0.176,0.192,0.217,0.201,0.187,0.204,0.426,0.549,0.234,0.194,0.21,0.166,0.609,0.656,0.59,0.205,0.194,0.172,0.227,0.155,0.123,0.084,0.028,0.012,0.004,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.008,0.3,0.447,0.543,0.101,0.02,0.013,0.007,0.484,0.58,0.508,0.552,0.612,0.537,0.162,0.033,0.123,0.588,0.83,0.573,0.517,0.345,0.367,0.638,0.432,0.134,0.023,0.121,0.586,0.73,0.244,0.108,0.268,0.561,0.627,0.519,0.071,0.017,0.177,0.666,0.801,0.618,0.51,0.455,0.44,0.264,0.168,0.136,0.114,0.653,0.751,0.221,0.261,0.314,0.342,0.603,0.545,0.218,0.055,0.015,0.002,0.002,0.186,0.318,0.371,0.298,0.198,0.277,0.306,0.532,0.607,0.262,0.166,0.13,0.434,0.478,0.528,0.586,0.415,0.526,0.566,0.325,0.151,0.307,0.274,0.189,0.148,0.144,0.564,0.766,0.779,0.56,0.429,0.368,0.101,0.084,0.06,0.037,0.022,0.008,0.003,0.002,0.001,0.001,0.001,0.001,0.036,0.096,0.267,0.362,0.44,0.754,1,1,0.341,0.352,0.461,0.689,0.51,0.19,0.191,0.855,0.436,0.282,0.492,0.589,0.862,0.788,0.488,0.349,0.099,0.237,0.715,1,0.759,0.067,0.07,0.1,0.595,0.885,0.546,0.427,0.325,0.054,0.02,0.015,0.285,0.742,0.817,0.752,0.649,0.716,0.863,0.796,0.7,0.563,0.431,0.251,0.23,0.026,0.007,0.002,0.006,0.219,0.655,0.4,0.436,0.552,0.646,0.654,0.393,0.564,0.255,0.287,0.203,0.25,0.398,0.541,0.225,0.213,0.243,0.432,0.271,0.136,0.092,0.059,0.041,0.029,0.013,0.003,0.001,0.001,0.001,0.019,0.037,0.053,0.209,0.349,0.317,0.148,0.115,0.33,0.525,0.459,0.388,0.407,0.364,0.103,0.123,0.149,0.296,0.326,0.263,0.288,0.37,0.49,0.177,0.023,0.012,0.011,0.424,0.431,0.338,0.296,0.039,0.01,0.004,0.002,0.126,0.352,0.43,0.507,0.156,0.507,0.642,0.207,0.21,0.059,0.14,0.379,0.355,0.122,0.14,0.198,0.601,0.727,0.717,0.577,0.492,0.726,0.618,0.418,0.206,0.121,0.093,0.054,0.029,0.015,0.003,0.001,0.001,0.001,0.001,0.001,0.001,0.069,0.464,0.857,1,1,0.751,0.457,1,0.427,0.364,0.568,0.376,0.786,0.493,0.584,0.736,0.04,0.086,0.166,0.51,0.182,0.18,0.802,0.311,0.029,0.014,0.011,0.509,0.521,0.095,0.017,0.009,0.003,0.003,0.004,0.001,0.001,0.107,0.27,0.48,0.696,0.428,0.249,0.269,0.172,0.204,0.309,0.4,0.333,0.311,0.084,0.008,0.565,0.933,0.861,0.667,0.738,0.82,0.772,0.752,0.592,0.449,0.318,0.198,0.115,0.051,0.02,0.005,0.002,0.001,0.001,0.001,0.001,0.001,0.006,0.661,0.741,0.752,0.417,0.55,0.787,1,0.822,0.389,0.29,0.382,0.407,0.429,0.4,0.351,0.26,0.23,0.304,0.281,0.191,0.073,0.013,0.004,0.003,0.003,0.041,0.884,0.8,0.174,0.166,0.165,0.351,0.497,1,0.97,0.318,0.404,0.44,0.281,0.127,0.106,0.848,0.84,0.581,0.667,0.606,0.125,0.067,0.25,0.397,0.182,0.145,0.226,0.296,0.172,0.134,0.609,0.56,0.043,0.026,0.456,0.324,0.123,0.582,0.806,0.636,0.208,0.103,0.165,0.281,0.395,0.645,0.75,0.479,0.351,0.236,0.179,0.225,0.136,0.039,0.008,0.002,0.001,0.001,0.003,0.136,0.79,0.727,0.445,0.59,0.617,0.255,0.189,0.184,0.09,0.353,0.626,0.237,0.193,0.111,0.127,0.264,0.419,0.661,0.447,0.249,0.237,0.25,0.331,0.382,0.387,0.367,0.342,0.297,0.154,0.021,0.003,0.006,1,1,0.973,0.515,0.338,0.667,0.916,0.76,0.733,0.738,0.266,0.327,0.621,0.505,0.336,0.358,0.525,0.733,0.653,0.432,0.304,0.244,0.166,0.064,0.057,0.035,0.011,0.002,0.001,0.001,0.001,0.002,0.149,0.507,0.995,1,0.93,0.341,0.13,0.715,1,1,0.144,0.062,0.287,0.699,0.693,0.938,1,0.721,0.455,0.319,0.133,0.038,0.036,0.673,1,0.192,0.133,0.193,0.274,0.833,0.706,0.274,0.179,0.533,1,1,0.555,0.377,0.937,0.961,0.935,0.812,0.425,0.193,0.451,0.788,0.968,0.969,1,0.764,0.427,0.327,0.221,0.136,0.071,0.034,0.011,0.004,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.009,0.474,0.866,0.529,0.143,0.827,0.827,0.494,0.052,0.023,0.191,0.516,0.665,0.646,0.709,0.573,0.245,0.04,0.019,0.011,0.006,0.001,0.001,0.001,0.001,0.001,0.031,0.56,1,1,0.997,1,1,0.962,0.227,0.031,0.032,0.026,0.038,0.859,1,0.956,0.526,0.241,0.041,0.413,0.53,0.141,0.073,0.259,0.88,0.565,0.29,0.191,0.125,0.093,0.301,0.598,0.32,0.291,0.137,0.048,0.204,0.625,0.747,0.476,0.043,0.022,0.016,0.531,0.711,0.762,0.712,0.144,0.033,0.106,0.44,0.613,0.294,0.02,0.011,0.015,0.59,0.87,0.399,0.265,0.067,0.025,0.393,0.45,0.153,0.1,0.403,0.54,0.892,0.978,0.325,0.091,0.207,0.448,0.194,0.022,0.012,0.242,0.307,0.279,0.175,0.056,0.008,0.003,0.144,0.301,0.351,0.243,0.141,0.525,0.699,0.593,0.498,0.163,0.188,0.293,0.298,0.19,0.133,0.082,0.065,0.053,0.017,0.005,0.001,0.002,0.001,0.001,0.001,0.236,0.872,0.957,0.439,0.256,0.102,0.048,0.682,0.999,0.987,0.965,0.211,0.036,0.212,1,1,0.372,0.263,0.093,0.063,0.487,0.636,0.082,0.032,0.182,0.239,0.29,0.335,0.82,0.609,0.046,0.066,0.566,0.61,0.094,0.015,0.367,0.656,0.565,0.099,0.024,0.016,0.481,0.708,0.769,0.612,0.052,0.023,0.013,0.476,0.567,0.668,0.143,0.141,0.094,0.022,0.013,0.582,0.981,0.395,0.036,0.03,0.527,0.668,0.302,0.261,0.449,0.25,0.038,0.017,0.127,0.505,0.62,0.483,0.16,0.086,0.149,0.316,0.555,0.53,0.344,0.177,0.017,0.01,0.102,0.433,0.466,0.447,0.2,0.17,0.145,0.119,0.097,0.061,0.021,0.006,0.002,0.001,0.019,0.038,0.188,0.322,0.449,0.709,0.767,0.596,0.535,0.603,0.542,0.354,0.285,0.229,0.154,0.121,0.101,0.093,0.087,0.076,0.066,0.059,0.045,0.026,0.008,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.012,0.053,0.125,0.116,0.019,0.044,0.611,0.771,0.754,0.764,0.514,0.573,0.908,1,0.979,0.59,0.401,0.375,0.339,0.203,0.059,0.015,0.137,0.769,0.945,0.638,0.129,0.178,0.609,0.921,0.851,0.411,0.331,0.347,0.782,0.47,0.222,0.178,0.243,0.464,0.64,0.425,0.554,0.297,0.222,0.269,0.512,0.772,0.848,0.678,0.255,0.123,0.133,0.212,0.251,0.188,0.152,0.104,0.071,0.042,0.027,0.006,0.005,0.001,0.003,0.035,0.076,0.263,0.375,0.478,0.968,0.928,0.956,0.482,0.331,0.777,1,0.535,0.342,0.367,0.243,0.534,0.616,0.818,0.437,0.05,0.35,1,0.79,0.224,0.091,0.344,1,0.602,0.301,0.651,0.552,0.357,0.316,0.152,0.611,0.275,0.395,0.451,0.725,0.425,0.47,0.614,0.882,0.649,0.27,0.303,0.174,0.724,0.82,0.48,0.485,0.403,0.396,0.358,0.271,0.532,0.602,0.344,0.109,0.136,0.265,0.339,0.186,0.117,0.038,0.055,0.333,0.337,0.445,0.485,0.065,0.009,0.003,0.162,0.649,0.704,0.728,0.318,0.193,0.034,0.063,0.439,0.276,0.074,0.068,0.134,0.81,0.677,0.572,0.239,0.226,0.108,0.049,0.101,0.536,0.886,0.869,0.115,0.019,0.016,0.088,0.113,0.709,0.79,0.484,0.238,0.159,0.071,0.074,0.06,0.046,0.029,0.011,0.004,0.002,0.001,0.001,0.016,0.351,0.423,0.153,0.184,0.748,0.574,0.541,0.577,0.837,0.318,0.125,0.121,0.114,0.111,0.31,0.485,0.471,0.375,0.137,0.19,0.973,0.677,0.441,0.392,0.335,0.141,0.116,0.568,0.695,0.833,0.164,0.129,0.622,0.714,0.279,0.16,0.141,0.303,0.266,0.396,0.371,0.225,0.163,0.184,0.446,0.475,0.404,0.239,0.119,0.058,0.025,0.01,0.001,0.001,0.001,0.001,0.005,0.038,0.09,0.186,0.337,0.407,0.529,0.493,0.449,0.728,0.976,0.916,0.901,0.951,0.867,0.638,0.384,0.242,0.073,0.007,0.002,0.001,0.001,0.001,0.084,0.164,0.839,1,1,1,0.64,0.535,0.044,0.03,0.016,0.006,0.009,0.001,0.001,0.073,0.171,0.267,0.615,0.767,0.93,0.152,0.083,0.045,0.098,0.133,0.408,1,0.83,0.838,0.595,0.535,0.258,0.163,0.092,0.115,0.132,0.138,0.215,0.441,0.435,0.482,0.192,0.184,0.145,0.014,0.012,0.619,0.89,0.716,0.761,0.175,0.143,0.714,0.694,0.214,0.07,0.065,0.168,0.312,0.412,0.333,0.285,0.197,0.132,0.041,0.027,0.011,0.002,0.001,0.001,0.001,0.001,0.014,0.067,0.145,0.618,0.995,0.471,0.039,0.062,0.894,0.837,0.399,0.76,1,1,0.999,1,0.98,0.688,0.23,0.28,0.885,1,0.307,0.281,0.265,0.569,0.699,0.682,0.678,0.708,0.492,0.169,0.258,0.199,0.223,0.22,0.231,0.431,0.659,0.287,0.327,0.316,0.36,0.672,0.551,0.311,0.028,0.019,0.15,0.417,0.465,0.345,0.294,0.192,0.18,0.102,0.104,0.102,0.09,0.086,0.062,0.035,0.011,0.002,0.002,0.001,0.001,0.002,0.11,0.473,0.825,0.997,0.656,0.178,0.152,0.857,0.877,0.456,0.222,0.101,0.598,0.213,0.141,0.55,0.566,0.343,0.199,0.404,0.908,0.79,0.065,0.085,0.271,0.446,0.751,0.728,0.428,0.113,0.033,0.011,0.003,0.001,0.001,0.001,0.001,0.083,0.629,0.076,0.026,0.02,0.599,0.481,0.073,0.016,0.015,0.012,0.002,0.152,0.615,0.532,0.398,0.162,0.028,0.003,0.275,1,1,0.953,0.67,0.575,0.386,0.135,0.301,0.176,0.067,0.318,0.7,0.645,0.642,0.322,0.288,0.175,0.137,0.597,0.363,0.254,0.402,0.355,0.229,0.181,0.045,0.219,0.401,0.349,0.243,0.118,0.065,0.073,0.043,0.025,0.006,0.001,0.001,0.001,0.001,0.003,0.035,0.093,0.129,0.676,1,1,0.667,0.529,0.462,0.211,0.208,0.202,0.179,0.157,0.133,0.12,0.095,0.074,0.05,0.029,0.012,0.003,0.001,0.001,0.001]/*ENV*/;
+
+  /* ==========================================================================
+     EDIT DI SINI (Tahap 3): t0/t1 dari jeda VO asli. Sekarang ESTIMASI 2,5 kata/detik.
+     Semua beat di bawah memakai at(scene, fraksi), jadi cukup ganti t0/t1.
+     ========================================================================== */
+  const SCENES = [   // Tahap 3: dari jeda VO asli (envelope.mjs, titik tengah jeda)
+    { id: 's01', pose: 'present', t0: 0.00,  t1: 13.73, kw: 'Seribu <o>kembaran</o>' },
+    { id: 's02', pose: 'shocked', t0: 13.73, t1: 25.07, kw: '<o>Kaku</o> & pasaran' },
+    { id: 's03', pose: 'shocked', t0: 25.07, t1: 32.25, kw: '<o>Rungkad</o> berjamaah' },
+    { id: 's04', pose: 'point',   t0: 32.25, t1: 41.08, kw: 'Colok <o>21st MCP</o>' },
+    { id: 's05', pose: 'present', t0: 41.08, t1: 54.62, kw: 'Satu halaman <o>naik kelas</o>' },
+    { id: 's06', pose: 'thumbs',  t0: 54.62, t1: 61.00, kw: 'Ketik <o>UI</o> di komentar' },
+  ];
+  const DURATION = SCENES[SCENES.length - 1].t1, FPS = 30;
+  const S = SCENES, at = (i, f) => S[i].t0 + (S[i].t1 - S[i].t0) * f;
+
+  /* ---------- bangun elemen ---------- */
+  const clonesEl = $('#clones'), cloneEls = [];
+  for (let r = -2; r <= 2; r++) for (let c = -2; c <= 2; c++) {
+    if (r === 0 && c === 0) continue;
+    const d = document.createElement('div'); d.className = 'clone';
+    d.innerHTML = '<i class="n"></i><i class="h"></i><i class="h2"></i><i class="b"></i><i class="f1"></i><i class="f2"></i><i class="f3"></i>';
+    d.style.left = (55 + c * 820) + 'px'; d.style.top = (25 + r * 1100) + 'px';
+    d.dataset.dist = Math.hypot(c, r).toFixed(2);
+    clonesEl.appendChild(d); cloneEls.push(d);
+  }
+  cloneEls.sort((a, b) => a.dataset.dist - b.dataset.dist);
+  const kwEls = SCENES.map((sc) => {
+    const d = document.createElement('div'); d.className = 'kwb';
+    d.innerHTML = sc.kw.replace(/(<o>.*?<\/o>|[^\s<]+)/g, m => `<span class="wd">${m}</span>`);
+    $('#kw').appendChild(d); return d;
+  });
+
+  /* ---------- kamera ---------- */
+  const camEl = $('#cam'), worldEl = $('#world');
+  const VW = 870, VH = 1090;
+  const shot = (cx, cy, s) => ({ x: VW / 2 - cx * s, y: VH / 2 - cy * s, scale: s });
+  gsap.set(camEl, { transformOrigin: '0 0', ...shot(435, 545, 1.12) });
+  const EC = 'power3.inOut', EI = 'power4.out', EO = 'power2.in';
+  const tl = gsap.timeline({ paused: true });
+
+  // s01 — landing ungu utuh dirakit, ciri-cirinya disebut satu per satu, lalu mundur: seribu halaman kembar
+  tl.to('#ai-land', { opacity: 1, duration: 0.3 }, 0.1);
+  tl.from('#ai-nav, #ai-chip, #ai-h1, #ai-sub, #ai-feat > div, #ai-testi', { y: 60, opacity: 0, duration: 0.8, ease: 'back.out(1.5)', stagger: 0.1 }, 0.2);
+  tl.fromTo('#f-ai', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.8)' }, 0.9);
+  tl.to(camEl, { ...shot(435, 545, 1.0), duration: at(0, 0.72) - 0.2, ease: 'none' }, 0.2);
+  ['#tag-4', '#tag-1', '#tag-3', '#tag-2'].forEach((q, k) => tl.fromTo(q, { opacity: 0, scale: 0.6, rotation: -6 }, { opacity: 1, scale: 1, rotation: k % 2 ? 3 : -3, duration: 0.4, ease: 'back.out(2.4)' }, at(0, [0.295, 0.383, 0.492, 0.608][k])));
+  tl.to('#tag-1, #tag-2, #tag-3, #tag-4', { opacity: 0, duration: 0.25, ease: EO }, at(0, 0.72));
+  tl.to(camEl, { ...shot(435, 545, 0.2), duration: 2.0, ease: EC }, at(0, 0.74));
+  tl.to(cloneEls, { opacity: 1, duration: 0.4, stagger: 0.05, ease: 'none' }, at(0, 0.75));
+  tl.to('#land-ring', { opacity: 1, duration: 0.3 }, at(0, 0.84));
+  tl.fromTo('#counter', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: EI }, at(0, 0.83));
+  tl.to('#counter', { opacity: 0, duration: 0.3, ease: EO }, S[0].t1 - 0.3);
+
+  // s02 — kembali ke satu halaman: kerangka "pola paling umum" ditimpakan
+  tl.to(camEl, { ...shot(435, 545, 1.0), duration: 1.2, ease: EC }, S[1].t0 - 0.2);
+  tl.to(cloneEls.slice().reverse(), { opacity: 0, duration: 0.3, stagger: 0.02 }, S[1].t0 - 0.2);
+  tl.to('#land-ring', { opacity: 0, duration: 0.2 }, S[1].t0);
+  tl.fromTo('#wire .wb', { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.35, ease: EI, stagger: 0.22 }, at(1, 0.32));
+  tl.fromTo('#pola', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: 'back.out(2)' }, at(1, 0.58));
+  tl.to('#wire .wb, #pola', { opacity: 0, duration: 0.3, ease: EO }, S[1].t1 - 0.3);
+
+  // s03 — klien minta merah, tombol dibenerin, halaman rungkad
+  tl.fromTo('#client', { opacity: 0, y: -40, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.8)' }, S[2].t0 + 0.1);
+  tl.to('#f-fix', { opacity: 1, duration: 0.15 }, at(2, 0.3));
+  tl.fromTo('#hero', { scale: 1 }, { scale: 1.12, duration: 0.15, yoyo: true, repeat: 1 }, at(2, 0.3));
+  tl.to('#ai-nav', { y: 120, rotation: -4, duration: 0.4, ease: 'power2.out' }, at(2, 0.42));
+  tl.to('#ai-h1', { x: 30, y: 50, rotation: 5, scale: 1.0, duration: 0.4, ease: 'power2.out' }, at(2, 0.44));
+  tl.to('#ai-sub', { x: -30, y: 60, rotation: -7, duration: 0.4 }, at(2, 0.46));
+  tl.to('#ai-feat > div', { y: (k) => [-230, 40, -300][k], x: (k) => [70, -40, -30][k], rotation: (k) => [-14, 8, 18][k], duration: 0.5, ease: 'power2.out', stagger: 0.05 }, at(2, 0.46));
+  tl.to('#ai-testi', { y: 90, rotation: 5, duration: 0.4 }, at(2, 0.5));
+  tl.to('#ai-land', { rotation: -2, duration: 0.4 }, at(2, 0.44));
+  ['#imp-1', '#imp-2', '#imp-3'].forEach((q, k) => tl.fromTo(q, { opacity: 0, scale: 1.8, rotation: -10 }, { opacity: 1, scale: 1, rotation: [-6, 5, -3][k], duration: 0.25, ease: 'power4.in' }, at(2, 0.55 + k * 0.08)));
+
+  // s04 — semua runtuh, tinggal tombol; kabel turun ke monitor berisi 21st.dev/mcp asli
+  tl.to('#ai-land, #client, #imp-1, #imp-2, #imp-3', { opacity: 0, y: '+=220', duration: 0.6, ease: EO }, S[3].t0 - 0.2);
+  tl.to('#glow-p', { opacity: 0, duration: 1.2 }, S[3].t0);
+  tl.to('#glow-o', { opacity: 1, duration: 1.2 }, S[3].t0);
+  tl.fromTo('#cable-path', { strokeDasharray: 900, strokeDashoffset: 900 }, { strokeDashoffset: 0, duration: 1.1, ease: 'power2.inOut' }, S[3].t0 + 0.2);
+  tl.to(camEl, { ...shot(435, 1486, 1.12), duration: 1.3, ease: EC }, S[3].t0 + 0.3);
+  tl.to(camEl, { ...shot(330, 1600, 1.6), duration: 0.8, ease: EC }, at(3, 0.46));
+  tl.to(camEl, { ...shot(470, 1440, 1.6), duration: 0.6, ease: EC }, at(3, 0.62));
+  tl.to(camEl, { ...shot(435, 1600, 1.0), duration: 0.7, ease: EC }, at(3, 0.72));
+  tl.fromTo('#monitor', { opacity: 0, y: 120, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: EI }, S[3].t0 + 0.4);
+  tl.fromTo('#socket', { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.4, ease: 'back.out(2)' }, S[3].t0 + 1.1);
+  tl.fromTo('#scr-flash', { opacity: 0, scaleY: 0.01 }, { opacity: 1, scaleY: 1, duration: 0.25, ease: 'power2.out' }, S[3].t0 + 1.25);
+  tl.set('#scr-mcp', { opacity: 1 }, S[3].t0 + 1.5);
+  tl.to('#scr-flash', { opacity: 0, duration: 0.35 }, S[3].t0 + 1.5);
+  tl.fromTo('#scr-mcp', { scale: 1.08 }, { scale: 1, duration: 1.2, ease: EI }, S[3].t0 + 1.5);
+  tl.to('#ring-json', { opacity: 1, duration: 0.25 }, at(3, 0.52)); tl.fromTo('#lbl-json', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease: 'back.out(2)' }, at(3, 0.54));
+  tl.to('#ring-key', { opacity: 1, duration: 0.25 }, at(3, 0.66)); tl.fromTo('#lbl-key', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease: 'back.out(2)' }, at(3, 0.68));
+  tl.fromTo('#agy', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: EI }, at(3, 0.72));
+  tl.to('#agy-ok', { opacity: 1, duration: 0.2 }, at(3, 0.8));
+  tl.to('#agy .tool', { opacity: 1, duration: 0.2, stagger: 0.12 }, at(3, 0.82));
+
+  // s05 — layar pindah ke katalog 21st.dev (12.000+), komponen asli terbang keluar layar, tombol naik kelas
+  tl.to('#ring-json, #lbl-json, #ring-key, #lbl-key', { opacity: 0, duration: 0.2 }, S[4].t0 - 0.1);
+  tl.to(camEl, { ...shot(435, 1486, 1.12), duration: 0.8, ease: EC }, S[4].t0 - 0.2);
+  tl.fromTo('#scr-home', { opacity: 0, y: 480 }, { opacity: 1, y: 0, duration: 0.55, ease: EC }, S[4].t0 + 0.05);
+  tl.fromTo('#scr-cat', { opacity: 0, y: 480 }, { opacity: 1, y: 0, duration: 0.55, ease: EC }, at(4, 0.14));
+  tl.to('#scr-cat', { y: -800, duration: at(4, 0.44) - at(4, 0.2), ease: 'power1.inOut' }, at(4, 0.2));
+  tl.fromTo('#count21', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2.2)' }, at(4, 0.4));
+  tl.to('#agy', { opacity: 0, duration: 0.3 }, at(4, 0.12));
+  tl.to('#scr-url', { opacity: 0, duration: 0.2 }, at(4, 0.5));
+  tl.to(camEl, { ...shot(435, 1060, 0.6), duration: 1.0, ease: EC }, at(4, 0.5));
+  [['#g0', 435, 85], ['#g1', 435, 325], ['#g4', 630, 845], ['#g2', 240, 739], ['#g3', 240, 951]].forEach(([q, cx, cy], k) =>
+    tl.fromTo(q, { opacity: 0, x: 435 - cx, y: 1470 - cy, scale: 0.25, rotation: [6, -8, 7, 10, -12][k] }, { opacity: 1, x: 0, y: 0, scale: 1, rotation: 0, duration: 0.9, ease: 'back.out(1.2)' }, at(4, 0.52) + k * 0.13));
+  tl.to('#count21', { opacity: 0, duration: 0.3 }, at(4, 0.53));
+  tl.to('#pulse', { opacity: 1, duration: 0.1 }, at(4, 0.74));
+  tl.to('#f-ai, #f-fix', { opacity: 0, scale: 0.7, duration: 0.25 }, at(4, 0.84));
+  tl.fromTo('#f-ok', { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(2)' }, at(4, 0.85));
+  tl.to('#pulse', { opacity: 0, duration: 0.2 }, at(4, 0.85));
+  tl.to('#cable-path, #socket', { opacity: 0, duration: 0.4 }, at(4, 0.86));
+  tl.to(camEl, { ...shot(435, 545, 1.0), duration: 1.0, ease: EC }, at(4, 0.6));
+  ['#g1', '#g4', '#g0', '#g2', '#g3'].forEach((q, k) => tl.fromTo(q + ' .by', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: 'back.out(2)' }, at(4, [0.6, 0.64, 0.7, 0.77, 0.8][k]))); // hero, card, navbar, background (tepat di kata VO)
+
+  // s06 — tombol jadi kolom komentar, lalu end card
+  tl.to(camEl, { ...shot(435, 545, 1.25), duration: 1.0, ease: EC }, S[5].t0 - 0.2);
+  tl.to('.good', { opacity: 0.18, duration: 0.6 }, S[5].t0);
+  tl.to('#f-ok', { opacity: 0, scale: 0.8, duration: 0.25 }, S[5].t0 + 0.2);
+  tl.fromTo('#f-cta', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.8)' }, S[5].t0 + 0.25);
+  tl.to('#world', { opacity: 0, duration: 0.5, ease: EO }, S[5].t1 - 2.4);
+  tl.fromTo('#endcard', { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.7, ease: EI }, S[5].t1 - 2.1);
+
+  // kinetic typography per scene: masuk per kata (blur berarah), keluar cepat
+  SCENES.forEach((sc, i) => {
+    const wds = kwEls[i].querySelectorAll('.wd');
+    tl.fromTo(wds, { opacity: 0, y: 70, filter: 'blur(14px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.7, ease: EI, stagger: 0.1 }, sc.t0 + 0.3);
+    tl.to(wds, { opacity: 0, y: -30, filter: 'blur(8px)', duration: 0.3, ease: EO, stagger: 0.03 }, i < SCENES.length - 1 ? sc.t1 - 0.4 : sc.t1 - 2.5);
+  });
+  tl.set({}, {}, DURATION);
+
+  /* ---------- sub-state per frame (deterministik dari curT) ---------- */
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  const cablePath = $('#cable-path'), pulse = $('#pulse'), cableLen = cablePath.getTotalLength();
+  function sub(curT, vol) {
+    // arus naik lewat kabel (soket -> tombol)
+    const pp = clamp01((curT - at(4, 0.74)) / (at(4, 0.84) - at(4, 0.74)));
+    const pt = cablePath.getPointAtLength(cableLen * (1 - pp));
+    pulse.setAttribute('cx', pt.x.toFixed(1)); pulse.setAttribute('cy', pt.y.toFixed(1));
+    // URL di layar monitor mengikuti halaman yang tampil
+    $('#scr-url').textContent = curT < S[4].t0 + 0.05 ? '21st.dev/mcp' : curT < at(4, 0.14) ? '21st.dev' : '21st.dev/community/components';
+    // hitung naik 12.000+ komponen
+    const k = clamp01((curT - at(4, 0.4)) / 1.2), ek = 1 - Math.pow(1 - k, 3);
+    $('#count21').textContent = Math.round(12000 * ek).toLocaleString('id-ID') + '+ komponen';
+    // kolom komentar diketik "UI" lalu terkirim
+    const typed = curT < S[5].t0 + 1.0 ? '' : curT < S[5].t0 + 1.25 ? 'U' : 'UI';
+    const sent = curT > S[5].t0 + 1.9;
+    $('#cta-text').textContent = sent ? '✓ UI terkirim' : 'Ketik: ' + typed + (Math.floor(curT * 2.4) % 2 ? '' : '▍');
+    // getar halaman saat rungkad
+    const dB = curT - at(2, 0.42);
+    $('#ai-land').style.translate = dB > 0 && dB < 0.8 ? `${(Math.sin(curT * 70) * 9).toFixed(1)}px 0px` : '0px 0px';
+    // latar hidup: cahaya bergeser + denyut VO, grain bergerak per frame, kamera bernapas
+    const f = Math.floor(curT * FPS);
+    $('#glow-p').style.translate = `${(Math.sin(curT * 0.35) * 120).toFixed(1)}px ${(Math.cos(curT * 0.28) * 90).toFixed(1)}px`;
+    $('#glow-o').style.translate = `${(Math.cos(curT * 0.3) * 110).toFixed(1)}px ${(Math.sin(curT * 0.33) * 80).toFixed(1)}px`;
+    $('#glow-o').style.scale = (1 + vol * 0.12).toFixed(3);
+    $('#grain').style.backgroundPosition = `${(f * 37) % 220}px ${(f * 53) % 220}px`;
+    worldEl.style.transform = `translate(${(Math.sin(curT * 0.7) * 5).toFixed(2)}px, ${(Math.cos(curT * 0.55) * 5).toFixed(2)}px)`;
+  }
+
+  /* ---------- Karakter Rama (rumus AGENTS.md bagian 4) ---------- */
+  const poses = { present: $('#pose-present'), shocked: $('#pose-shocked'), point: $('#pose-point'), thumbs: $('#pose-thumbs') };
+  const visemes = {}; ['v0', 'v1', 'v2', 'v3', 'v4', 'v5'].forEach(k => visemes[k] = $('#viseme-' + k));
+  const eyeBlink = $('#eye-blink'), eyeWink = $('#eye-wink'), charRig = $('#character-rig');
+  const only = (map, key) => Object.keys(map).forEach(k => map[k].classList.toggle('active', k === key));
+  const SYLLABLE_PATTERN = ['v3', 'v4', 'v1', 'v3', 'v2', 'v4', 'v0', 'v3', 'v1', 'v4', 'v2', 'v3'];
+  function computeVisemeForFrame(frameIdx, vol, poseKey) {
+    if (vol < 0.14) return 'v0';
+    const step = Math.floor(frameIdx / 2);
+    if (vol < 0.32) return (step % 2 === 0) ? 'v2' : 'v1';
+    const patViseme = SYLLABLE_PATTERN[step % SYLLABLE_PATTERN.length];
+    if (poseKey === 'shocked' && patViseme === 'v4' && vol > 0.72) return 'v5';
+    return patViseme;
+  }
+  const POSE_SWITCH = [];
+  SCENES.forEach((sc, i) => POSE_SWITCH.push(i === 0 ? -10 : (sc.pose !== SCENES[i - 1].pose ? sc.t0 : POSE_SWITCH[i - 1])));
+  function updateCharacter(curT, frameIdx, vol) {
+    let idx = SCENES.findIndex(sc => curT >= sc.t0 && curT < sc.t1); if (idx === -1) idx = SCENES.length - 1;
+    const sc = SCENES[idx];
+    only(poses, sc.pose);
+    only(visemes, computeVisemeForFrame(frameIdx, vol, sc.pose));
+    const isWinking = (curT >= DURATION - 5.5 && curT <= DURATION - 4.4);
+    const blinkMod = (curT + 1.2) % 3.4;
+    const isBlinking = !isWinking && (blinkMod >= 0 && blinkMod < 0.13);
+    eyeWink.classList.toggle('active', isWinking); eyeBlink.classList.toggle('active', isBlinking);
+    const dtSwitch = Math.max(0, curT - POSE_SWITCH[idx]);
+    const switchPop = dtSwitch < 0.25 ? Math.sin((dtSwitch / 0.25) * Math.PI) * 0.025 : 0;
+    const talkBobY = vol > 0.15 ? -Math.abs(Math.sin(curT * 18)) * (2.0 + vol * 3.5) : 0;
+    const breatheY = Math.sin(curT * 2.8) * 2.5;
+    const subtleTilt = Math.sin(curT * 2.2) * (0.6 + vol * 0.8);
+    const subtleSwayX = Math.sin(curT * 1.6) * 2.5;
+    charRig.style.transform = 'translate(' + subtleSwayX.toFixed(2) + 'px, ' + (breatheY + talkBobY).toFixed(2) + 'px) rotate('
+      + subtleTilt.toFixed(2) + 'deg) scale(' + (1 + switchPop + vol * 0.008).toFixed(4) + ')';
+  }
+
+  /* ---------- seek ---------- */
+  let currentT = 0;
+  function seekTimeline(t) {
+    const curT = Math.max(0, Math.min(DURATION, t));
+    tl.seek(curT, false);
+    const fi = Math.min(AUDIO_ENV.length - 1, Math.max(0, Math.floor(curT * FPS)));
+    const vol = AUDIO_ENV.length ? (AUDIO_ENV[fi] || 0) : 0;
+    sub(curT, vol);
+    updateCharacter(curT, Math.max(0, fi), vol);
+    if (!RENDER) { $('#scrub').value = curT; const sc = SCENES.find(s => curT >= s.t0 && curT < s.t1) || S[S.length - 1]; $('#tread').textContent = `${curT.toFixed(2)} / ${DURATION.toFixed(2)} s · ${sc.id}`; }
+    return { srcT: curT };
+  }
+  window.seekTo = (sec) => { currentT = sec; return seekTimeline(sec); };
+
+  /* ==========================================================================
+     EDIT DI SINI: SFX (dicampur render.mjs dari projects/_shared/sfx, volume 0.14–0.16)
+     ========================================================================== */
+  const SFX = [
+    { t: at(0, 0.74), file: 'sfx_whoosh.wav', vol: 0.15 },   // mundur: seribu kembaran
+    { t: at(0, 0.83), file: 'sfx_pop.wav', vol: 0.14 },
+    { t: S[1].t0 - 0.2, file: 'sfx_whoosh.wav', vol: 0.15 }, // push-in ke halaman
+    { t: at(2, 0.3), file: 'sfx_click.wav', vol: 0.15 },     // tombol dibenerin
+    { t: at(2, 0.42), file: 'sfx_glitch.wav', vol: 0.15 },   // rungkad
+    { t: S[3].t0 + 0.3, file: 'sfx_whoosh.wav', vol: 0.14 }, // turun ke soket
+    { t: S[3].t0 + 1.25, file: 'sfx_click.wav', vol: 0.14 }, // monitor menyala
+    { t: at(3, 0.8), file: 'sfx_success.wav', vol: 0.15 },   // MCP connected
+    { t: at(4, 0.52), file: 'sfx_whoosh.wav', vol: 0.14 },   // komponen keluar layar
+    { t: at(4, 0.85), file: 'sfx_pop.wav', vol: 0.15 },      // tombol berubah
+    { t: S[5].t0 + 1.9, file: 'sfx_click.wav', vol: 0.15 },  // komentar terkirim
+    { t: S[5].t1 - 2.1, file: 'sfx_success.wav', vol: 0.14 },// end card
+  ];
+  window.OPENER = { ready: true, DURATION, FPS, WIDTH: 1080, HEIGHT: 1920, SCENES, SFX, seek: (s) => window.seekTo(s) };
+
+  /* ---------- skala tampilan & preview ---------- */
+  const vp = $('#viewport'), wrap = $('#stage-wrap');
+  function fit() {
+    const s = RENDER ? 1 : Math.min((innerHeight - 24) / 1920, (innerWidth - 480) / 1080);
+    vp.style.transform = `scale(${s})`; wrap.style.width = (1080 * s) + 'px'; wrap.style.height = (1920 * s) + 'px';
+  }
+  addEventListener('resize', fit); fit();
+  const vo = $('#vo'); let playing = false, t0Wall = 0, t0Pos = 0;
+  function loop(now) {
+    if (!playing) return;
+    const t = t0Pos + (now - t0Wall) / 1000;
+    if (t >= DURATION) { playing = false; vo.pause(); $('#btn-play').textContent = '▶ Play'; window.seekTo(DURATION); return; }
+    window.seekTo(t); if (Math.abs(vo.currentTime - t) > 0.15 && vo.readyState > 1) vo.currentTime = t;
+    requestAnimationFrame(loop);
+  }
+  if (!RENDER) {
+    $('#scrub').max = DURATION;
+    $('#btn-play').onclick = () => { playing = !playing; $('#btn-play').textContent = playing ? '❚❚ Pause' : '▶ Play';
+      if (playing) { if (currentT >= DURATION - 0.05) currentT = 0; t0Wall = performance.now(); t0Pos = currentT; vo.currentTime = currentT; vo.play().catch(() => {}); requestAnimationFrame(loop); } else vo.pause(); };
+    $('#scrub').oninput = (e) => { if (playing) { playing = false; vo.pause(); $('#btn-play').textContent = '▶ Play'; } window.seekTo(+e.target.value); };
+    $('#btn-guides').onclick = () => vp.classList.toggle('show-guides');
+    addEventListener('keydown', (e) => { if (e.key === 'g') vp.classList.toggle('show-guides'); if (e.key === ' ') { e.preventDefault(); $('#btn-play').click(); } });
+  }
+
+  /* ---------- cek aturan ---------- */
+  function rectIn(el) { const v = vp.getBoundingClientRect(), r = el.getBoundingClientRect(), s = v.width / 1080; return { x: (r.left - v.left) / s, y: (r.top - v.top) / s, w: r.width / s, h: r.height / s }; }
+  const effOpacity = (el) => { let o = 1; for (let e = el; e && e !== document.body; e = e.parentElement) { const cs = getComputedStyle(e); o *= +cs.opacity; if (cs.visibility === 'hidden' || cs.display === 'none') return 0; } return o; };
+  const camScale = () => +gsap.getProperty(camEl, 'scale');
+  function runChecks() {
+    const out = [], add = (status, title, detail) => out.push({ status, title, detail }), f1 = Math.round, keepT = currentT;
+    add(vp.offsetWidth === 1080 && vp.offsetHeight === 1920 ? 'pass' : 'fail', 'Kanvas 1080 × 1920', `${vp.offsetWidth} × ${vp.offsetHeight}`);
+    const sr = rectIn($('#safe'));
+    add(f1(sr.x) === 80 && f1(sr.y) === 180 && f1(sr.w) === 870 && f1(sr.h) === 1290 ? 'pass' : 'fail', 'Safe zone 80 / 180 / 130 / 450', `#safe x${f1(sr.x)} y${f1(sr.y)} ${f1(sr.w)}×${f1(sr.h)}`);
+    const cs = getComputedStyle($('#view'));
+    add(cs.overflow === 'hidden' ? 'pass' : 'fail', 'Visual terpotong di batas safe zone (tidak bocor)', `#view overflow ${cs.overflow}`);
+    // teks yang terlihat: utuh di dalam area, dan cukup besar untuk HP
+    const cut = [], tiny = [];
+    const probes = SCENES.flatMap((s, i) => [s.t0 + 0.9, (s.t0 + s.t1) / 2, s.t1 - 0.5]);
+    probes.forEach(p => {
+      window.seekTo(p);
+      const view = rectIn($('#view')), sc = camScale();
+      document.querySelectorAll('#view *, #kw *').forEach(el => {
+        if (el.closest('#clones')) return;
+        if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+        if (effOpacity(el) < 0.6) return;
+        const r = rectIn(el); if (!r.w) return;
+        const inView = el.closest('#view');
+        const box = inView ? view : rectIn($('#kw'));
+        const vis = r.x < box.x + box.w && r.x + r.w > box.x && r.y < box.y + box.h && r.y + r.h > box.y;
+        if (!vis) return;
+        if (r.x < box.x - 1 || r.y < box.y - 1 || r.x + r.w > box.x + box.w + 1 || r.y + r.h > box.y + box.h + 1) cut.push(`${p.toFixed(1)}s "${el.textContent.trim().slice(0, 22)}"`);
+        const fs = parseFloat(getComputedStyle(el).fontSize) * (el.closest('#cam') ? sc : 1);
+        if (fs < 14 && sc >= 0.5) tiny.push(`${p.toFixed(1)}s "${el.textContent.trim().slice(0, 18)}" ${fs.toFixed(0)}px`);
+      });
+    });
+    add(cut.length ? 'fail' : 'pass', 'Teks yang tampil utuh (tidak terpotong tepi)', [...new Set(cut)].slice(0, 6).join('<br>') || 'aman di semua titik cek');
+    add(tiny.length ? 'warn' : 'pass', 'Teks terbaca di HP (≥ 14px efektif)', [...new Set(tiny)].slice(0, 6).join('<br>') || 'semua ≥ 14px');
+    const wide = kwEls.map((e, i) => { window.seekTo(SCENES[i].t0 + 1.5); const r = rectIn(e); return (r.y < 1290 - 1 || r.x + r.w > 620 || e.scrollWidth > e.clientWidth + 1) ? SCENES[i].id + ` (y${f1(r.y)}, lebar ${f1(r.w)})` : null; }).filter(Boolean);
+    add(wide.length ? 'fail' : 'pass', 'Kinetic typography muat di pita bawah, tidak menabrak Rama', wide.join(', ') || 'semua ≤ 2 baris, x ≤ 620');
+    const rr = rectIn(charRig);
+    add(rr.x >= 80 && rr.x + rr.w <= 950 ? 'pass' : 'fail', 'Rama di dalam kolom aman (x 80–950)', `x ${f1(rr.x)}–${f1(rr.x + rr.w)}, y ${f1(rr.y)}–${f1(rr.y + rr.h)}`);
+    const withTr = [...document.querySelectorAll('#viewport *')].filter(el => getComputedStyle(el).transitionDuration.split(',').some(d => parseFloat(d) > 0));
+    add(withTr.length ? 'fail' : 'pass', 'Tanpa CSS transition', `${withTr.length} elemen`);
+    const snap = () => [camEl.style.transform, worldEl.style.transform, $('#count21').textContent, $('#scr-url').textContent, getComputedStyle($('#g4')).opacity, $('#cta-text').textContent,
+      ...kwEls.map(e => getComputedStyle(e.querySelector('.wd')).opacity), getComputedStyle($('#endcard')).opacity, $('#pulse').getAttribute('cy'), charRig.style.transform, Object.keys(poses).find(k => poses[k].classList.contains('active')), eyeBlink.classList.contains('active'), eyeWink.classList.contains('active')].join('|');
+    let mismatch = 0; const pr = [0.5, ...SCENES.flatMap(s => [s.t0 + 0.2, (s.t0 + s.t1) / 2]), DURATION - 0.5];
+    pr.forEach(p => { window.seekTo(p); const a = snap(); window.seekTo(DURATION * 0.61); window.seekTo(0); window.seekTo(p); if (snap() !== a) mismatch++; });
+    add(mismatch ? 'fail' : 'pass', 'seekTo() deterministik', `${pr.length - mismatch}/${pr.length} titik identik`);
+    add(window.OPENER && OPENER.ready && OPENER.SFX.length ? 'pass' : 'fail', 'Kontrak render (OPENER, SFX)', `DURATION ${DURATION.toFixed(2)} s · ${SFX.length} SFX`);
+    add(AUDIO_ENV.length ? 'pass' : 'warn', 'Envelope VO (Tahap 3)', AUDIO_ENV.length ? `${AUDIO_ENV.length} frame` : 'belum ada vo.mp3, jalankan envelope.mjs di Tahap 3');
+    window.seekTo(keepT);
+    const nP = out.filter(o => o.status === 'pass').length, nF = out.filter(o => o.status === 'fail').length, nW = out.filter(o => o.status === 'warn').length;
+    const sum = $('#summary'); sum.textContent = `${nP} lolos · ${nF} gagal · ${nW} peringatan`; sum.style.color = nF ? '#F87171' : (nW ? '#FBBF24' : '#34D399');
+    $('#checks').innerHTML = out.map(o => `<div class="chk ${o.status}"><span class="ic">${o.status === 'pass' ? '✓' : o.status === 'fail' ? '✕' : '!'}</span><span>${o.title}</span><span class="dt">${o.detail}</span></div>`).join('');
+    window.RULE_CHECKS = out;
+  }
+
+  window.seekTo(Number(Q.get('t')) || 0);
+  if (!RENDER) {
+    $('#btn-recheck').onclick = runChecks;
+    Promise.all([document.fonts.ready, ...[...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))]).then(() => setTimeout(runChecks, 80));
+  }
+})();
+</script>
+</body>
+</html>

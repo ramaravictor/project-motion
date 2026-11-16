@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Thumbnail · AI Zaman Batu</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,900&family=JetBrains+Mono:wght@600;800&family=Caveat:wght@700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #e2c99b; }
+  #c { position: relative; width: 1080px; height: 1920px; overflow: hidden;
+    background: radial-gradient(90% 70% at 30% 30%, #f3e3c3 0%, #e2c99b 58%, #c9a46b 100%); }
+  .grain { position: absolute; inset: 0; opacity: .3; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); }
+  .stain { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(120,70,20,.26), transparent 65%); }
+
+  .title { position: absolute; left: 80px; top: 190px; width: 870px; font: 900 128px/.95 'Playfair Display', serif; letter-spacing: -.035em; color: #2b1d0e; }
+  .title b { font-style: italic; color: #a3361b; }
+
+  /* kertas jawaban AI */
+  .sheet { position: absolute; left: 90px; top: 700px; width: 570px; padding: 32px 36px 40px; background: #f8eedb; border: 3px solid #8a6a3a; transform: rotate(-4deg);
+    box-shadow: 10px 12px 0 rgba(90,60,20,.22); }
+  .sheet h3 { font: 900 42px 'Playfair Display', serif; color: #3a2a14; }
+  .sheet .yr { font: 900 italic 22px 'Playfair Display', serif; color: #8a6a3a; margin: 4px 0 18px; }
+  .sheet code { display: block; font: 600 30px/1.75 'JetBrains Mono', monospace; color: #4a3a22; }
+  .sheet del { text-decoration-color: #a3361b; text-decoration-thickness: 4px; }
+  .stamp { position: absolute; left: 230px; top: 1010px; font: 700 70px 'Cinzel', serif; color: #a3361b; border: 7px double #a3361b; padding: 4px 22px; letter-spacing: .08em;
+    transform: rotate(-14deg); background: rgba(248,238,219,.55); white-space: nowrap; }
+  .note { position: absolute; left: 690px; top: 690px; font: 700 70px/1 'Caveat', cursive; color: #a3361b; transform: rotate(6deg); }
+  .arrow { position: absolute; left: 610px; top: 820px; width: 140px; height: 100px; }
+  .bone { position: absolute; left: 690px; top: 930px; width: 260px; height: 160px; transform: rotate(-12deg); }
+  .badge { position: absolute; left: 80px; top: 1230px; font: 800 38px 'JetBrains Mono', monospace; color: #f3e3c3; background: #2b1d0e; padding: 14px 26px; border-radius: 18px; white-space: nowrap; }
+
+  .rama { position: absolute; left: 470px; top: 1290px; width: 560px; height: 560px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 100%); mask-image: linear-gradient(to bottom, #000 80%, transparent 100%); }
+  .rama img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .rama .p { filter: drop-shadow(0 20px 40px rgba(60,35,10,.35)); }
+</style>
+</head>
+<body>
+<div id="c">
+  <div class="stain" style="left:-160px;top:520px;width:520px;height:520px"></div>
+  <div class="stain" style="right:-140px;top:1050px;width:600px;height:600px"></div>
+  <div class="grain"></div>
+
+  <div class="title">AI lo masih<br>nulis kode<br><b>zaman batu?</b></div>
+
+  <div class="sheet">
+    <h3>pages/_app.js</h3>
+    <div class="yr">jawaban AI · kira-kira 2021</div>
+    <code><del>MyApp.getInitialProps</del><br><del>@tailwind base;</del><br><del>@tailwind utilities;</del><br><del>tailwind.config.js</del></code>
+  </div>
+  <div class="stamp">DEPRECATED</div>
+
+  <div class="note">udah punah,<br>bang!</div>
+  <svg class="arrow" viewBox="0 0 140 100"><path d="M128 10 C86 12 48 34 20 82" fill="none" stroke="#a3361b" stroke-width="6" stroke-linecap="round"/><path d="M8 62 L20 86 L44 74" fill="none" stroke="#a3361b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <svg class="bone" viewBox="0 0 260 160"><g stroke="#6b4f26" stroke-width="4" fill="#efe0c0"><path d="M44 80 L216 80" stroke-width="30"/><path d="M44 80 L216 80" stroke="#efe0c0" stroke-width="22"/><circle cx="32" cy="60" r="22"/><circle cx="32" cy="100" r="22"/><circle cx="228" cy="60" r="22"/><circle cx="228" cy="100" r="22"/></g></svg>
+
+  <div class="badge">obatnya: Context7 MCP</div>
+
+  <div class="rama">
+    <img class="p" src="../_shared/rama/rama_pose_shocked.png" alt="">
+    <img src="../_shared/rama/mouth_v5_shock.png" alt="">
+  </div>
+</div>
+</body>
+</html>

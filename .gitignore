@@ -1,0 +1,41 @@
+# Dependencies & build output
+node_modules
+dist
+out
+
+# OS
+.DS_Store
+
+# Secrets
+.env
+.env.*
+/.env.local
+
+# Folder di luar project motion (berisi API key)
+wedding_bot/
+
+# Lock sementara Claude Code
+.claude/scheduled_tasks.lock
+
+# ---- File berat ----
+# Video (hasil render, sumber, klip)
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.m4v
+
+# Audio mentah .wav, kecuali SFX yang dipakai render
+*.wav
+!projects/_shared/sfx/*.wav
+!projects/*/assets/audio/sfx/*.wav
+
+# Folder kerja, sumber unduhan, dan frame render
+projects/**/source/
+projects/**/work/
+projects/**/frames/
+
+# Python cache
+__pycache__/
+*.pyc

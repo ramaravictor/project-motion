@@ -1,0 +1,60 @@
+JUDUL (pilih satu)
+AI yang Bisa Buka Browser & Ngeklik Sendiri! #shorts
+Capek QA Manual? Suruh AI Agent Pakai browser-use #shorts
+Cek Harga 30 Toko Otomatis Pakai AI Agent #shorts
+
+DESKRIPSI
+Tiap hari cek harga di 30 toko online, isi form yang sama, klik tombol yang sama. Jempol pegel, mata juling 😵 QA manual juga gitu: 50 tombol diklik satu-satu, besok diulang lagi, dan pasti ada yang kelewat.
+
+Kenalin browser-use (120k+ ⭐, MIT). Library open source Python buat bikin AI agent yang bisa buka browser sendiri.
+
+Caranya: tiap tombol dan input di halaman dikasih nomor. AI tinggal mutusin, ketik di nomor satu, klik nomor tiga, terus cek hasilnya.
+
+Lo cukup nulis tugasnya pakai bahasa manusia. Minta agen di Antigravity IDE bikinin script-nya, jalanin dari terminal, lo tinggal ngopi ☕
+
+Contoh script ada di komentar pin. Ketik "AGENT" di komentar 👇
+
+#vibecoding #antigravityide #browseruse #aiagent #automation #python #qa #testing #webscraping #programmer #ngoding #shorts
+
+KOMENTAR PIN
+Contoh script browser-use 👇
+
+1) Install:
+uv add browser-use
+
+2) cek_harga.py:
+from browser_use import Agent
+
+result = Agent('Cek harga laptop 14 inci di 3 toko online, kasih yang paling murah').run_sync()
+print(result)
+
+3) Jalanin:
+uv run cek_harga.py
+
+Butuh API key model AI (setup lengkap ada di README github.com/browser-use/browser-use).
+
+Tips: di Antigravity IDE, tinggal prompt "bikinin script browser-use buat [tugas lo]", terus run di terminal ✅
+
+BALASAN KOMENTAR
+
+[Yang ketik "AGENT"]
+Gas! Contoh script-nya ada di komentar pin 📌 Ganti teks tugasnya sesuai kebutuhan lo, terus uv run. Agent yang ngeklik, lo yang ngopi ☕
+
+[Variasi]
+Siap, cek pin ya 📌 Mulai dari tugas simpel dulu, misal buka satu halaman terus ambil judulnya 😎
+Mantap! Script ada di komentar pin, 3 baris doang 🤖
+
+["Gratis?"]
+Library-nya open source (MIT). Yang bayar cuma pemakaian model AI-nya, tergantung provider yang lo pakai.
+
+["Bisa buat scraping?"]
+Bisa buat ambil data dari halaman, tapi tetap patuhi aturan/ToS situsnya ya. Buat data yang strukturnya tetap, script scraping biasa sering lebih murah.
+
+["Bisa login?"]
+Bisa. Simpan password lewat sensitive_data, jangan ditulis langsung di teks tugas. Detailnya ada di README browser-use.
+
+["Ganti Selenium/Playwright?"]
+Beda kegunaan. Playwright cocok buat tes yang langkahnya pasti. browser-use cocok buat tugas yang halamannya sering berubah atau ditulis pakai bahasa manusia.
+
+["Error pas jalan?"]
+Cek dulu API key model udah di-set dan Python-nya versi baru. Paste error-nya di sini, nanti gue bantu lihat 👀

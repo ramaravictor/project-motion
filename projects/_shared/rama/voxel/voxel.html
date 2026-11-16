@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Rama Voxel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1080px;overflow:hidden;background:radial-gradient(ellipse 90% 80% at 50% 100%,#1E5BD8 0%,#0D1F4A 50%,#070F26 100%)}
+#rama{position:absolute;left:90px;top:90px;width:900px;height:900px;filter:drop-shadow(0 26px 28px rgba(0,0,0,.5));
+  -webkit-mask-image:linear-gradient(to bottom,#000 86%,transparent 100%);mask-image:linear-gradient(to bottom,#000 86%,transparent 100%)}
+#rama canvas{display:block}
+#lbl{position:absolute;left:40px;top:30px;font:700 30px monospace;color:#9CC2FF}
+</style>
+</head>
+<body>
+<div id="lbl"></div>
+<div id="rama"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="env.js"></script>
+<script src="rama-voxel.js"></script>
+<script>
+// Pratinjau: ?pose=present|point|thumbs|shocked (tetap) · tanpa pose = berganti tiap 2 detik.
+// ?render=1 untuk ekspor (tanpa loop). Klik = putar suara demo.
+const Q = new URLSearchParams(location.search);
+const ENV = window.ENV || [];
+const FIXED = RamaVoxel.POSES.includes(Q.get('pose')) ? Q.get('pose') : null;
+const LOOK = { present: 0.25, point: 0.15, thumbs: 0, shocked: 0 };
+const rv = RamaVoxel.create(900);
+document.getElementById('rama').appendChild(rv.canvas);
+const lbl = document.getElementById('lbl');
+
+function seekTo(t) {
+  const fi = Math.min(ENV.length - 1, Math.max(0, Math.floor(t * 30)));
+  const vol = ENV[fi] || 0;
+  let pose = FIXED, fromPose = FIXED, k = 1;
+  if (!FIXED) {
+    const P = RamaVoxel.POSES, n = Math.floor(t / 2);
+    pose = P[n % 4]; fromPose = n ? P[(n - 1) % 4] : pose;
+    const x = Math.min(1, (t - n * 2) / 0.3); k = 1 - Math.pow(1 - x, 3); // transisi 0,3 dtk
+  }
+  rv.render({ t, vol, viseme: RamaVoxel.viseme(fi, vol, pose), blink: RamaVoxel.blink(t), pose, fromPose, k,
+    look: LOOK[fromPose] + (LOOK[pose] - LOOK[fromPose]) * k });
+  lbl.textContent = 'POSE ' + pose.toUpperCase();
+}
+window.seekTo = seekTo;
+window.READY = true;
+seekTo(Number(Q.get('t')) || 0);
+if (!Q.has('render')) {
+  const audio = new Audio('../../../_template/vo.mp3');
+  let t0 = performance.now();
+  addEventListener('click', () => { audio.currentTime = 0; audio.play(); t0 = performance.now(); });
+  (function loop() { seekTo(audio.paused ? ((performance.now() - t0) / 1000) % 8 : audio.currentTime); requestAnimationFrame(loop); })();
+}
+</script>
+</body>
+</html>

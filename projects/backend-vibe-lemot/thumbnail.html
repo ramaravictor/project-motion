@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Thumbnail · Backend Lemot</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #DCEBFF; }
+  #c { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: linear-gradient(180deg, #DCEBFF 0%, #F7F1E6 62%); }
+  .sun { position: absolute; right: -60px; top: 560px; width: 620px; height: 620px; border-radius: 50%; background: radial-gradient(circle, rgba(255,140,60,.55), transparent 65%); }
+
+  .title { position: absolute; left: 80px; top: 190px; width: 870px; font: 800 140px/.92 'Bricolage Grotesque', sans-serif; letter-spacing: -.045em; color: #141619; }
+  .title b { color: #FF5500; }
+
+  .err { position: absolute; left: 80px; top: 690px; font: 800 42px 'JetBrains Mono', monospace; color: #fff; background: #DC2626; padding: 14px 24px; border-radius: 16px; transform: rotate(-3deg); white-space: nowrap;
+    box-shadow: 0 20px 40px -14px rgba(220,38,38,.7); }
+
+  /* jalan + antrean GET */
+  .lane { position: absolute; left: -30px; top: 960px; width: 1180px; height: 150px; transform: rotate(-6deg); transform-origin: left center; }
+  .road { position: absolute; inset: 0; background: #3F4654; }
+  .road::after { content: ''; position: absolute; left: 0; right: 0; top: 72px; height: 7px; background: repeating-linear-gradient(90deg, #F7F1E6 0 46px, transparent 46px 92px); }
+  .pk { position: absolute; top: 46px; height: 58px; padding: 0 16px; border-radius: 14px; background: #fff; border: 3px solid #141619; font: 800 22px 'JetBrains Mono', monospace; display: flex; align-items: center; color: #141619; }
+  .pk.r { background: #FCA5A5; }
+
+  .db { position: absolute; left: 720px; top: 690px; width: 220px; height: 280px; }
+  .count { position: absolute; left: 80px; top: 1150px; width: 380px; padding: 20px 26px; background: #fff; border: 4px solid #141619; border-radius: 22px; box-shadow: 8px 10px 0 #141619; }
+  .count b { display: block; font: 800 72px/1 'Bricolage Grotesque'; color: #DC2626; letter-spacing: -.03em; }
+  .count span { font: 700 20px 'JetBrains Mono', monospace; color: #4B5563; }
+  .badge { position: absolute; left: 80px; top: 1330px; font: 800 36px 'JetBrains Mono', monospace; color: #fff; background: #FF5500; padding: 12px 24px; border-radius: 16px; white-space: nowrap; }
+
+  .rama { position: absolute; left: 470px; top: 1290px; width: 560px; height: 560px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 100%); mask-image: linear-gradient(to bottom, #000 80%, transparent 100%); }
+  .rama img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .rama .p { filter: drop-shadow(0 20px 40px rgba(20,22,25,.25)); }
+</style>
+</head>
+<body>
+<div id="c">
+  <div class="sun"></div>
+  <div class="title">Web lo<br>lemot pas<br><b>100 user?</b></div>
+
+  <div class="lane">
+    <div class="road"></div>
+    <div class="pk" style="left:40px">GET</div>
+    <div class="pk" style="left:124px">GET</div>
+    <div class="pk r" style="left:208px">GET</div>
+    <div class="pk" style="left:292px">GET</div>
+    <div class="pk r" style="left:376px">GET</div>
+    <div class="pk" style="left:460px">GET</div>
+    <div class="pk r" style="left:544px">GET</div>
+    <div class="pk r" style="left:628px">GET</div>
+  </div>
+
+  <svg class="db" viewBox="0 0 170 220"><ellipse cx="85" cy="40" rx="78" ry="30" fill="#FCA5A5" stroke="#141619" stroke-width="5"/><path d="M7 40 V180 A78 30 0 0 0 163 180 V40" fill="#EF4444" stroke="#141619" stroke-width="5"/><path d="M7 90 A78 30 0 0 0 163 90 M7 135 A78 30 0 0 0 163 135" fill="none" stroke="#141619" stroke-width="4"/><text x="85" y="122" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="24" fill="#fff">CPU 100%</text></svg>
+
+  <div class="err">504 Gateway Timeout</div>
+
+  <div class="count"><b>101 query</b><span>buat 1 halaman</span></div>
+  <div class="badge">biangnya: N+1 query</div>
+
+  <div class="rama">
+    <img class="p" src="../_shared/rama/rama_pose_shocked.png" alt="">
+    <img src="../_shared/rama/mouth_v5_shock.png" alt="">
+  </div>
+</div>
+</body>
+</html>

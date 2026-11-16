@@ -1,0 +1,24 @@
+  <div id="safe">
+    <header class="brand-header">
+      <div class="brand-logo-badge">
+        <div class="brand-monogram"><img src="../../_shared/brand/logo-youtube.svg"></div>
+        <div class="brand-text-col"><span class="brand-title">ChillDev</span><span class="brand-sub">@chilldevibe</span></div>
+      </div>
+      <div class="header-right-group">
+        <div class="scene-tag-pill">TIMNAS FUTSAL</div>
+        <div class="brand-handle"><img src="../../_shared/brand/logo-instagram.svg"><span>@ramarvctr_</span></div>
+      </div>
+    </header>
+    <section id="top-card-container">__CARD__</section>
+    <section id="headline-dock">
+      <h1 class="headline-main">Final lawan Thailand, <span class="highlight-orange">menang 6–1</span></h1>
+      <div class="genz-caption-pill">SEA Games 2025, medali emas buat Timnas Futsal. Gacor parah, no debat!</div>
+    </section>
+  </div>
+  <section id="character-stage">
+    <div class="char-ground-shadow"></div>
+    <div id="character-rig">
+      <img class="pose" src="../../_shared/rama/rama_pose_thumbsup.png">
+      <img src="../../_shared/rama/mouth_v3_med.png">
+    </div>
+  </section>

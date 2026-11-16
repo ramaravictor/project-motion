@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timnas Futsal · Part 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+/* Part 2 · "Awal mula: Sekjen dipecat, semua kebongkar"
+   Gaya: Opsi B (arena 3D siaran TV), lanjutan Part 1. Tanpa template ChillDev.
+   Benang merah: surat → bola kertas → megafon → tanda tanya → bola salju → amplop ke PSSI.
+   Semua gerak = fungsi murni dari t (seekTo). */
+:root{--tA:#8E1424;--tB:#12050A;--red:#E2272F;--hot:#FF5A4A;--navy:#0D1F4A}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{width:100%;height:100%;background:#05070D;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden;transform-origin:0 0;
+  background:radial-gradient(ellipse 130% 62% at 50% 108%,var(--tA) 0%,var(--navy) 48%,var(--tB) 100%)}
+#gl{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.scrim{position:absolute;left:0;right:0;pointer-events:none}
+.scrim.top{top:0;height:620px;background:linear-gradient(to bottom,rgba(5,10,28,.84),rgba(5,10,28,0))}
+.scrim.bot{bottom:0;height:880px;background:linear-gradient(to top,rgba(5,10,28,.94) 0%,rgba(5,10,28,.62) 42%,rgba(5,10,28,0) 100%)}
+#grain{position:absolute;inset:-60px;opacity:.12;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 90% 72% at 50% 46%,transparent 52%,rgba(0,0,0,.5))}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+
+/* HUD = safe zone 80/180/130/450 */
+#hud{position:absolute;top:180px;left:80px;width:870px;height:1290px;font-family:'Barlow Condensed',sans-serif;color:#fff}
+.topbar{position:absolute;top:0;left:0;right:0;height:52px;display:flex;justify-content:space-between;align-items:center}
+.pill{font:800 30px 'Barlow Condensed';letter-spacing:.06em;background:var(--red);padding:6px 18px 5px;border-radius:8px;white-space:nowrap;display:flex;gap:12px;align-items:center}
+.pill .dot{width:12px;height:12px;border-radius:50%;background:#fff}
+.handle{font:700 24px 'JetBrains Mono';display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);padding:6px 14px 6px 8px;border-radius:99px;white-space:nowrap}
+.handle img{width:30px;height:30px}
+
+#stat{position:absolute;top:76px;left:0;display:flex;align-items:center;gap:18px;opacity:0}
+#stat b{font:800 150px/1 'Barlow Condensed';font-variant-numeric:tabular-nums;text-shadow:0 8px 30px rgba(0,0,0,.45);min-width:120px}
+#stat span{font:800 34px 'JetBrains Mono';background:var(--red);padding:8px 16px;white-space:nowrap;letter-spacing:.02em}
+
+.say{position:absolute;left:0;width:870px;font-weight:800;line-height:.98;letter-spacing:-.005em;text-shadow:0 6px 26px rgba(0,0,0,.45)}
+.say.top{top:170px}.say.bot{bottom:24px}.say.mid{top:300px;text-align:center}
+.w{display:inline-block;position:relative;margin-right:.22em;white-space:nowrap}
+.w .wi{display:inline-block;position:relative;z-index:1}
+.w .bar{position:absolute;left:-.1em;right:-.1em;top:.08em;bottom:-.02em;background:var(--red);transform-origin:0 50%;transform:scaleX(0) skewX(-8deg);z-index:0}
+.lbl{position:absolute;left:0;font:800 34px 'JetBrains Mono';letter-spacing:.04em;color:#fff;background:rgba(13,31,74,.86);border-left:8px solid var(--red);padding:10px 18px;white-space:nowrap;opacity:0}
+
+.lt{position:absolute;left:0;bottom:250px;display:flex;flex-direction:column;align-items:flex-start;opacity:0}
+.lt .nm{font:800 74px 'Barlow Condensed';background:#fff;color:#0D1F4A;padding:0 22px;line-height:1.15;white-space:nowrap}
+.lt .rl{font:700 34px 'JetBrains Mono';background:var(--red);padding:6px 22px;letter-spacing:.04em;white-space:nowrap}
+
+#dbg{position:fixed;left:0;right:0;bottom:0;display:none;gap:10px;align-items:center;padding:10px 16px;background:rgba(0,0,0,.75);font:600 13px monospace;color:#ddd;z-index:9}
+#dbg input{flex:1}
+body.debug #dbg{display:flex}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" width="1080" height="1920"></canvas>
+  <div class="scrim top"></div><div class="scrim bot"></div>
+  <div id="vig"></div><div id="grain"></div><div id="flash"></div>
+  <div id="hud">
+    <div class="topbar">
+      <div class="pill"><span class="dot"></span>TIMNAS FUTSAL · PART 2</div>
+      <div class="handle"><img src="../../_shared/brand/logo-instagram.svg" alt=""><span>@ramarvctr_</span></div>
+    </div>
+    <div id="stat"><b id="stat-n">0</b><span id="stat-u"></span></div>
+    <div id="says"></div>
+  </div>
+</div>
+<div id="dbg"><button id="dbg-play">❚❚</button><input id="dbg-r" type="range" min="0" step="0.01"><span id="dbg-t"></span></div>
+
+<script>
+(async () => {
+'use strict';
+await Promise.all([
+  document.fonts.load("800 100px 'Barlow Condensed'"), document.fonts.load("italic 800 100px 'Barlow Condensed'"),
+  document.fonts.load("700 100px 'Barlow Condensed'"), document.fonts.load("700 40px 'JetBrains Mono'"), document.fonts.load("800 40px 'JetBrains Mono'"),
+]).catch(() => {});
+const Q = new URLSearchParams(location.search);
+const RENDER = Q.get('render') === '1', DEBUG = Q.get('debug') === '1';
+const W = 1080, H = 1920, FPS = 30;
+
+/* ============ SCENES ============
+   BOUND = estimasi dari naskah (±5,4 suku kata/dtk + jeda). Setelah VO ada: ganti dengan titik tengah jeda. */
+const BOUND = [0, 1.95, 8.27, 10.99, 12.65, 15.68, 20.94, 23.43, 28.39, 34.22, 40.14, 45.32, 49.40];
+const NAMES = ['satu-surat', 'sekjen-dipecat', 'demi-organisasi', 'budi-melawan', 'tanya-anggaran', 'apbn-20-miliar', 'bola-salju', 'sepuluh-klub-klb', 'dua-alasan', 'exco-mundur', 'surat-ke-pssi', 'pssi-ngapain'];
+const SCENES = NAMES.map((id, i) => ({ idx: i + 1, id, t0: BOUND[i], t1: BOUND[i + 1] }));
+const T = i => SCENES[i - 1].t0;
+const DURATION = BOUND[BOUND.length - 1];
+
+/* ============ util deterministik ============ */
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const pr = (t, a, b) => cl((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const E = {
+  lin: x => x, o2: x => 1 - (1 - x) ** 2, o3: x => 1 - (1 - x) ** 3, i2: x => x * x, i3: x => x * x * x,
+  io2: x => x < .5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2, io3: x => x < .5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2,
+  back: x => { const c = 1.9, c3 = c + 1; return 1 + c3 * (x - 1) ** 3 + c * (x - 1) ** 2; }
+};
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const pos0 = v => Math.max(.001, v);
+
+/* ============ titik penting dunia ============ */
+const L0 = V(-2.0, 1.012, .1);           // tempat surat di meja FFI
+const BOXP = V(12, .6, 0);                // kotak anggaran
+const BALL_X0 = 13, BALL_X1 = 31, BALL_Z = 1.2, R0 = .15, R1 = .9;
+const KR = (R1 - R0) / (BALL_X1 - BALL_X0);
+const rAt = x => R0 + KR * (x - BALL_X0);
+const ballX = t => t < T(7) + .5 ? BALL_X0 : lerp(BALL_X0, BALL_X1, E.io2(pr(t, T(7) + .5, T(8) + 2.75)));
+const BADGE_X = [...Array(10)].map((_, i) => 16 + i * 1.65);
+const BADGE_T = BADGE_X.map(x => { for (let t = T(7) + .5; t < T(8) + 2.95; t += 1 / 120) if (ballX(t) >= x - .2) return t; return T(8) + 2.75; });
+const VOTERS = 58, LIT = 41;
+const VORDER = [...Array(VOTERS).keys()].sort((a, b) => hash(a + 7) - hash(b + 7));
+const vLitT = k => T(11) + .9 + k * .07;
+
+/* ============ kamera ============ */
+const K = [
+  { t: 0, p: [1.6, 6.4, 8.6], l: [-.6, 1.2, 0] },
+  { t: T(1) + 1.5, p: [-1.0, 4.4, 4.4], l: [-1.8, 1.0, 0], e: 'io2' },
+  { t: T(2) + .8, p: [-2.0, 5.0, 1.75], l: [-2.0, 1.0, -.15], e: 'io3' },
+  { t: T(2) + 3.2, p: [-2.0, 4.5, 1.6], l: [-2.0, 1.0, -.15], e: 'lin' },
+  { t: T(3), p: [-2.0, 3.5, 1.3], l: [-2.0, 1.0, -.05], e: 'io2' },
+  { t: T(3) + 2.4, p: [-2.05, 3.0, 1.12], l: [-2.0, 1.0, 0], e: 'lin' },
+  { t: T(4) + .3, p: [-.8, 2.6, 3.4], l: [-1.9, 1.3, 0], e: 'io3' },
+  { t: T(5) + .4, p: [-3.6, 2.0, 3.7], l: [-1.8, 2.0, 0], e: 'io2' },
+  { t: T(5) + 2.8, p: [-3.2, 2.5, 3.4], l: [-1.6, 2.7, 0], e: 'lin' },
+  { t: T(6) + .55, p: [12, 2.8, 8.4], l: [12, 2.2, 0], e: 'io3' },
+  { t: T(6) + 3.1, p: [12, 2.5, 7.6], l: [12, 1.8, 0], e: 'lin' },
+  { t: T(6) + 4.7, p: [12.3, 2.0, 4.9], l: [12.3, 1.0, 0], e: 'io2' },
+  { t: T(7), p: [12.6, 1.7, 4.7], l: [12.8, .8, 0], e: 'lin' },
+  { t: T(8) + 4.0, p: [31.5, 2.2, 6.2], l: [32.6, 1.6, 0], e: 'io2' },
+  { t: T(9) + .3, p: [33.4, 2.4, 6.8], l: [33.4, 2.3, .6], e: 'io3' },
+  { t: T(9) + 5.4, p: [33.4, 2.4, 6.1], l: [33.4, 2.3, .6], e: 'lin' },
+  { t: T(10) + .55, p: [45, 3.2, 6.4], l: [45, 1.1, 0], e: 'io3' },
+  { t: T(10) + 4.2, p: [44.6, 2.7, 5.4], l: [45, 1.1, -.3], e: 'lin' },
+  { t: T(11) + .6, p: [60, 10.5, 7.2], l: [60, 0, .4], e: 'io3' },
+  { t: T(11) + 3.0, p: [60, 9.6, 5.6], l: [60, .4, -.8], e: 'lin' },
+  { t: T(11) + 4.9, p: [60, 4.3, -1.0], l: [60, 1.4, -8], e: 'io2' },
+  { t: T(12) + 1.5, p: [60, 2.4, -4.4], l: [60, 1.1, -8], e: 'io3' },
+  { t: DURATION, p: [60, 2.2, -4.9], l: [60, 1.2, -8], e: 'lin' },
+];
+function camKey(t) {
+  let i = K.findIndex(k => k.t > t);
+  if (i === -1) i = K.length - 1;
+  if (i === 0) i = 1;
+  const a = K[i - 1], b = K[i], k = E[b.e || 'io2'](pr(t, a.t, b.t));
+  return { p: a.p.map((v, j) => lerp(v, b.p[j], k)), l: a.l.map((v, j) => lerp(v, b.l[j], k)) };
+}
+function camAt(t) {
+  const c = camKey(t);
+  // kamera mengikuti bola salju (scene 7–8), dicampur halus di tepi
+  const w = E.io2(pr(t, T(7) + .25, T(7) + .9)) * (1 - E.io2(pr(t, T(8) + 3.05, T(8) + 3.75)));
+  if (w > 0) {
+    const bx = ballX(t), r = rAt(bx);
+    const tp = [bx - 2.0, 1.5 + r * 1.1, 4.9 + r * 2.2], tlk = [bx + 1.3, .5 + r * .7, -.4];
+    c.p = c.p.map((v, j) => lerp(v, tp[j], w)); c.l = c.l.map((v, j) => lerp(v, tlk[j], w));
+  }
+  return c;
+}
+const SHAKES = [];
+const shakeAt = t => SHAKES.reduce((a, [s, amp]) => t >= s ? a + amp * Math.exp(-(t - s) * 9) : a, 0);
+
+/* ============ HUD ============ */
+const SAYS = [
+  { s: 1, pos: 'top', at: .3, size: 104, txt: 'Semua bermula dari satu [surat]' },
+  { s: 2, pos: 'bot', at: 3.7, size: 120, txt: 'Sekjen FFI [dipecat]' },
+  { s: 3, pos: 'mid', at: .2, size: 124, txt: '“Demi [organisasi]”' },
+  { s: 4, pos: 'top', at: .15, size: 112, txt: 'Tapi Budi nggak diam' },
+  { s: 5, pos: 'bot', at: .5, size: 108, txt: 'Balik tanya soal [anggaran]' },
+  { s: 6, pos: 'bot', at: 3.55, size: 104, txt: 'Budi minta semua [dibuka]' },
+  { s: 7, pos: 'top', at: .3, size: 108, txt: 'Efeknya kayak [bola] [salju]' },
+  { s: 8, pos: 'bot', at: .4, size: 108, txt: '10 klub satu suara: [KLB]' },
+  { s: 9, pos: 'top', at: .3, size: 104, txt: 'Alasannya ada [dua]' },
+  { s: 10, pos: 'top', at: .3, size: 108, txt: 'Beberapa Exco [mundur]' },
+  { s: 11, pos: 'bot', at: .4, size: 108, txt: 'Surat menumpuk ke [PSSI]' },
+  { s: 12, pos: 'mid', at: .1, size: 124, txt: 'Terus, PSSI [ngapain]?' },
+];
+const LABELS = [
+  { s: 6, at: 2.1, out: 3.4, y: 280, txt: '+ UANG SPONSOR' },
+  { s: 8, at: 3.2, out: 4.75, y: 280, txt: 'KLB · KONGRES LUAR BIASA' },
+  { s: 11, at: 3.4, out: 4.95, y: 280, txt: 'SYARAT KLB: 2/3 SUARA' },
+  { s: 12, at: 1.4, out: 99, y: 520, txt: 'LANJUT PART 3  →', center: true },
+];
+const LTS = [
+  { s: 2, at: .9, out: 3.4, nm: 'Michael Sianipar', rl: 'KETUM FFI', top: true },
+  { s: 2, at: 4.7, out: 6.25, nm: 'Budi Setiawan', rl: 'SEKJEN FFI', top: true },
+  { s: 10, at: 2.2, out: 5.4, nm: 'Dimas Bagus Kurniawan', rl: 'PEMILIK BINTANG TIMUR SURABAYA' },
+];
+
+const tl = gsap.timeline({ paused: true });
+const saysEl = document.getElementById('says');
+SAYS.forEach(d => {
+  const el = document.createElement('div');
+  el.className = 'say ' + d.pos; el.style.fontSize = d.size + 'px';
+  el.innerHTML = d.txt.split(' ').map(w => {
+    if (!/^\[.*\]/.test(w)) return `<span class="w"><span class="wi">${w}</span></span>`;
+    const core = w.replace(/^\[(.*?)\].*$/, '$1'), tail = w.replace(/^\[(.*?)\]/, '');
+    return `<span class="w hl"><i class="bar"></i><span class="wi">${core}</span>${tail}</span>`;
+  }).join('');
+  saysEl.appendChild(el);
+  const at = T(d.s) + d.at, out = T(d.s) + (d.out ?? (SCENES[d.s - 1].t1 - T(d.s) - .32));
+  const ws = el.querySelectorAll('.w');
+  tl.fromTo(ws, { yPercent: 70, opacity: 0, filter: 'blur(14px)' }, { yPercent: 0, opacity: 1, filter: 'blur(0px)', duration: .55, ease: 'power4.out', stagger: .075 }, at);
+  const bars = el.querySelectorAll('.bar');
+  if (bars.length) tl.fromTo(bars, { scaleX: 0 }, { scaleX: 1, duration: .35, ease: 'power3.out', stagger: .1 }, at + ws.length * .075 + .15);
+  if (d.s !== 12) tl.to(ws, { yPercent: -45, opacity: 0, filter: 'blur(10px)', duration: .32, ease: 'power2.in', stagger: .025 }, out);
+});
+LABELS.forEach(d => {
+  const el = document.createElement('div');
+  el.className = 'lbl'; el.textContent = d.txt; el.style.top = d.y + 'px';
+  if (d.center) { el.style.left = '50%'; el.style.transform = 'translateX(-50%)'; }
+  saysEl.appendChild(el);
+  tl.fromTo(el, { opacity: 0, clipPath: 'inset(0 100% 0 0)' }, { opacity: 1, clipPath: 'inset(0 0% 0 0)', duration: .45, ease: 'power3.out' }, T(d.s) + d.at);
+  tl.to(el, { opacity: 0, duration: .25, ease: 'power2.in' }, T(d.s) + d.out - .25);
+});
+LTS.forEach(d => {
+  const el = document.createElement('div');
+  el.className = 'lt'; if (d.top) { el.style.bottom = 'auto'; el.style.top = '96px'; } el.innerHTML = `<span class="nm">${d.nm}</span><span class="rl">${d.rl}</span>`;
+  saysEl.appendChild(el);
+  tl.fromTo(el, { opacity: 0, x: -80 }, { opacity: 1, x: 0, duration: .5, ease: 'power3.out' }, T(d.s) + d.at);
+  tl.to(el, { opacity: 0, x: -50, duration: .3, ease: 'power2.in' }, T(d.s) + d.out - .3);
+});
+tl.set({}, {}, DURATION);
+
+/* ============ Three.js ============ */
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x070F26, 22, 60);
+const cam = new THREE.PerspectiveCamera(50, W / H, .05, 200);
+const hemi = new THREE.HemisphereLight(0xcfe0ff, 0x0d1f4a, .85); scene.add(hemi);
+const dir = new THREE.DirectionalLight(0xffffff, .9); dir.position.set(-4, 12, 7); scene.add(dir);
+const redL = new THREE.PointLight(0xff2030, 0, 10); redL.position.set(0, 2.6, 1.2); scene.add(redL);
+
+function canvasTex(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); draw(g, w, h);
+  const tx = new THREE.CanvasTexture(c); tx.anisotropy = 8; return { c, g, tx };
+}
+function sprite(text, { size = 120, weight = 800, fam = 'Barlow Condensed', color = '#fff', bg = null, pad = 26, h = .6, border = null } = {}) {
+  const m = document.createElement('canvas').getContext('2d'); m.font = `${weight} ${size}px '${fam}'`;
+  const tw = Math.ceil(m.measureText(text).width) + pad * 2 + (border ? 12 : 0), th = Math.ceil(size * 1.25) + pad;
+  const { tx } = canvasTex(tw, th, (g, w, hh) => {
+    if (bg) { g.fillStyle = bg; g.fillRect(0, 0, w, hh); }
+    if (border) { g.fillStyle = border; g.fillRect(0, 0, 12, hh); }
+    g.font = `${weight} ${size}px '${fam}'`; g.fillStyle = color; g.textBaseline = 'middle'; g.fillText(text, pad + (border ? 12 : 0), hh / 2 + size * .04);
+  });
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, transparent: true, depthWrite: false }));
+  sp.scale.set(h * tw / th, h, 1); return sp;
+}
+const std = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: .6, ...o });
+const gold = std(0xE7B530, { metalness: .55, roughness: .3, emissive: 0x4a3000 });
+const flatOn = (m, x, y, z) => { m.rotation.x = -Math.PI / 2; m.position.set(x, y, z); return m; };
+function bumpy(geo, amt, seed) {
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const k = 1 + amt * (hash(Math.round(x * 997) * 7 + Math.round(y * 991) * 13 + Math.round(z * 983) * 17 + seed) - .5);
+    p.setXYZ(i, x * k, y * k, z * k);
+  }
+  geo.computeVertexNormals(); return geo;
+}
+const reveal = (geo, f, segs, rad) => geo.setDrawRange(0, Math.floor(cl(f) * segs) * rad * 6);
+
+/* lantai + lampu dekor + debu naik */
+const floorT = canvasTex(512, 512, (g, w, h) => { g.fillStyle = '#0B1736'; g.fillRect(0, 0, w, h); g.strokeStyle = 'rgba(110,150,255,.14)'; g.lineWidth = 3; g.strokeRect(0, 0, w, h); });
+floorT.tx.wrapS = floorT.tx.wrapT = THREE.RepeatWrapping; floorT.tx.repeat.set(60, 20);
+scene.add(flatOn(new THREE.Mesh(new THREE.PlaneGeometry(240, 80), new THREE.MeshStandardMaterial({ map: floorT.tx, roughness: .9 })), 30, 0, 0));
+[0, 12, 33.4, 45, 60].forEach(x => {
+  const fx = new THREE.Mesh(new THREE.BoxGeometry(1.2, .22, .5), new THREE.MeshBasicMaterial({ color: 0xffffff })); fx.position.set(x, 8.6, -.4); scene.add(fx);
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(2.0, 8.4, 32, 1, true), new THREE.MeshBasicMaterial({ color: 0xBFD8FF, transparent: true, opacity: .05, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  cone.position.set(x, 4.4, -.4); scene.add(cone);
+});
+const DUST = 420, dustG = new THREE.BufferGeometry(), dustP = new Float32Array(DUST * 3);
+dustG.setAttribute('position', new THREE.BufferAttribute(dustP, 3));
+scene.add(new THREE.Points(dustG, new THREE.PointsMaterial({ color: 0x9CC2FF, size: .05, transparent: true, opacity: .55, depthWrite: false })));
+
+/* ---- Zona A: meja rapat yang sudah terbelah (dari Part 1) ---- */
+const table = new THREE.Group(); scene.add(table);
+[-1, 1].forEach(s => {
+  const g = new THREE.Group(); g.position.x = s * .55; g.rotation.z = -s * .05; table.add(g);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(2.6, .2, 2.2), std(0x7A5230)); top.position.set(s * 1.3, .9, 0); g.add(top);
+  [[.3, .85], [2.35, .85], [.3, -.85], [2.35, -.85]].forEach(([x, z]) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, .8, 8), std(0x3a2a1a)); l.position.set(s * x, .4, z); g.add(l); });
+  const nT = canvasTex(512, 200, (c, w, h) => { c.fillStyle = s < 0 ? '#E2272F' : '#0D1F4A'; c.fillRect(0, 0, w, h); c.fillStyle = '#fff'; c.textAlign = 'center'; c.font = "800 150px 'Barlow Condensed'"; c.fillText(s < 0 ? 'FFI' : 'PSSI', w / 2, 152); });
+  const np = new THREE.Mesh(new THREE.BoxGeometry(1.0, .4, .08), [0, 0, 0, 0, 1, 0].map(k => k ? new THREE.MeshBasicMaterial({ map: nT.tx }) : std(0x222222)));
+  np.position.set(s * .95, 1.22, .8); np.rotation.x = -.25; g.add(np);
+});
+// amplop (sama dengan akhir Part 1)
+const envT = canvasTex(800, 520, (g, w, h) => {
+  g.fillStyle = '#F4EEDF'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#CDBF9F'; g.lineWidth = 6; g.beginPath(); g.moveTo(0, 0); g.lineTo(w / 2, h * .55); g.lineTo(w, 0); g.stroke();
+  g.save(); g.translate(w * .7, h * .7); g.rotate(-.14); g.strokeStyle = '#D0261E'; g.lineWidth = 10; g.strokeRect(-170, -62, 340, 124);
+  g.fillStyle = '#D0261E'; g.textAlign = 'center'; g.font = "800 96px 'Barlow Condensed'"; g.fillText('PART 2', 0, 34); g.restore();
+  g.fillStyle = '#5b5446'; g.font = "700 40px 'JetBrains Mono'"; g.fillText('SURAT · FFI', 40, h - 40);
+});
+const env = new THREE.Mesh(new THREE.PlaneGeometry(1.5, .975), new THREE.MeshBasicMaterial({ map: envT.tx, side: THREE.DoubleSide })); scene.add(env);
+// surat keputusan (ilustrasi) + stempel
+const doc = new THREE.Group(); doc.position.copy(L0); scene.add(doc);
+const letterT = canvasTex(700, 980, (g, w, h) => {
+  g.fillStyle = '#FBF8F1'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#0D1F4A'; g.fillRect(0, 0, w, 120); g.fillStyle = '#fff'; g.textAlign = 'center';
+  g.font = "800 62px 'Barlow Condensed'"; g.fillText('SURAT KEPUTUSAN', w / 2, 82);
+  g.fillStyle = '#0D1F4A'; g.font = "800 50px 'Barlow Condensed'"; g.fillText('PEMBERHENTIAN', w / 2, 230); g.fillText('SEKRETARIS JENDERAL', w / 2, 290);
+  g.fillStyle = '#C9C2B4'; [360, 400, 440, 480, 520, 560].forEach((y, i) => g.fillRect(70, y, i % 3 === 2 ? 380 : 560, 16));
+  g.fillStyle = '#0D1F4A'; g.textAlign = 'left'; g.font = "700 40px 'JetBrains Mono'"; g.fillText('a.n. BUDI SETIAWAN', 70, 660);
+  g.fillStyle = '#C9C2B4'; [720, 760].forEach(y => g.fillRect(70, y, 460, 16));
+  g.fillStyle = '#9A9386'; g.font = "700 30px 'JetBrains Mono'"; g.fillText('ILUSTRASI', 70, h - 50);
+  g.strokeStyle = '#0D1F4A'; g.lineWidth = 4; g.beginPath(); g.moveTo(430, 880); g.bezierCurveTo(470, 830, 520, 900, 560, 850); g.bezierCurveTo(590, 820, 600, 880, 630, 860); g.stroke();
+});
+const letter = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 1.4), new THREE.MeshStandardMaterial({ map: letterT.tx, roughness: .9, side: THREE.DoubleSide }));
+letter.rotation.x = -Math.PI / 2; doc.add(letter);
+const stampT = canvasTex(640, 220, (g, w, h) => { g.strokeStyle = '#D0261E'; g.lineWidth = 16; g.strokeRect(12, 12, w - 24, h - 24); g.fillStyle = '#D0261E'; g.textAlign = 'center'; g.font = "800 170px 'Barlow Condensed'"; g.fillText('DIPECAT', w / 2, 172); });
+const stamp = new THREE.Mesh(new THREE.PlaneGeometry(.9, .31), new THREE.MeshBasicMaterial({ map: stampT.tx, transparent: true, depthWrite: false }));
+stamp.rotation.set(-Math.PI / 2, 0, .22); doc.add(stamp);
+// bola kertas
+const paperBall = new THREE.Mesh(bumpy(new THREE.IcosahedronGeometry(.3, 1), .5, 3), new THREE.MeshStandardMaterial({ color: 0xF4EFE4, roughness: .95, flatShading: true })); scene.add(paperBall);
+// megafon
+const MEG_DIR = V(.35, .75, .55).normalize();
+const meg = new THREE.Group(); scene.add(meg);
+{
+  const horn = new THREE.Mesh(new THREE.ConeGeometry(.34, .75, 28, 1, true), std(0xE2272F, { side: THREE.DoubleSide, emissive: 0x300000 }));
+  horn.quaternion.setFromUnitVectors(V(0, -1, 0), MEG_DIR); meg.add(horn);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(.34, .035, 8, 28), std(0xffffff));
+  rim.quaternion.setFromUnitVectors(V(0, 0, 1), MEG_DIR); rim.position.copy(MEG_DIR).multiplyScalar(.375); meg.add(rim);
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(.1, .3, .1), std(0x141619)); grip.position.set(0, -.22, 0); meg.add(grip);
+}
+const QS = [...Array(6)].map((_, i) => {
+  const sp = sprite('?', { size: 220, color: i % 2 ? '#FFFFFF' : '#FF5A4A', h: .55, pad: 10 }); scene.add(sp);
+  const d = MEG_DIR.clone().add(V((hash(i + 3) - .5) * .9, (hash(i + 9) - .3) * .5, (hash(i + 21) - .5) * .5)).normalize();
+  return { sp, d, ts: T(5) + .75 + i * .32 };
+});
+
+/* ---- Zona B: kotak anggaran + pipa koin ---- */
+const qBoxT = canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#141B33'; g.fillRect(0, 0, w, h); g.strokeStyle = '#E7B530'; g.lineWidth = 10; g.strokeRect(8, 8, w - 16, h - 16); g.fillStyle = '#FF5A4A'; g.textAlign = 'center'; g.font = "800 210px 'Barlow Condensed'"; g.fillText('?', w / 2, 205); });
+const qBox = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), new THREE.MeshStandardMaterial({ map: qBoxT.tx, roughness: .5 })); qBox.position.copy(BOXP); scene.add(qBox);
+const PIPES = [
+  { pts: [V(10.4, 4.3, -1.0), V(10.6, 3.2, -.5), V(11.4, 2.3, 0), V(11.75, 1.32, 0)], label: 'APBN', t0: T(6) + .5 },
+  { pts: [V(13.6, 4.3, -1.0), V(13.4, 3.2, -.5), V(12.6, 2.3, 0), V(12.25, 1.32, 0)], label: 'SPONSOR', t0: T(6) + 2.1 },
+].map(P => {
+  const curve = new THREE.CatmullRomCurve3(P.pts), geo = new THREE.TubeGeometry(curve, 80, .13, 12);
+  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x9CC2FF, transparent: true, opacity: .32, depthWrite: false, roughness: .2 })); scene.add(mesh);
+  const lab = sprite(P.label, { size: 90, h: .42, bg: 'rgba(13,31,74,.9)', border: '#E7B530' }); lab.position.copy(P.pts[0]).add(V(0, .45, 0)); scene.add(lab);
+  const coins = [...Array(8)].map(() => { const c = new THREE.Mesh(new THREE.CylinderGeometry(.11, .11, .035, 20), gold); scene.add(c); return c; });
+  return { ...P, curve, geo, mesh, lab, coins };
+});
+const mag = new THREE.Group(); scene.add(mag);
+{
+  mag.add(new THREE.Mesh(new THREE.TorusGeometry(.42, .055, 10, 36), std(0x141619, { metalness: .4 })));
+  mag.add(new THREE.Mesh(new THREE.CircleGeometry(.4, 36), new THREE.MeshBasicMaterial({ color: 0xBFE0FF, transparent: true, opacity: .18, depthWrite: false })));
+  const hd = new THREE.Mesh(new THREE.CylinderGeometry(.06, .07, .7, 10), std(0x7A5230)); hd.position.set(.42, -.5, 0); hd.rotation.z = .7; mag.add(hd);
+}
+const qDrop = sprite('?', { size: 220, color: '#FF5A4A', h: .5, pad: 10 }); scene.add(qDrop);
+
+/* ---- bola salju + lencana klub ---- */
+const snow = new THREE.Mesh(bumpy(new THREE.IcosahedronGeometry(1, 3), .1, 11), new THREE.MeshStandardMaterial({ color: 0xEEF4FF, roughness: .85, flatShading: true, emissive: 0x101826 })); scene.add(snow);
+const snowSh = flatOn(new THREE.Mesh(new THREE.CircleGeometry(1, 32), new THREE.MeshBasicMaterial({ color: 0, transparent: true, opacity: .35, depthWrite: false })), 0, .012, BALL_Z); scene.add(snowSh);
+function shieldTex(n, lit) {
+  return canvasTex(256, 320, (g, w, h) => {
+    g.beginPath(); g.moveTo(20, 20); g.lineTo(w - 20, 20); g.lineTo(w - 20, 170); g.quadraticCurveTo(w - 30, 260, w / 2, 305); g.quadraticCurveTo(30, 260, 20, 170); g.closePath();
+    g.fillStyle = lit ? '#E2272F' : '#1A2A55'; g.fill(); g.lineWidth = 12; g.strokeStyle = lit ? '#fff' : '#3E5491'; g.stroke();
+    g.fillStyle = lit ? '#fff' : '#6E86C2'; g.textAlign = 'center'; g.font = "800 46px 'JetBrains Mono'"; g.fillText('KLUB', w / 2, 92);
+    g.font = "800 140px 'Barlow Condensed'"; g.fillText(String(n), w / 2, 230);
+  }).tx;
+}
+const BADGES = BADGE_X.map((x, i) => {
+  const g = new THREE.Group(); g.position.set(x, 0, -.7); scene.add(g);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .7, 8), std(0x3E5491)); post.position.y = .35; g.add(post);
+  const off = new THREE.MeshBasicMaterial({ map: shieldTex(i + 1, false), transparent: true }), on = new THREE.MeshBasicMaterial({ map: shieldTex(i + 1, true), transparent: true });
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(.9, 1.125), off); face.position.y = 1.25; g.add(face);
+  return { g, face, off, on, t: BADGE_T[i] };
+});
+const klb = sprite('KLB', { size: 230, h: 1.25, bg: '#E2272F', pad: 30 }); klb.position.set(33.4, 3.75, .6); scene.add(klb);
+function cardTex(lines, icon) {
+  return canvasTex(1040, 400, (g, w, h) => {
+    g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.fillStyle = '#E2272F'; g.fillRect(0, 0, 26, h);
+    g.save(); g.translate(150, h / 2); g.strokeStyle = '#E2272F'; g.lineWidth = 14; g.fillStyle = '#E2272F';
+    if (icon === 'clock') { g.beginPath(); g.arc(0, 0, 80, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -52); g.moveTo(0, 0); g.lineTo(42, 18); g.stroke(); }
+    else { g.beginPath(); g.moveTo(-70, -80); g.lineTo(40, -80); g.lineTo(70, -50); g.lineTo(70, 80); g.lineTo(-70, 80); g.closePath(); g.stroke(); g.font = "800 120px 'Barlow Condensed'"; g.textAlign = 'center'; g.fillText('?', 0, 50); }
+    g.restore();
+    g.fillStyle = '#0D1F4A'; g.textBaseline = 'middle';
+    let fs = 112; g.font = `800 ${fs}px 'Barlow Condensed'`;
+    while (fs > 60 && Math.max(...lines.map(l => g.measureText(l).width)) > w - 290 - 40) { fs -= 4; g.font = `800 ${fs}px 'Barlow Condensed'`; }
+    lines.forEach((l, i) => g.fillText(l, 290, h / 2 + (i - (lines.length - 1) / 2) * 112));
+  }).tx;
+}
+const CARDS = [
+  { tx: cardTex(['SUBSIDI KLUB', 'TELAT'], 'clock'), y: 2.4, ts: T(9) + .9 },
+  { tx: cardTex(['PEMECATAN SEKJEN', 'DIPERSOALKAN'], 'doc'), y: 1.15, ts: T(9) + 2.55 },
+].map(c => {
+  const piv = new THREE.Group(); piv.position.set(33.4, c.y, .9); scene.add(piv);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.0, .06), [0, 0, 0, 0, 1, 0].map(k => k ? new THREE.MeshBasicMaterial({ map: c.tx }) : new THREE.MeshBasicMaterial({ color: 0xcfd6e6 })));
+  piv.add(m); return { ...c, piv };
+});
+
+/* ---- Zona D: meja Exco ---- */
+const exco = new THREE.Group(); exco.position.set(45, 0, 0); scene.add(exco);
+{
+  const top = new THREE.Mesh(new THREE.BoxGeometry(5.6, .12, 1.4), std(0x6B4628)); top.position.y = .95; exco.add(top);
+  [[-2.6, .55], [2.6, .55], [-2.6, -.55], [2.6, -.55]].forEach(([x, z]) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, .9, 8), std(0x3a2a1a)); l.position.set(x, .45, z); exco.add(l); });
+  const sign = sprite('EXCO FFI', { size: 100, h: .55, bg: '#0D1F4A', border: '#E2272F' }); sign.position.set(0, 2.75, -1.2); exco.add(sign);
+  const bts = sprite('BTS', { size: 90, h: .34, bg: '#E2272F' }); bts.position.set(.8, 1.18, -.35); exco.add(bts);
+}
+const CHAIRS = [...Array(7)].map((_, i) => {
+  const g = new THREE.Group(); exco.add(g);
+  const m = std(0x2A3556);
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(.6, .08, .55), m); seat.position.y = .55; g.add(seat);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(.6, .7, .08), m); back.position.set(0, .95, -.26); g.add(back);
+  [[-.25, -.22], [.25, -.22], [-.25, .22], [.25, .22]].forEach(([x, z]) => { const l = new THREE.Mesh(new THREE.CylinderGeometry(.03, .03, .55, 6), std(0x111111)); l.position.set(x, .27, z); g.add(l); });
+  const out = { 1: T(10) + .5, 4: T(10) + 1.0, 6: T(10) + 1.5 }[i];
+  return { g, x: (i - 3) * .8, out };
+});
+
+/* ---- Zona E: 58 pemilik suara → amplop ke PSSI ---- */
+const VOTE = [...Array(VOTERS)].map((_, i) => {
+  const c = i % 10, r = Math.floor(i / 10);
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, .16, 18), std(0x2A3A6E)); m.position.set(60 + (c - 4.5) * .62, .08, -1.4 + r * .66 + (c % 2) * .1); scene.add(m);
+  return m;
+});
+const VLIT = []; VORDER.forEach((v, k) => { if (k < LIT) VLIT[v] = k; });
+const pssi = new THREE.Group(); pssi.position.set(60, 0, -9.6); scene.add(pssi);
+{
+  const fT = canvasTex(512, 320, (g, w, h) => { g.fillStyle = '#E8ECF4'; g.fillRect(0, 0, w, h); g.fillStyle = '#C9D1E2'; for (let x = 30; x < w; x += 80) g.fillRect(x, 40, 30, h - 40); });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(5, 3.2, 1.2), new THREE.MeshStandardMaterial({ map: fT.tx, roughness: .8 })); body.position.y = 1.6; pssi.add(body);
+  const door = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.8), new THREE.MeshBasicMaterial({ color: 0x0A1020 })); door.position.set(0, .9, .61); pssi.add(door);
+  const sign = sprite('PSSI', { size: 150, h: .9, bg: '#0D1F4A', border: '#E2272F' }); sign.position.set(0, 3.75, .7); pssi.add(sign);
+}
+const ENVS = VORDER.slice(0, LIT).map((v, k) => {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(.42, .27), new THREE.MeshBasicMaterial({ map: envT.tx, side: THREE.DoubleSide })); scene.add(m);
+  const end = V(60 + (hash(k + 40) - .5) * 1.3, .02 + k * .018, -8.3 + (hash(k + 80) - .5) * .7);
+  return { m, v, ts: vLitT(k) + .15, end, yaw: (hash(k + 5) - .5) * 1.4 };
+});
+const gavel = new THREE.Group(); scene.add(gavel);
+{
+  const hd = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 1.3, 10), std(0x7A5230)); hd.rotation.z = Math.PI / 2; hd.position.x = .55; gavel.add(hd);
+  const head = new THREE.Mesh(new THREE.CylinderGeometry(.2, .2, .62, 18), std(0x5A3A20, { roughness: .4 })); head.rotation.x = Math.PI / 2; gavel.add(head);
+  [-.31, .31].forEach(z => { const b = new THREE.Mesh(new THREE.CylinderGeometry(.21, .21, .05, 18), gold); b.rotation.x = Math.PI / 2; b.position.z = z; gavel.add(b); });
+}
+
+/* ============ warna latar ============ */
+const TINTS = [[0, '#8E1424', '#12050A'], [T(2) + .2, '#1E5BD8', '#070F26'], [T(6) + .4, '#C8902A', '#120c03'], [T(7) + .3, '#5C9BE8', '#06122B'],
+  [T(10) + .3, '#2A2F45', '#05060C'], [T(11) + .4, '#1E5BD8', '#070F26'], [T(12) + .2, '#8E1424', '#12050A']];
+const cA = new THREE.Color(), cB = new THREE.Color(), cC = new THREE.Color();
+function tintAt(t) {
+  let i = 0; while (i < TINTS.length - 1 && TINTS[i + 1][0] <= t) i++;
+  const cur = TINTS[i], prev = TINTS[Math.max(0, i - 1)], k = i ? pr(t, cur[0], cur[0] + .6) : 1;
+  cA.set(prev[1]).lerp(cC.set(cur[1]), k); cB.set(prev[2]).lerp(cC.set(cur[2]), k);
+  return ['#' + cA.getHexString(), '#' + cB.getHexString()];
+}
+
+/* ============ state 3D = fungsi t ============ */
+const STAMP_T = T(2) + 3.6;
+SHAKES.push([STAMP_T + .18, .16], [T(8) + 2.95, .14], [T(4) + .7, .06]);
+BADGE_T.forEach(bt => SHAKES.push([bt, .05]));
+const statEl = document.getElementById('stat'), statN = document.getElementById('stat-n'), statU = document.getElementById('stat-u');
+const flashEl = document.getElementById('flash'), stage = document.getElementById('stage'), glEl = document.getElementById('gl'), grain = document.getElementById('grain');
+const bez = (a, c, b, k) => a.clone().multiplyScalar((1 - k) ** 2).add(c.clone().multiplyScalar(2 * k * (1 - k))).add(b.clone().multiplyScalar(k * k));
+
+function update(t) {
+  /* debu naik */
+  for (let i = 0; i < DUST; i++) {
+    const x = -6 + hash(i + 1) * 72, z = -10 + hash(i + 2) * 16, sp = .15 + hash(i + 3) * .25;
+    dustP[i * 3] = x + Math.sin(t * .5 + i) * .2; dustP[i * 3 + 1] = (hash(i + 4) * 9 + t * sp) % 9; dustP[i * 3 + 2] = z;
+  }
+  dustG.attributes.position.needsUpdate = true;
+  redL.intensity = t < T(2) + .5 ? 1.6 : (t > T(12) ? 1.2 * pr(t, T(12), T(12) + .6) : 0);
+  redL.position.set(t > T(12) ? 60 : 0, 2.6, t > T(12) ? -7 : 1.2);
+
+  /* S1: amplop mendarat, S2: terbang lagi */
+  const ek = E.o3(pr(t, T(1) + .1, T(1) + 1.35));
+  const land = L0.clone().add(V(0, .012, 0));
+  let ep = V(1.6, 4.4, 5.6).lerp(land, ek);
+  ep.y += Math.sin(ek * Math.PI) * .6;
+  const settle = t > T(1) + 1.35 ? Math.abs(Math.sin(pr(t, T(1) + 1.35, T(1) + 1.7) * Math.PI)) * .05 * (1 - pr(t, T(1) + 1.35, T(1) + 1.7)) : 0;
+  ep.y += settle;
+  let erx = lerp(-1.0, -Math.PI / 2, ek), ery = (1 - ek) * Math.PI * 2, erz = lerp(.6, .12, ek);
+  const eo = E.i2(pr(t, T(2) + .1, T(2) + .65));
+  if (eo > 0) { ep = ep.lerp(V(-5.5, 3.6, -1.5), eo); erz += eo * 1.4; erx += eo * .6; }
+  env.position.copy(ep); env.rotation.set(erx, ery, erz); env.visible = t < T(2) + .7;
+
+  /* surat + stempel + remuk */
+  const crush = E.io2(pr(t, T(4) + .2, T(4) + .65));
+  doc.visible = t > T(1) + 1.2 && crush < 1;
+  doc.scale.setScalar(pos0(lerp(t < T(2) ? .92 : lerp(.92, 1, E.o3(pr(t, T(2) + .1, T(2) + .6))), .05, crush)));
+  doc.rotation.y = crush * 2.4; doc.position.set(L0.x, L0.y + crush * .3, L0.z);
+  const sk = pr(t, STAMP_T, STAMP_T + .18);
+  stamp.visible = t >= STAMP_T; stamp.position.set(.05, lerp(1.1, .004, E.i2(sk)), .2); stamp.scale.setScalar(lerp(2.4, 1, E.i2(sk)));
+  const pbIn = E.back(pr(t, T(4) + .45, T(4) + .8)), pbOut = E.i2(pr(t, T(5) + .1, T(5) + .45));
+  paperBall.visible = pbIn > 0 && pbOut < 1;
+  paperBall.scale.setScalar(pos0(pbIn * (1 - pbOut)));
+  const hop = t > T(4) + .8 ? Math.abs(Math.sin(pr(t, T(4) + .8, T(4) + 1.9) * Math.PI * 2)) * .35 * (1 - pr(t, T(4) + .8, T(4) + 1.9)) : 0;
+  paperBall.position.set(L0.x, L0.y + .3 + hop, L0.z); paperBall.rotation.set(t * 1.3, t * .9 + pbOut * 6, 0);
+
+  /* S5: megafon + tanda tanya */
+  const mk = E.back(pr(t, T(5) + .3, T(5) + .7));
+  meg.visible = mk > 0 && t < T(6) + .6; meg.scale.setScalar(pos0(mk)); meg.position.set(L0.x, 1.45 + Math.sin(t * 6) * .02, L0.z);
+  meg.rotation.z = Math.sin(t * 9) * .03 * mk;
+  const mouth = meg.position.clone().add(MEG_DIR.clone().multiplyScalar(.4));
+  QS.forEach(q => {
+    const k = pr(t, q.ts, q.ts + 1.6); q.sp.visible = t > q.ts && t < T(6) + .6;
+    q.sp.position.copy(mouth).add(q.d.clone().multiplyScalar(E.o3(k) * 2.2)).add(V(0, k * .5, 0));
+    const s = lerp(.25, 1, E.back(pr(t, q.ts, q.ts + .4))); q.sp.scale.set(.55 * s * .62, .55 * s, 1);
+  });
+
+  /* S6: pipa koin + kotak + kaca pembesar */
+  const zoneB = t > T(5) + 3 && t < T(8) + 1;
+  qBox.visible = zoneB; qBox.rotation.y = Math.sin(t * .8) * .08;
+  qBox.scale.setScalar(1 + (t > T(7) && t < T(7) + .25 ? Math.sin(pr(t, T(7), T(7) + .25) * Math.PI) * .12 : 0));
+  PIPES.forEach(P => {
+    const f = E.io2(pr(t, P.t0, P.t0 + .9)); reveal(P.geo, f, 80, 12);
+    P.mesh.visible = zoneB && f > 0; P.lab.visible = P.mesh.visible; P.lab.material.opacity = pr(t, P.t0, P.t0 + .4);
+    P.coins.forEach((c, i) => {
+      const u = ((t - P.t0 - .5) * .45 + i / 8) % 1;
+      c.visible = zoneB && t > P.t0 + .5 + (1 - i / 8) * 0 && u >= 0 && u < f && t < T(7) + .1;
+      if (c.visible) { c.position.copy(P.curve.getPoint(u)); c.rotation.set(t * 4 + i, 0, t * 3 + i); }
+    });
+  });
+  const mgk = pr(t, T(6) + 3.5, T(6) + 5.1);
+  mag.visible = mgk > 0 && mgk < 1; mag.position.set(lerp(11.2, 12.9, E.io2(mgk)), 1.05 + Math.sin(mgk * Math.PI * 2) * .12, .95); mag.rotation.y = -.2;
+
+  /* S7: tanda tanya jatuh → bola salju */
+  const qk = pr(t, T(7), T(7) + .5);
+  qDrop.visible = qk > 0 && qk < 1;
+  qDrop.position.copy(bez(V(12, 1.4, 0), V(12.6, 2.8, .6), V(BALL_X0, .25, BALL_Z), E.i2(qk))); qDrop.material.opacity = 1 - pr(t, T(7) + .38, T(7) + .5);
+  const bx = ballX(t), r = rAt(bx) * E.back(pr(t, T(7) + .4, T(7) + .65));
+  snow.visible = t > T(7) + .4; snow.scale.setScalar(pos0(r)); snow.position.set(bx, r, BALL_Z);
+  snow.rotation.set(0, 0, -Math.log(rAt(bx) / R0) / KR);
+  snowSh.visible = snow.visible; snowSh.position.x = bx; snowSh.scale.setScalar(pos0(r * 1.05));
+  BADGES.forEach(B => {
+    const on = t >= B.t; B.face.material = on ? B.on : B.off;
+    const pop = on ? Math.exp(-(t - B.t) * 7) * Math.sin((t - B.t) * 22) * .18 : 0;
+    B.g.scale.setScalar(1 + pop); B.g.rotation.y = on ? -.15 : 0;
+    B.g.visible = t > T(6) + 4 && t < T(10) + .5;
+  });
+  const kk = E.back(pr(t, T(8) + 2.9, T(8) + 3.35)) * (1 - E.i2(pr(t, T(9) - .1, T(9) + .3)));
+  klb.visible = kk > 0.002 && t < T(9) + .3; klb.scale.set(1.25 * kl.aspect * pos0(kk), 1.25 * pos0(kk), 1);
+  klb.material.rotation = Math.sin(t * 2) * .03;
+  CARDS.forEach((c, i) => {
+    const k = pr(t, c.ts, c.ts + .7);
+    c.piv.visible = k > 0 && t < T(10) + .6; c.piv.rotation.y = lerp(-Math.PI / 2, 0, E.back(k)) + Math.sin(t * 1.3 + i) * .04;
+    c.piv.position.y = c.y + Math.sin(t * 1.7 + i * 2) * .04;
+  });
+
+  /* S10: kursi Exco keluar */
+  exco.visible = t > T(9) + 3 && t < T(11) + 1;
+  CHAIRS.forEach((c, i) => {
+    const k = c.out ? E.i2(pr(t, c.out, c.out + .55)) : 0;
+    c.g.position.set(c.x + k * (i < 3 ? -.8 : .8), k * .1, -1.15 - k * 3.2); c.g.rotation.y = k * (i < 3 ? 1.2 : -1.2); c.g.visible = k < 1;
+  });
+
+  /* S11: pemilik suara menyala, amplop terbang ke PSSI */
+  const zoneE = t > T(10) + 3;
+  let nLit = 0;
+  VOTE.forEach((m, i) => {
+    m.visible = zoneE; const k = VLIT[i]; const on = k !== undefined && t >= vLitT(k);
+    if (on) nLit++;
+    m.material.color.setHex(on ? 0xE2272F : 0x2A3A6E); m.material.emissive.setHex(on ? 0x400000 : 0);
+    m.scale.y = on ? 1 + Math.exp(-(t - vLitT(k)) * 8) * 1.8 : 1;
+  });
+  pssi.visible = zoneE;
+  ENVS.forEach((e, k) => {
+    const f = pr(t, e.ts, e.ts + 1.1); e.m.visible = zoneE && f > 0;
+    if (!e.m.visible) return;
+    const st = VOTE[e.v].position.clone().add(V(0, .2, 0)), mid = st.clone().lerp(e.end, .5).add(V(0, 3.4, 0));
+    e.m.position.copy(bez(st, mid, e.end, E.io2(f)));
+    e.m.rotation.set(lerp(-.4, -Math.PI / 2, E.i2(f)), e.yaw + (1 - f) * 5, (1 - f) * 2);
+  });
+  const gk = E.o3(pr(t, T(12) + .7, T(12) + 1.6));
+  gavel.visible = gk > 0; gavel.position.set(60.1, lerp(6.5, 2.0, gk) + Math.sin(t * 2.2) * .05, -8.0); gavel.rotation.set(0, -.5, -.35 + Math.sin(t * 1.6) * .06);
+
+  /* stat HUD */
+  let sv = null;
+  if (t > T(6) + .6 && t < T(7) - .15) sv = ['Rp ' + Math.round(20 * E.o2(pr(t, T(6) + .6, T(6) + 1.8))) + ' M', 'DANA APBN'];
+  else if (t > T(8) + .2 && t < T(9) + .2) sv = [String(BADGES.filter(B => t >= B.t).length), 'KLUB PFL'];
+  else if (t > T(11) + .8 && t < T(12) + .1) sv = [nLit > 40 ? '40+' : String(nLit), '/ 58 PEMILIK SUARA'];
+  if (sv) { statN.textContent = sv[0]; statU.textContent = sv[1]; }
+  const sIn = Math.max(pr(t, T(6) + .6, T(6) + .9) * (1 - pr(t, T(7) - .4, T(7) - .15)), pr(t, T(8) + .2, T(8) + .5) * (1 - pr(t, T(9) - .05, T(9) + .2)), pr(t, T(11) + .8, T(11) + 1.1) * (1 - pr(t, T(12) - .2, T(12) + .1)));
+  statEl.style.opacity = sIn.toFixed(3); statEl.style.transform = `translateX(${((1 - sIn) * -50).toFixed(1)}px)`;
+
+  /* flash */
+  let fl = 0;
+  if (t >= STAMP_T + .18) fl = Math.max(fl, .3 * Math.exp(-(t - STAMP_T - .18) * 7));
+  if (t >= T(8) + 2.95) fl = Math.max(fl, .22 * Math.exp(-(t - T(8) - 2.95) * 7));
+  flashEl.style.opacity = fl.toFixed(3);
+
+  const [a, b] = tintAt(t); stage.style.setProperty('--tA', a); stage.style.setProperty('--tB', b);
+  grain.style.transform = `translate(${Math.round(Math.sin(t * 37) * 30)}px, ${Math.round(Math.cos(t * 29) * 30)}px)`;
+}
+const kl = { aspect: klb.scale.x / klb.scale.y };
+
+/* ============ seek ============ */
+const lookV = V(0, 0, 0);
+function applyCam(t) {
+  const c = camAt(t), c2 = camAt(Math.max(0, t - 1 / FPS));
+  const br = [Math.sin(t * .7) * .06, Math.sin(t * .9) * .05, Math.cos(t * .6) * .05];
+  const sh = shakeAt(t), sv = [Math.sin(t * 53) * sh, Math.sin(t * 61 + 1) * sh, Math.sin(t * 47 + 2) * sh];
+  cam.position.set(c.p[0] + br[0] + sv[0], c.p[1] + br[1] + sv[1], c.p[2] + br[2]);
+  lookV.set(c.l[0] + sv[2], c.l[1], c.l[2]); cam.lookAt(lookV);
+  const sp = Math.hypot(c.p[0] - c2.p[0], c.p[1] - c2.p[1], c.p[2] - c2.p[2]) + .5 * Math.hypot(c.l[0] - c2.l[0], c.l[1] - c2.l[1], c.l[2] - c2.l[2]);
+  const blur = cl((sp - .3) * 7, 0, 9);
+  glEl.style.filter = blur > .2 ? `blur(${blur.toFixed(1)}px)` : 'none';
+}
+let curT = 0;
+function seekTimeline(t) {
+  curT = cl(t, 0, DURATION);
+  tl.seek(curT, false); update(curT); applyCam(curT); renderer.render(scene, cam);
+  if (DEBUG) { dr.value = curT; dt.textContent = curT.toFixed(2) + ' / ' + DURATION.toFixed(2) + ' · ' + (SCENES.find(s => curT >= s.t0 && curT < s.t1) || SCENES.at(-1)).id; }
+}
+window.seekTo = sec => seekTimeline(sec);
+
+/* ============ SFX (dicampur render.mjs) ============ */
+const SFX = [
+  { t: .12, file: 'sfx_whoosh.wav', vol: .15 }, { t: T(1) + 1.35, file: 'sfx_click.wav', vol: .14 },
+  { t: T(2) + .15, file: 'sfx_whoosh.wav', vol: .14 }, { t: STAMP_T + .18, file: 'sfx_glitch.wav', vol: .15 },
+  { t: T(4) + .3, file: 'sfx_whoosh.wav', vol: .14 }, { t: T(4) + .8, file: 'sfx_pop.wav', vol: .15 },
+  { t: T(5) + .35, file: 'sfx_pop.wav', vol: .15 }, ...QS.map(q => ({ t: q.ts, file: 'sfx_click.wav', vol: .14 })),
+  { t: T(6) + .1, file: 'sfx_whoosh.wav', vol: .15 }, { t: T(6) + 1.8, file: 'sfx_success.wav', vol: .14 },
+  { t: T(6) + 3.5, file: 'sfx_whoosh.wav', vol: .14 }, { t: T(7) + .05, file: 'sfx_pop.wav', vol: .15 },
+  ...BADGE_T.map(bt => ({ t: bt, file: 'sfx_click.wav', vol: .14 })), { t: T(8) + 2.95, file: 'sfx_pop.wav', vol: .16 },
+  { t: T(9) + .9, file: 'sfx_whoosh.wav', vol: .14 }, { t: T(9) + 2.55, file: 'sfx_whoosh.wav', vol: .14 },
+  { t: T(10) + .1, file: 'sfx_whoosh.wav', vol: .15 }, ...CHAIRS.filter(c => c.out).map(c => ({ t: c.out, file: 'sfx_glitch.wav', vol: .14 })),
+  { t: T(11) + .1, file: 'sfx_whoosh.wav', vol: .15 }, ...[0, 8, 16, 24, 32, 40].map(k => ({ t: vLitT(k), file: 'sfx_click.wav', vol: .14 })),
+  { t: T(12) + .2, file: 'sfx_whoosh.wav', vol: .14 }, { t: T(12) + 1.6, file: 'sfx_pop.wav', vol: .15 },
+];
+
+/* ============ tampilan & preview ============ */
+function fit() { const s = RENDER ? 1 : Math.min(innerWidth / W, innerHeight / H); stage.style.transform = `scale(${s})`; stage.style.left = RENDER ? '0' : ((innerWidth - W * s) / 2) + 'px'; }
+addEventListener('resize', fit); fit();
+const dr = document.getElementById('dbg-r'), dt = document.getElementById('dbg-t');
+let playing = !RENDER && Q.get('t') === null, wall = 0, from = 0;
+if (DEBUG) { document.body.classList.add('debug'); dr.max = DURATION; dr.oninput = e => { playing = false; seekTimeline(+e.target.value); }; }
+const vo = new Audio('vo.mp3'); vo.preload = 'auto';
+function loop(now) {
+  if (!playing) return;
+  let t = from + (now - wall) / 1000;
+  if (t >= DURATION + .8) { from = 0; wall = now; t = 0; try { vo.currentTime = 0; } catch (e) {} }
+  seekTimeline(Math.min(t, DURATION)); requestAnimationFrame(loop);
+}
+function play() { playing = true; wall = performance.now(); from = curT >= DURATION ? 0 : curT; try { vo.currentTime = from; vo.play().catch(() => {}); } catch (e) {} requestAnimationFrame(loop); }
+function pause() { playing = false; try { vo.pause(); } catch (e) {} }
+addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); }
+  if (e.key === 'r' || e.key === 'R') { seekTimeline(0); pause(); play(); }
+});
+document.getElementById('dbg-play').onclick = () => playing ? pause() : play();
+
+window.OPENER = { ready: false, DURATION, FPS, WIDTH: W, HEIGHT: H, SCENES, SFX, seek: s => window.seekTo(s) };
+seekTimeline(Number(Q.get('t')) || 0);
+window.OPENER.ready = true;
+if (playing) play();
+})();
+</script>
+</body>
+</html>

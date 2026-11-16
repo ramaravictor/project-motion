@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Format Baru</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@600;800&family=Playfair+Display:ital,wght@0,800;1,800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
+.f{position:absolute;inset:0;overflow:hidden;display:none}
+.f.on{display:block}
+.safe{position:absolute;top:180px;left:80px;width:870px;height:1290px}
+.hdr{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between}
+.tag{font:800 25px 'JetBrains Mono';letter-spacing:.04em;color:#fff;padding:9px 16px;border-radius:10px;white-space:nowrap}
+.me{display:flex;align-items:center;gap:10px;font:700 22px 'JetBrains Mono';white-space:nowrap;padding:7px 14px 7px 8px;border-radius:99px}
+.me img{width:28px;height:28px}
+.me b{font:800 22px 'Plus Jakarta Sans'}
+#rama{position:absolute;filter:drop-shadow(0 26px 28px rgba(0,0,0,.5))}
+#rama canvas{display:block}
+
+/* 1 · DEV */
+#f1{background:radial-gradient(ellipse 90% 60% at 72% 34%,#1d2c52 0%,#0B0E14 62%)}
+#f1 .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.035) 2px,transparent 2px);background-size:48px 48px}
+#f1 .me{color:#fff;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.18)}
+#f1 h1{position:absolute;top:110px;left:0;width:870px;font:800 96px/1.02 'Plus Jakarta Sans';letter-spacing:-.04em;color:#fff}
+#f1 h1 span{display:inline-block;background:#FF5500;padding:0 18px 6px;transform:rotate(-2deg);border-radius:10px}
+#f1 .ed{position:absolute;top:440px;left:10px;width:840px;background:#11151D;border:2px solid #263047;border-radius:22px;
+  transform:perspective(1500px) rotateY(-13deg) rotateX(7deg);box-shadow:0 50px 90px rgba(0,0,0,.55);overflow:hidden}
+#f1 .tab{height:54px;background:#0C1017;display:flex;align-items:center;padding:0 22px;font:700 22px 'JetBrains Mono';color:#8FA3C8;gap:12px}
+#f1 .tab i{width:12px;height:12px;border-radius:50%;background:#FF5500}
+#f1 pre{font:500 27px/1.75 'JetBrains Mono';color:#C9D4EA;padding:18px 0 26px}
+#f1 pre div{padding:0 26px;white-space:pre}
+#f1 pre .n{color:#46506A;margin-right:22px}
+#f1 pre .k{color:#FF7AB8}#f1 pre .s{color:#8EE59B}#f1 pre .c{color:#5D6888}
+#f1 pre .bad{background:rgba(226,39,47,.16)}
+#f1 pre .bad u{text-decoration:wavy underline #FF4D4D 3px;text-underline-offset:8px}
+#f1 .err{position:absolute;top:880px;left:380px;font:800 26px 'JetBrains Mono';color:#fff;background:#E2272F;padding:12px 20px;border-radius:12px;transform:rotate(3deg);box-shadow:0 18px 30px rgba(0,0,0,.45);white-space:nowrap}
+#f1 .chip{position:absolute;font:700 24px 'JetBrains Mono';color:#9CC2FF;border:2px solid #34508A;background:rgba(30,60,120,.35);padding:8px 16px;border-radius:99px;white-space:nowrap}
+#f1 .sub{position:absolute;top:1060px;left:0;width:540px;font:600 40px/1.3 'Plus Jakarta Sans';color:#D5DDF0}
+#f1 .sub b{color:#FF7A3A}
+
+/* 2 · BOLA */
+#f2{background:radial-gradient(ellipse 130% 62% at 50% 108%,#1E5BD8 0%,#0D1F4A 48%,#070F26 100%)}
+#f2 .pitch{position:absolute;left:-200px;right:-200px;bottom:-200px;height:900px;transform:perspective(900px) rotateX(62deg);
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.03) 0 120px,transparent 120px 240px);border:4px solid rgba(255,255,255,.18)}
+#f2 .pitch:after{content:'';position:absolute;left:50%;top:40%;width:360px;height:360px;margin-left:-180px;border:4px solid rgba(255,255,255,.18);border-radius:50%}
+#f2 .me{color:#fff;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25)}
+#f2 .bug{position:absolute;top:120px;left:0;right:0;text-align:center;font:800 54px 'Barlow Condensed';letter-spacing:.3em;color:#FFD43B}
+#f2 .score{position:absolute;top:190px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:50px;font:800 330px/1 'Barlow Condensed';color:#fff;text-shadow:0 20px 60px rgba(0,0,0,.5)}
+#f2 .score i{font-style:normal;color:#FFD43B;font-size:200px}
+#f2 .teams{position:absolute;top:560px;left:90px;right:90px;display:flex;justify-content:space-between;font:800 62px 'Barlow Condensed';color:#fff;letter-spacing:.05em}
+#f2 .teams span{display:flex;align-items:center;gap:16px}
+#f2 .fl{width:64px;height:42px;border-radius:4px;box-shadow:0 0 0 2px rgba(255,255,255,.4)}
+#f2 .pk{position:absolute;top:700px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:16px}
+#f2 .pk div{display:flex;gap:16px;align-items:center;font:700 26px 'JetBrains Mono';color:#9CC2FF}
+#f2 .pk b{width:40px;height:40px;border-radius:50%;display:block}
+#f2 h2{position:absolute;top:930px;left:0;width:870px;font:800 108px/.98 'Barlow Condensed';color:#fff;text-transform:uppercase;text-align:right}
+#f2 h2 em{font-style:normal;color:#FF5A4A}
+
+/* 3 · CERITA */
+#f3{background:linear-gradient(#04050A 0%,#0B0A10 55%,#17130A 100%)}
+#f3 .glow{position:absolute;left:640px;top:180px;width:700px;height:700px;margin:-350px;background:radial-gradient(circle,rgba(255,224,150,.55),rgba(255,200,90,.12) 35%,transparent 65%)}
+#f3 .tower{position:absolute;left:600px;top:190px;width:84px;height:46px;border-radius:6px;background:#FFF4D6;box-shadow:0 0 40px 14px rgba(255,230,160,.8)}
+#f3 .pole{position:absolute;left:636px;top:236px;width:12px;height:900px;background:linear-gradient(#3a3324,#0c0b08)}
+#f3 .seats{position:absolute;left:-260px;right:-260px;top:1000px;height:1100px;transform:perspective(800px) rotateX(48deg);
+  background-image:radial-gradient(ellipse 40% 36% at 50% 50%,#C8A12A 60%,transparent 64%);background-size:46px 40px;opacity:.38;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 30%);mask-image:linear-gradient(to bottom,transparent,#000 30%)}
+#f3 .yr{position:absolute;top:300px;left:-30px;font:800 330px/1 'Playfair Display';color:rgba(244,231,200,.06)}
+#f3 .me{color:#E9DDBE;background:rgba(255,255,255,.06);border:1.5px solid rgba(233,221,190,.2)}
+#f3 h2{position:absolute;top:640px;left:0;width:760px;font:800 96px/1.05 'Playfair Display';color:#F4E7C8;letter-spacing:-.02em}
+#f3 h2 i{color:#FFD27A}
+#f3 .cap{position:absolute;top:960px;left:0;width:620px;font:600 34px/1.4 'Plus Jakarta Sans';color:rgba(244,231,200,.7)}
+
+/* 4 · CTA */
+#f4{background:#FF5500}
+#f4 .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(20,22,25,.08) 2px,transparent 2px),linear-gradient(90deg,rgba(20,22,25,.08) 2px,transparent 2px);background-size:48px 48px}
+#f4 .me{color:#141619;background:rgba(255,255,255,.35);border:1.5px solid rgba(20,22,25,.25)}
+#f4 .big{position:absolute;top:120px;left:0;width:870px;font:800 112px/.98 'Plus Jakarta Sans';white-space:nowrap;letter-spacing:-.05em;color:#141619}
+#f4 .big span{color:#fff}
+#f4 .cmt{position:absolute;top:560px;left:30px;width:810px;background:#fff;border-radius:28px;padding:28px 30px;box-shadow:16px 18px 0 #141619;transform:rotate(-2.5deg)}
+#f4 .cmt .who{display:flex;align-items:center;gap:16px;font:800 28px 'Plus Jakarta Sans';color:#141619}
+#f4 .cmt .av{width:58px;height:58px;border-radius:50%;background:#1E5BD8}
+#f4 .cmt .who small{font:600 22px 'Plus Jakarta Sans';color:#888}
+#f4 .cmt .txt{margin-top:20px;display:flex;align-items:center;justify-content:space-between;border:3px solid #141619;border-radius:18px;padding:16px 22px}
+#f4 .cmt .txt b{font:800 64px 'JetBrains Mono';color:#141619;letter-spacing:.06em}
+#f4 .cmt .txt b:after{content:'';display:inline-block;width:6px;height:56px;background:#FF5500;margin-left:8px;vertical-align:-8px}
+#f4 .cmt .send{width:70px;height:70px;border-radius:50%;background:#FF5500;display:grid;place-items:center}
+#f4 .note{position:absolute;top:900px;left:0;width:870px;text-align:center;font:700 34px 'JetBrains Mono';color:#141619}
+#f4 .burst{position:absolute;left:540px;top:1530px;width:900px;height:900px;margin:-450px;background:repeating-conic-gradient(rgba(255,255,255,.14) 0 8deg,transparent 8deg 20deg);border-radius:50%}
+</style>
+</head>
+<body>
+
+<div class="f" id="f1"><div class="grid"></div>
+  <div class="safe">
+    <div class="hdr"><div class="tag" style="background:#FF5500">CONTEXT7 MCP</div>
+      <div class="me"><img src="../brand/logo-instagram.svg" alt=""><b>ChillDev</b>&nbsp;@ramarvctr_</div></div>
+    <h1>AI lo nulis kode <span>zaman batu?</span></h1>
+    <div class="chip" style="top:372px;left:560px">Next.js 15</div>
+    <div class="ed">
+      <div class="tab"><i></i>pages/_app.js</div>
+      <pre><div><span class="n">1</span><span class="k">import</span> App <span class="k">from</span> <span class="s">'next/app'</span></div><div><span class="n">2</span></div><div class="bad"><span class="n">3</span><u>MyApp.getInitialProps</u> = <span class="k">async</span> (ctx) =&gt; {</div><div><span class="n">4</span>  <span class="k">const</span> p = <span class="k">await</span> App.getInitialProps(ctx)</div><div><span class="n">5</span>  <span class="k">return</span> { ...p }</div><div><span class="n">6</span>}</div><div><span class="n">7</span><span class="c">// pages router · 2021</span></div></pre>
+    </div>
+    <div class="err">✕ deprecated di Next.js 15</div>
+    <div class="sub">Memorinya berhenti di <b>knowledge cutoff</b>. Docs-nya udah update.</div>
+  </div>
+</div>
+
+<div class="f" id="f2"><div class="pitch"></div>
+  <div class="safe">
+    <div class="hdr"><div class="tag" style="background:#E2272F">● PIALA ASIA FUTSAL</div>
+      <div class="me"><img src="../brand/logo-instagram.svg" alt=""><b>ChillDev</b>&nbsp;@ramarvctr_</div></div>
+    <div class="bug">FINAL</div>
+    <div class="score"><span>5</span><i>–</i><span>5</span></div>
+    <div class="teams"><span><b class="fl" style="background:linear-gradient(#E2272F 50%,#fff 50%)"></b>IDN</span>
+      <span>IRN<b class="fl" style="background:linear-gradient(#239F40 33%,#fff 33% 66%,#D0261E 66%)"></b></span></div>
+    <div class="pk">
+      <div>IDN <b style="background:#2BD46A"></b><b style="background:#2BD46A"></b><b style="background:#FF4D4D"></b><b style="background:#2BD46A"></b><b style="background:#FF4D4D"></b></div>
+      <div>IRN <b style="background:#2BD46A"></b><b style="background:#2BD46A"></b><b style="background:#2BD46A"></b><b style="background:#2BD46A"></b><b style="background:#FF4D4D"></b></div>
+    </div>
+    <h2>Kalah tipis<br>lewat <em>adu penalti</em></h2>
+  </div>
+</div>
+
+<div class="f" id="f3"><div class="glow"></div><div class="pole"></div><div class="tower"></div><div class="seats"></div>
+  <div class="safe">
+    <div class="hdr"><div class="tag" style="background:#8A6A1E">SRIWIJAYA FC · PART 4</div>
+      <div class="me"><img src="../brand/logo-instagram.svg" alt=""><b>ChillDev</b>&nbsp;@ramarvctr_</div></div>
+    <div class="yr">2026</div>
+    <h2>Tinggal <i>satu lampu</i> yang menyala.</h2>
+    <div class="cap">Kursi kuning Jakabaring masih berjajar, nunggu seseorang datang lagi.</div>
+  </div>
+</div>
+
+<div class="f" id="f4"><div class="grid"></div><div class="burst"></div>
+  <div class="safe">
+    <div class="hdr"><div class="tag" style="background:#141619">CONFIG MCP</div>
+      <div class="me"><img src="../brand/logo-instagram.svg" alt=""><b>ChillDev</b>&nbsp;@ramarvctr_</div></div>
+    <div class="big">Mau config-nya?<br><span>Ketik di komen.</span></div>
+    <div class="cmt">
+      <div class="who"><div class="av"></div><div>kamu<br><small>baru saja</small></div></div>
+      <div class="txt"><b>DOCS</b><div class="send"><svg width="34" height="34" viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8z" fill="#fff"/></svg></div></div>
+    </div>
+    <div class="note">config lengkap ada di komentar pin 📌</div>
+  </div>
+</div>
+
+<div id="rama"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const CFG = {
+  1: { x: 640, y: 1380, s: 420, ry: -0.38, rx: 0, m: [15, 12] },   // kanan bawah, menoleh ke editor
+  2: { x: 20, y: 1370, s: 440, ry: 0.38, rx: 0, m: [21, 15] },     // kiri bawah, menoleh ke skor
+  3: { x: 390, y: 1490, s: 300, ry: 0.12, rx: -0.2, m: [11, 8] },   // tengah bawah kecil, melihat lampu
+  4: { x: 250, y: 1230, s: 580, ry: 0, rx: 0, m: [21, 15] },       // tengah besar untuk CTA
+};
+const v = CFG[new URLSearchParams(location.search).get('v')] ? new URLSearchParams(location.search).get('v') : '1';
+document.getElementById('f' + v).classList.add('on');
+const C = CFG[v];
+
+function makeVoxel(size) {
+  const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setPixelRatio(1); r.setSize(size, size);
+  const sc = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(28, 1, 0.1, 100); cam.position.set(0, -0.6, 9.5); cam.lookAt(0, -0.6, 0);
+  sc.add(new THREE.HemisphereLight(0xffffff, 0x334477, 0.7));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.85); dl.position.set(3, 4, 5); sc.add(dl);
+  const rim = new THREE.DirectionalLight(0xff7a3a, 0.7); rim.position.set(-4, 2, -3); sc.add(rim);
+  const box = (g, w, h, d, c, x, y, z) => {
+    const geo = new THREE.BoxGeometry(w, h, d), m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: c }));
+    m.position.set(x, y, z); g.add(m);
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0x0a0a0c }));
+    e.position.copy(m.position); g.add(e); return m;
+  };
+  const bodyG = new THREE.Group(); sc.add(bodyG);
+  box(bodyG, 3.2, 1.5, 1.6, 0xffffff, 0, -2.75, 0);
+  box(bodyG, 0.9, 0.12, 1.62, 0xc9a24b, -1.15, -2.05, 0); box(bodyG, 0.9, 0.12, 1.62, 0xc9a24b, 1.15, -2.05, 0);
+  box(bodyG, 0.8, 0.14, 0.1, 0x1b2650, 0, -2.08, 0.81);
+  box(bodyG, 0.26, 0.26, 0.06, 0xc9a24b, 0.75, -2.45, 0.82);
+  box(bodyG, 0.7, 0.5, 0.7, 0xd9976e, 0, -1.8, 0);
+  const head = new THREE.Group(); head.position.y = -1.55; sc.add(head);
+  const H = (w, h, d, c, x, y, z) => box(head, w, h, d, c, x, y + 1.55, z);
+  H(2, 2, 2, 0xf2c29b, 0, 0, 0);
+  H(2.12, 0.5, 2.12, 0x16161a, 0, 1.2, -0.02);
+  H(0.92, 0.42, 0.16, 0x16161a, -0.56, 0.8, 1.02); H(0.92, 0.42, 0.16, 0x16161a, 0.56, 0.8, 1.02);
+  H(0.14, 1.0, 1.9, 0x16161a, -1.04, 0.55, -0.05); H(0.14, 1.0, 1.9, 0x16161a, 1.04, 0.55, -0.05);
+  H(0.22, 0.4, 0.4, 0xf2c29b, -1.12, 0, 0); H(0.22, 0.4, 0.4, 0xf2c29b, 1.12, 0, 0);
+  [-0.48, 0.48].forEach(x => { H(0.78, 0.56, 0.08, 0x0b0b0d, x, 0.05, 1.03); H(0.56, 0.34, 0.08, 0x9fb3c8, x, 0.05, 1.06); });
+  [-0.48, 0.48].forEach(x => H(0.26, 0.09, 0.06, 0x16161a, x, 0.04, 1.11));
+  H(0.2, 0.08, 0.08, 0x0b0b0d, 0, 0.12, 1.05);
+  H(0.6, 0.08, 0.06, 0x16161a, -0.48, 0.48, 1.03); H(0.6, 0.08, 0.06, 0x16161a, 0.48, 0.48, 1.03);
+  H(0.18, 0.26, 0.2, 0xd9976e, 0, -0.32, 1.08);
+  H(0.6, 0.08, 0.06, 0x16161a, 0, -0.56, 1.03);
+  const mouth = H(0.46, 0.14, 0.04, 0x5b1f22, 0, -0.76, 1.02);
+  return { r, sc, cam, head, mouth, bodyG };
+}
+const V3 = makeVoxel(C.s);
+const el = document.getElementById('rama');
+el.style.left = C.x + 'px'; el.style.top = C.y + 'px';
+el.appendChild(V3.r.domElement);
+V3.mouth.scale.set(C.m[0] / 18, Math.max(0.3, C.m[1] / 6), 1);
+V3.head.rotation.set(C.rx, C.ry, 0.03);
+V3.bodyG.rotation.y = C.ry * 0.35;
+V3.r.render(V3.sc, V3.cam);
+window.READY = true;
+</script>
+</body>
+</html>

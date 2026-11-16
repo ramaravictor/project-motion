@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="id">
+<!-- Made with skill-motion v1.19.0 · Snappy Photo Corner · Promo B "Snap! Snap! Snap!" · kolase ritmis color-block · 9:16 · 30.00 s · 120 BPM -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snap Snap Snap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+:root{--void:#120f17;--lilac:#b497cf;--blurple:#5227ff;--white:#f3f1f7;
+  --disp:'Anton',Impact,sans-serif;--mono:'Space Mono',ui-monospace,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#07060a;overflow:hidden}
+img{display:block;-webkit-user-drag:none}
+#stage{position:absolute;left:50%;top:50%;width:1080px;height:1920px;margin:-960px 0 0 -540px;transform-origin:50% 50%;
+  background:var(--void);overflow:hidden;color:var(--void);font-family:var(--mono)}
+#field{position:absolute;inset:0;z-index:1}
+.blk{position:absolute;inset:0}
+#dots{position:absolute;inset:-40px;z-index:2;pointer-events:none;--r:4px;
+  background-image:radial-gradient(circle,rgba(110,102,128,.34) var(--r),transparent calc(var(--r) + .6px));background-size:30px 30px;
+  -webkit-mask-image:radial-gradient(75% 60% at 50% 50%,transparent 30%,#000 100%);mask-image:radial-gradient(75% 60% at 50% 50%,transparent 30%,#000 100%)}
+#world{position:absolute;inset:0;z-index:3;transform-origin:50% 50%}
+.mo{position:absolute;inset:0;display:none}
+.big{position:absolute;font-family:var(--disp);line-height:.84;white-space:nowrap;text-transform:uppercase;letter-spacing:-.01em}
+.lbl{position:absolute;font-family:var(--mono);font-weight:700;font-size:36px;letter-spacing:.06em;white-space:nowrap}
+.tag{display:inline-block;padding:14px 26px;border-radius:999px;background:var(--void);color:var(--white)}
+#flash{position:absolute;inset:0;z-index:9;background:#fff;opacity:0;pointer-events:none}
+#endblk{position:absolute;inset:0;z-index:8;background:var(--void)}
+
+/* m1 */
+.snap{left:-60px;font-size:600px}
+/* m2 */
+.shape{position:absolute;left:160px;top:560px;width:760px;height:760px;overflow:hidden;transform:scale(0)}
+.shape img{width:100%;height:100%;object-fit:cover}
+.s-circle{border-radius:50%}
+.s-pill{left:250px;top:400px;width:580px;height:1060px;border-radius:290px}
+.s-star{clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);width:860px;height:860px;left:110px;top:510px}
+.s-rsq{border-radius:110px}
+#pose{left:-200px;top:740px;font-size:520px;color:transparent;-webkit-text-stroke:7px var(--white);transform:rotate(-12deg);opacity:.85}
+#m2lbl{left:72px;top:1700px}
+/* m3 */
+#rp{left:-30px;top:120px;font-size:400px;color:var(--white);text-transform:none}
+#lunas{left:-30px;top:120px;font-size:400px;color:var(--void);opacity:0}
+#phone{position:absolute;left:250px;top:590px;width:580px;height:1140px;border-radius:80px;background:var(--void);padding:18px;
+  box-shadow:0 50px 100px rgba(18,15,23,.45)}
+#scr{position:relative;width:100%;height:100%;border-radius:64px;background:var(--white);overflow:hidden;display:flex;flex-direction:column;align-items:center;padding-top:110px}
+#scr h3{font-family:var(--disp);font-weight:400;font-size:96px;color:var(--void);font-style:italic;letter-spacing:.01em}
+#qr{position:relative;width:420px;height:420px;margin-top:40px;padding:22px;border-radius:30px;background:#fff;box-shadow:0 0 0 4px #e3dcef inset;overflow:hidden}
+#qr svg{width:100%;height:100%;display:block}
+#scan{position:absolute;left:0;right:0;top:0;height:8px;background:var(--blurple);box-shadow:0 0 30px 8px rgba(82,39,255,.5)}
+#scr .lbl{position:static;margin-top:48px;font-size:32px;color:var(--void)}
+#ok{position:absolute;left:50%;top:50%;width:380px;height:380px;margin:-190px 0 0 -190px;border-radius:50%;background:var(--blurple);
+  display:flex;align-items:center;justify-content:center;transform:scale(0)}
+#ok svg{width:220px;height:220px}
+/* m4 */
+#pilih{left:-40px;top:110px;font-size:470px;color:transparent;-webkit-text-stroke:7px var(--white)}
+#card{position:absolute;left:240px;top:560px;width:600px;height:900px;transform-style:preserve-3d}
+#cardwrap{position:absolute;inset:0;perspective:2200px}
+#m4lbl{left:0;right:0;top:1560px;text-align:center}
+/* paper */
+.paper{position:relative;width:100%;height:100%;background:#fbf8f2;border-radius:14px;padding:5.5%;display:grid;gap:3.2%;
+  grid-template-columns:repeat(var(--c),1fr);grid-template-rows:repeat(var(--r),1fr) auto;box-shadow:0 40px 90px rgba(18,15,23,.4)}
+.l-sweet{--c:2;--r:2}.l-classic{--c:2;--r:3}.l-big{--c:1;--r:2}.l-polaroid{--c:1;--r:1}
+.ph{position:relative;overflow:hidden;border-radius:6px;background:#ccc}
+.ph img{width:100%;height:100%;object-fit:cover}
+.foot{grid-column:1/-1;font-family:var(--disp);font-size:44px;color:var(--void);text-transform:uppercase;letter-spacing:.02em;line-height:1;padding-top:1%}
+.f-bw img{filter:grayscale(1) contrast(1.55) brightness(1.06)}
+.f-vin img{filter:sepia(.45) saturate(1.35) contrast(1.06) brightness(1.05) hue-rotate(-10deg)}
+/* m5 */
+.num{left:50%;top:50%;font-size:1700px;line-height:1;transform:translate(-50%,-50%)}
+/* m6 */
+#shot{position:absolute;left:150px;top:380px;width:780px;height:1060px;border-radius:70px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.4)}
+#shot img{width:100%;height:100%;object-fit:cover}
+#fullshot{position:absolute;inset:0;overflow:hidden;opacity:0}
+#fullshot img{width:100%;height:100%;object-fit:cover}
+#chips{position:absolute;left:0;right:0;top:1560px;display:flex;justify-content:center;gap:18px}
+.chip{font-family:var(--mono);font-weight:700;font-size:34px;padding:20px 30px;border-radius:999px;background:var(--void);color:var(--white);opacity:.55}
+.chip.on{background:var(--blurple);color:var(--white);opacity:1}
+.stk{position:absolute;transform:scale(0)}
+.stk svg{width:100%;height:100%;overflow:visible}
+/* m7 */
+#cetak{left:-20px;top:70px;font-size:430px;color:var(--white)}
+#r4{left:120px;top:1060px;font-size:1000px;color:var(--lilac)}
+#paper7{position:absolute;left:250px;top:470px;width:580px;height:870px}
+#paper7 .sheen{position:absolute;inset:0;overflow:hidden;border-radius:14px;pointer-events:none}
+#paper7 .sheen i{position:absolute;top:-20%;bottom:-20%;width:55%;left:0;transform:translateX(-140%) skewX(-18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.8),transparent)}
+#m7lbl{left:0;right:0;top:1440px;text-align:center}
+/* m8 + mosaic */
+#flick{position:absolute;inset:0}
+#flick img{width:100%;height:100%;object-fit:cover}
+#mosaic{position:absolute;left:0;top:420px;width:1080px;height:1080px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);z-index:4;display:none;
+  clip-path:polygon(50% 0%,100% 0%,100% 50%,100% 100%,50% 100%,0% 100%,0% 50%,0% 0%)}
+#mosaic img{width:100%;height:100%;object-fit:cover}
+/* m9 */
+#wm1{left:0;right:0;top:880px;text-align:center;font-size:330px;color:var(--void)}
+#wm2{left:0;right:0;top:1185px;text-align:center;font-size:150px;color:var(--void)}
+#tagline{left:0;right:0;top:1345px;text-align:center;font-size:40px;color:var(--void);letter-spacing:.02em}
+#cta{position:absolute;left:0;right:0;top:1500px;height:420px;background:var(--blurple);display:flex;align-items:flex-start;justify-content:center;padding-top:110px}
+#cta span{font-family:var(--disp);font-size:84px;color:var(--white);letter-spacing:.01em}
+
+#dbg{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:100;display:none;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;
+  width:min(720px,calc(100vw - 32px));padding:12px 14px;border-radius:16px;background:rgba(18,15,23,.92);border:1px solid rgba(243,241,247,.18);font:700 13px/1 var(--mono);color:#f3f1f7}
+#dbg button,#dbg select{font:inherit;color:inherit;background:#251f2f;border:1px solid rgba(243,241,247,.2);border-radius:10px;padding:8px 12px;cursor:pointer}
+#dbg input{flex:1 1 260px;accent-color:#b497cf}
+#d-time{min-width:118px;text-align:center;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="field"></div>
+  <div id="dots"></div>
+  <div id="world">
+    <div class="mo" id="m1">
+      <div class="lbl" id="ready" style="left:0;right:0;top:900px;text-align:center;font-size:44px;color:var(--white)">SIAP GAYA?</div>
+      <div class="big snap" id="snap1" style="top:150px;color:var(--void)">SNAP</div>
+      <div class="big snap" id="snap2" style="top:650px;color:var(--white)">SNAP</div>
+      <div class="big snap" id="snap3" style="top:1150px;color:var(--blurple)">SNAP</div>
+    </div>
+    <div class="mo" id="m2">
+      <div class="big" id="pose">POSE POSE</div>
+      <div class="shape s-circle" id="sh1"><img src="assets/models/m1.jpg" alt=""></div>
+      <div class="shape s-pill" id="sh2"><img src="assets/models/m6.jpg" alt=""></div>
+      <div class="shape s-star" id="sh3"><img src="assets/models-extra/m12.jpg" alt=""></div>
+      <div class="shape s-rsq" id="sh4"><img src="assets/models/m5.jpg" alt=""></div>
+      <div class="lbl" id="m2lbl"><span class="tag">✦ SNAPPY PHOTO CORNER</span></div>
+    </div>
+    <div class="mo" id="m3">
+      <div class="big" id="rp">Rp 35rb</div>
+      <div class="big" id="lunas">LUNAS!</div>
+      <div id="phone"><div id="scr"><h3>QRIS</h3><div id="qr"><div id="qrsvg"></div><i id="scan"></i></div><div class="lbl">SCAN UNTUK BAYAR</div>
+        <div id="ok"><svg viewBox="0 0 100 100"><path d="M22 52 L42 72 L80 30" fill="none" stroke="#f3f1f7" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div></div>
+    </div>
+    <div class="mo" id="m4">
+      <div class="big" id="pilih">PILIH</div>
+      <div id="cardwrap"><div id="card"><div id="cardflip" style="position:absolute;inset:0"></div></div></div>
+      <div class="lbl" id="m4lbl"><span class="tag" id="m4name">CLASSIC 2×3</span></div>
+    </div>
+    <div class="mo" id="m5">
+      <div class="big num" id="n3" style="color:var(--white)">3</div>
+      <div class="big num" id="n2" style="color:var(--blurple)">2</div>
+      <div class="big num" id="n1" style="color:var(--void)">1</div>
+    </div>
+    <div class="mo" id="m6">
+      <div id="shot"><img src="assets/models/m1.jpg" alt=""></div>
+      <div class="stk" id="st1" style="left:740px;top:290px;width:260px;height:260px"><svg viewBox="0 0 100 100"><polygon points="50,2 61,39 98,50 61,61 50,98 39,61 2,50 39,39" fill="#5227ff" stroke="#f3f1f7" stroke-width="4" stroke-linejoin="round"/></svg></div>
+      <div class="stk" id="st2" style="left:70px;top:1180px;width:250px;height:250px"><svg viewBox="0 0 100 100"><path d="M50 88C20 66 6 50 6 32 6 18 17 8 30 8c10 0 16 6 20 14 4-8 10-14 20-14 13 0 24 10 24 24 0 18-14 34-44 56z" fill="#b497cf" stroke="#120f17" stroke-width="5"/></svg></div>
+      <div class="stk" id="st3" style="left:650px;top:1230px;width:330px;height:190px"><svg viewBox="0 0 170 100"><rect x="4" y="8" width="162" height="70" rx="35" fill="#f3f1f7" stroke="#120f17" stroke-width="5"/><path d="M40 76 L30 96 L62 78" fill="#f3f1f7" stroke="#120f17" stroke-width="5" stroke-linejoin="round"/><text x="85" y="58" text-anchor="middle" font-family="Anton" font-size="44" fill="#120f17">WOW!</text></svg></div>
+      <div id="chips"><div class="chip">ORIGINAL</div><div class="chip">B&amp;W</div><div class="chip">VINTAGE</div></div>
+      <div id="fullshot"><img src="assets/models/m1.jpg" alt=""></div>
+    </div>
+    <div class="mo" id="m7">
+      <div class="big" id="cetak">CETAK</div>
+      <div class="big" id="r4">4R</div>
+      <div id="paper7"></div>
+      <div class="lbl" id="m7lbl"><span class="tag">TAHAN AIR · GLOSSY</span></div>
+    </div>
+    <div class="mo" id="m8"><div id="flick"><img id="flickimg" src="assets/models/m1.jpg" alt=""></div></div>
+    <div class="mo" id="m9">
+      <div class="big" id="wm1">SNAPPY</div>
+      <div class="big" id="wm2">PHOTO CORNER</div>
+      <div class="lbl" id="tagline">Pose dulu, sisanya urusan kami</div>
+      <div id="cta"><span>KUNJUNGI BOOTH TERDEKAT →</span></div>
+    </div>
+    <div id="mosaic"></div>
+  </div>
+  <div id="endblk"></div>
+  <div id="flash"></div>
+</div>
+
+<div id="dbg">
+  <button id="d-play">▶ Play</button>
+  <button id="d-restart">↺ Restart</button>
+  <input id="d-slider" type="range" min="0" max="30" step="0.01" value="0">
+  <span id="d-time">00.00 / 30.00</span>
+  <select id="d-voice"><option value="serena">Serena · ElevenLabs (ID)</option><option value="sarah">Sarah · ElevenLabs</option><option value="gadis">Gadis · Edge Neural</option></select>
+  <button id="d-mute">🔊 Mute</button>
+</div>
+
+<script>
+(() => {
+'use strict';
+const DUR = 30, BEAT = .5;
+const Q = s => document.querySelector(s), QA = s => [...document.querySelectorAll(s)];
+const params = new URLSearchParams(location.search);
+const DEBUG = params.get('debug') === '1', CLEAN = params.get('clean') === '1';
+const stage = Q('#stage');
+const fit = () => { stage.style.transform = `scale(${Math.min(innerWidth / 1080, innerHeight / 1920)})`; };
+addEventListener('resize', fit); fit();
+
+/* ---------- konten prosedural ---------- */
+const PH = ['models/m1','models/m6','models-extra/m12','models/m5','models/m7','models-extra/m10','models/m3','models/m2','models-extra/m9','models/m4','models-extra/m11','models/m8'];
+const src = p => `assets/${p}.jpg`;
+function qrSVG(n, seed){
+  let s = seed >>> 0; const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const m = [...Array(n)].map(() => Array(n).fill(0));
+  const f = (x, y) => { for (let i = -1; i < 8; i++) for (let j = -1; j < 8; j++){ const X = x + i, Y = y + j; if (X < 0 || Y < 0 || X >= n || Y >= n) continue;
+    const r = Math.max(Math.abs(i - 3), Math.abs(j - 3)); m[Y][X] = (r === 3 || r <= 1) ? 1 : 2; } };
+  f(0, 0); f(n - 7, 0); f(0, n - 7);
+  let d = ''; for (let y = 0; y < n; y++) for (let x = 0; x < n; x++){ let v = m[y][x] || (rnd() < .5 ? 1 : 2); if (v === 1) d += `M${x} ${y}h1v1h-1z`; }
+  return `<svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges"><path d="${d}" fill="#120f17"/></svg>`;
+}
+Q('#qrsvg').innerHTML = qrSVG(29, 2026);
+const sheet = (l, ps, cls = '') => `<div class="paper l-${l} ${cls}">${ps.map(p => `<div class="ph"><img src="${src(p)}" alt=""></div>`).join('')}<div class="foot">✦ Snappy Photo Corner</div></div>`;
+const LAYOUTS = [
+  ['classic', PH.slice(0, 6), 'CLASSIC 2×3'], ['big', [PH[6], PH[7]], 'BIG MOMENT 1×2'],
+  ['polaroid', [PH[8]], 'POLAROID SOLO'], ['sweet', [PH[0], PH[1], PH[4], PH[3]], 'SWEET SQUARE 2×2'],
+];
+const layoutHTML = LAYOUTS.map(([l, ps]) => sheet(l, ps));
+Q('#paper7').innerHTML = sheet('sweet', [PH[0], PH[1], PH[4], PH[3]], 'f-vin') + '<div class="sheen"><i></i></div>';
+Q('#mosaic').innerHTML = PH.map(p => `<img src="${src(p)}" alt="">`).join('');
+// preload semua foto
+PH.forEach(p => { const i = new Image(); i.src = src(p); });
+
+/* ---------- blok warna yang menabrak tepi ---------- */
+// [waktu tumbukan (tepat di ketukan), warna, arah datang]
+const C = { v: '#120f17', l: '#b497cf', b: '#5227ff', w: '#f3f1f7' };
+const CRASH = [
+  [1.0, 'l', 'top'], [2.0, 'b', 'left'], [3.0, 'w', 'right'], [4.0, 'l', 'bottom'], [5.0, 'v', 'top'],
+  [6.0, 'b', 'right'], [8.0, 'w', 'top'], [10.0, 'v', 'left'], [12.0, 'l', 'bottom'],
+  [14.5, 'b', 'top'], [15.5, 'w', 'left'], [16.5, 'l', 'right'], [18.0, 'v', 'bottom'], [19.0, 'w', 'right'], [20.0, 'l', 'left'],
+  [22.0, 'b', 'top'], [26.5, 'b', 'bottom'], [27.5, 'l', 'top'],
+];
+const OFF = { top: { yPercent: -100 }, bottom: { yPercent: 100 }, left: { xPercent: -100 }, right: { xPercent: 100 } };
+const field = Q('#field');
+const blkEls = CRASH.map(([t, c, from]) => { const d = document.createElement('div'); d.className = 'blk'; d.style.background = C[c]; field.appendChild(d); gsap.set(d, OFF[from]); return d; });
+
+/* ---------- timeline ---------- */
+const tl = gsap.timeline({ repeat: -1, paused: true });
+CRASH.forEach(([t, , from], i) => {
+  const ax = from === 'left' || from === 'right' ? 'xPercent' : 'yPercent', sgn = from === 'top' || from === 'left' ? -1 : 1;
+  tl.to(blkEls[i], { [ax]: 0, duration: .17, ease: 'power3.in' }, t - .17)
+    .to(blkEls[i], { [ax]: sgn * -1.6, duration: .07, ease: 'power2.out' }, t)
+    .to(blkEls[i], { [ax]: 0, duration: .22, ease: 'power2.inOut' }, t + .07);
+});
+const pop = (el, at, dur = .7) => tl.fromTo(el, { scale: 0, rotation: -14 }, { scale: 1, rotation: 0, duration: dur, ease: 'elastic.out(1,.5)', immediateRender: false }, at);
+const out = (el, at, v = {}) => tl.to(el, Object.assign({ scale: 0, rotation: 20, duration: .16, ease: 'power3.in' }, v), at - .16);
+
+// m1 · SNAP SNAP SNAP (1.0 / 1.25 / 1.5)
+gsap.set('#ready', { opacity: 0, scale: .6 });
+tl.to('#ready', { opacity: 1, scale: 1, duration: .25, ease: 'back.out(2.5)' }, .35).set('#ready', { opacity: 0 }, 1.0);
+gsap.set(['#snap1', '#snap2', '#snap3'], { xPercent: 0, yPercent: 120, opacity: 0 });
+[['#snap1', 1.0], ['#snap2', 1.25], ['#snap3', 1.5]].forEach(([s, t]) => tl.to(s, { yPercent: 0, opacity: 1, duration: .2, ease: 'back.out(2.2)' }, t - .02));
+// m2 · empat model, satu per 2 ketukan, wadah bentuk berbeda
+gsap.set('.shape', { scale: 0 });
+['#sh1', '#sh2', '#sh3', '#sh4'].forEach((s, i) => { pop(s, 2.0 + i); if (i < 3) out(s, 3.0 + i); });
+gsap.set('#m2lbl', { opacity: 0, y: 40 });
+tl.to('#m2lbl', { opacity: 1, y: 0, duration: .3, ease: 'back.out(2)' }, 2.5);
+// m3 · QRIS
+gsap.set('#phone', { y: 1400, rotation: 14 });
+gsap.set('#rp', { xPercent: 0, scale: 1.6, opacity: 0 });
+tl.to('#phone', { y: 0, rotation: -5, duration: .28, ease: 'power4.in' }, 6.0 - .28)
+  .to('#phone', { scaleY: .94, scaleX: 1.05, duration: .06 }, 6.0).to('#phone', { scaleY: 1, scaleX: 1, rotation: -3, duration: .5, ease: 'elastic.out(1,.4)' }, 6.06)
+  .to('#rp', { scale: 1, opacity: 1, duration: .2, ease: 'power4.in' }, 6.3)
+  .fromTo('#scan', { y: 0 }, { y: 368, duration: .5, ease: 'sine.inOut', repeat: 2, yoyo: true, immediateRender: false }, 6.5)
+  .to('#scan', { opacity: 0, duration: .05 }, 8.0);
+pop('#ok', 8.0, .6);
+tl.set('#rp', { opacity: 0 }, 8.0).set('#lunas', { opacity: 1 }, 8.0)
+  .fromTo('#lunas', { scale: 1.5 }, { scale: 1, duration: .25, ease: 'back.out(2)', immediateRender: false }, 8.0)
+  .to('#phone', { rotation: 4, duration: 1.6, ease: 'sine.inOut' }, 8.2);
+// m4 · kartu frame dibalik tiap ketukan (dikendalikan update), PILIH melintas
+gsap.set('#m4lbl', { opacity: 0 });
+tl.to('#m4lbl', { opacity: 1, duration: .1 }, 10.0);
+tl.fromTo('#card', { scale: .5, y: 500 }, { scale: 1, y: 0, duration: .35, ease: 'back.out(1.6)', immediateRender: false }, 10.0)
+  .to('#card', { scale: 1.06, duration: .12, ease: 'power2.out' }, 12.0).to('#card', { scale: 1, duration: .4, ease: 'elastic.out(1,.4)' }, 12.12)
+  .to('#card', { rotationZ: -3, y: -20, duration: 2.0, ease: 'sine.inOut' }, 12.4);
+// m5 · 3 2 1
+['#n3', '#n2', '#n1'].forEach((s, i) => { gsap.set(s, { opacity: 0 });
+  tl.set(s, { opacity: 1 }, 14.5 + i).fromTo(s, { scale: 1.8 }, { scale: 1, duration: .3, ease: 'power4.out', immediateRender: false }, 14.5 + i)
+    .to(s, { scale: .9, duration: .7, ease: 'none' }, 14.8 + i); if (i < 2) tl.set(s, { opacity: 0 }, 15.5 + i); });
+// m6 · foto memenuhi frame (17.5) → mengecil ke kotak, filter di ketukan, stiker
+tl.set('#fullshot', { opacity: 1 }, 17.5).to('#fullshot', { clipPath: 'inset(380px 150px 480px 150px round 70px)', duration: .45, ease: 'power3.inOut' }, 17.6)
+  .set('#fullshot', { opacity: 0 }, 18.05);
+gsap.set('#fullshot', { clipPath: 'inset(0px 0px 0px 0px round 0px)' });
+gsap.set('#chips', { opacity: 0, y: 60 });
+tl.to('#chips', { opacity: 1, y: 0, duration: .3, ease: 'back.out(2)' }, 18.3);
+[['#st1', 20.5], ['#st2', 21.0], ['#st3', 21.5]].forEach(([s, t]) => {
+  tl.fromTo(s, { scaleX: 0, scaleY: 0 }, { scaleX: 1.4, scaleY: .6, duration: .08, immediateRender: false }, t - .04)
+    .to(s, { scaleX: .85, scaleY: 1.2, duration: .1 }, t + .04).to(s, { scaleX: 1, scaleY: 1, duration: .5, ease: 'elastic.out(1,.35)' }, t + .14); });
+tl.to('#shot', { scale: 1.04, duration: .1 }, 19.0).to('#shot', { scale: 1, duration: .3 }, 19.1)
+  .to('#shot', { scale: 1.04, duration: .1 }, 20.0).to('#shot', { scale: 1, duration: .3 }, 20.1);
+// m7 · kertas 4R jatuh
+gsap.set('#paper7', { y: -1500, rotation: -18 });
+gsap.set('#r4', { yPercent: 60 }); gsap.set('#cetak', { yPercent: -110 }); gsap.set('#m7lbl', { opacity: 0, scale: .6 });
+tl.to('#cetak', { yPercent: 0, duration: .2, ease: 'power4.in' }, 21.98 - .2)
+  .to('#r4', { yPercent: 0, duration: .2, ease: 'power4.in' }, 22.5 - .2)
+  .to('#paper7', { y: 0, rotation: 4, duration: .38, ease: 'power3.in' }, 23.0 - .38)
+  .to('#paper7', { scaleY: .93, scaleX: 1.05, duration: .06 }, 23.0).to('#paper7', { scaleY: 1, scaleX: 1, rotation: -3, duration: .6, ease: 'elastic.out(1,.4)' }, 23.06)
+  .to('#m7lbl', { opacity: 1, scale: 1, duration: .4, ease: 'back.out(2.4)' }, 23.5)
+  .fromTo('#paper7 .sheen i', { xPercent: -140 }, { xPercent: 300, duration: .8, ease: 'power2.inOut', immediateRender: false }, 24.0);
+// m8 → mosaik ✦ → m9
+const RECT = 'polygon(50% 0%,100% 0%,100% 50%,100% 100%,50% 100%,0% 100%,0% 50%,0% 0%)';
+const STAR = 'polygon(50% 0%,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0% 50%,39% 39%)';
+gsap.set('#mosaic', { clipPath: RECT, scale: 1, y: 0 });
+tl.to('#mosaic', { clipPath: STAR, duration: .5, ease: 'power3.inOut' }, 26.6)
+  .to('#mosaic', { scale: .5, y: -480, rotation: 0, duration: .6, ease: 'power3.inOut' }, 27.1)
+  .to('#mosaic', { rotation: 90, duration: .3, ease: 'back.out(2)' }, 28.0)
+  .to('#mosaic', { rotation: 180, duration: .3, ease: 'back.out(2)' }, 29.0);
+gsap.set(['#wm1', '#wm2'], { yPercent: 110, opacity: 0 }); gsap.set('#tagline', { opacity: 0, y: 30 });
+tl.to('#wm1', { yPercent: 0, opacity: 1, duration: .22, ease: 'back.out(2)' }, 27.5)
+  .to('#wm2', { yPercent: 0, opacity: 1, duration: .22, ease: 'back.out(2)' }, 28.0)
+  .to('#tagline', { opacity: 1, y: 0, duration: .3, ease: 'power3.out' }, 28.25)
+  .to('#cta', { yPercent: 0, duration: .2, ease: 'power4.in' }, 28.5 - .2)
+  .to('#endblk', { yPercent: 0, duration: .2, ease: 'power4.in' }, 29.75 - .2)
+  .set({}, {}, DUR);
+gsap.set('#cta', { yPercent: 100 }); gsap.set('#endblk', { yPercent: -100 });
+
+/* ---------- status per waktu (deterministik) ---------- */
+const MOS = [['#m1', 0, 2], ['#m2', 2, 6], ['#m3', 6, 10], ['#m4', 10, 14.5], ['#m5', 14.5, 18], ['#m6', 17.5, 22], ['#m7', 21.8, 25], ['#m8', 25, 26.5], ['#m9', 27.4, DUR + 1]]
+  .map(([s, a, b]) => ({ el: Q(s), a, b, on: null }));
+const FLASHES = [[1.0, 1], [3.0, .35], [5.0, .35], [7.0, .35], [9.0, .35], [11.0, .35], [13.0, .35], [17.5, 1], [19.0, .3], [21.0, .3], [23.0, .45], [25.0, 1], [26.5, .8], [27.5, .4]];
+const SHAKES = CRASH.map(([t]) => [t, 9, .25]).concat([[17.5, 28, .5], [23.0, 16, .35], [6.0, 14, .3], [8.0, 12, .3], [25.0, 18, .4]]);
+const FLIPS = [10.5, 11.0, 11.5, 12.0];                  // tiap ketukan; berhenti di 2×2 pada 12.0
+const el = { world: Q('#world'), flash: Q('#flash'), dots: Q('#dots'), pose: Q('#pose'), card: Q('#cardflip'), m4name: Q('#m4name'),
+  shotImg: Q('#shot img'), flick: Q('#flickimg'), mosaic: Q('#mosaic'), chips: QA('.chip'), dSlider: Q('#d-slider'), dTime: Q('#d-time') };
+const cache = {};
+const once = (k, v, fn) => { if (cache[k] !== v){ cache[k] = v; fn(v); } };
+
+function updateSceneForTime(t){
+  for (const m of MOS){ const on = t >= m.a && t < m.b; if (m.on !== on){ m.on = on; m.el.style.display = on ? 'block' : 'none'; } }
+  // pompa ketukan (kick) + shake sinus
+  const fr = (t % BEAT) / BEAT, kick = t >= 1 && t < 29.75 ? Math.exp(-fr * 7) : 0;
+  let sx = 0, sy = 0;
+  for (const [a, amp, d] of SHAKES){ const k = t - a; if (k >= 0 && k < d){ const e = amp * (1 - k / d) ** 2; sx += Math.sin(k * 95) * e; sy += Math.sin(k * 127 + 1.1) * e; } }
+  el.world.style.transform = `translate(${sx.toFixed(1)}px,${sy.toFixed(1)}px) scale(${(1 + kick * .018).toFixed(4)})`;
+  // halftone bernapas + bergeser
+  el.dots.style.setProperty('--r', (3.2 + 2.6 * kick + 1.2 * Math.sin(t * .9)).toFixed(2) + 'px');
+  el.dots.style.backgroundPosition = `${(t * 18).toFixed(1)}px ${(t * -10).toFixed(1)}px`;
+  // flash
+  let fl = 0; for (const [a, amp] of FLASHES){ const k = t - a; if (k >= 0 && k < 1) fl = Math.max(fl, amp * Math.exp(-k * 7)); }
+  el.flash.style.opacity = fl.toFixed(3);
+  // m2 POSE melintas
+  el.pose.style.transform = `translateX(${(-(t - 2) * 260).toFixed(1)}px) rotate(-12deg)`;
+  // m4 kartu dibalik
+  let idx = 0, ang = 0;
+  for (let i = 0; i < FLIPS.length; i++){ const a = FLIPS[i] - .22, k = (t - a) / .22;
+    if (k >= 1) idx = i + 1; else if (k > 0){ const e = k * k * (3 - 2 * k); ang = e * 180; idx = e < .5 ? i : i + 1; if (e >= .5) ang -= 180; break; } }
+  const li = Math.min(idx, 3);
+  once('card', li, v => { el.card.innerHTML = layoutHTML[v]; el.m4name.textContent = LAYOUTS[v][2]; });
+  el.card.style.transform = `rotateY(${ang.toFixed(1)}deg)`;
+  // m6 filter
+  const f = t < 19 ? 0 : t < 20 ? 1 : 2;
+  once('flt', f, v => { el.shotImg.style.filter = ['', 'grayscale(1) contrast(1.55) brightness(1.06)', 'sepia(.45) saturate(1.35) contrast(1.06) brightness(1.05) hue-rotate(-10deg)'][v];
+    el.chips.forEach((c, i) => c.classList.toggle('on', i === v)); });
+  // m8 kedip 12 foto (16th note)
+  if (t >= 25 && t < 26.5){ const k = Math.min(11, Math.floor((t - 25) / .125)); once('flick', k, v => { el.flick.src = src(PH[v]); }); }
+  once('mos', t >= 26.5 && t < 29.75, v => { el.mosaic.style.display = v ? 'grid' : 'none'; });
+  if (DEBUG){ el.dSlider.value = t.toFixed(2); el.dTime.textContent = `${t.toFixed(2).padStart(5, '0')} / 30.00`; }
+}
+
+/* ---------- audio: synth Web Audio (musik + SFX) ---------- */
+let AC = null, MASTER = null, MUS = null, NOISE = null, muted = false;
+function ac(){ if (!AC){ AC = new (window.AudioContext || window.webkitAudioContext)(); MASTER = AC.createGain(); MASTER.gain.value = muted ? 0 : .9;
+  const comp = AC.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; MASTER.connect(comp).connect(AC.destination);
+  MUS = AC.createGain(); MUS.gain.value = .8; MUS.connect(MASTER); } return AC; }
+function noise(){ if (NOISE) return NOISE; const c = ac(), b = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), ch = b.getChannelData(0);
+  let s = 22695477; for (let i = 0; i < ch.length; i++){ s = (s * 1103515245 + 12345) >>> 0; ch[i] = s / 2147483648 - 1; } return NOISE = b; }
+function env(g, t0, a, p, d){ g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(p, t0 + a); g.gain.exponentialRampToValueAtTime(.0001, t0 + a + d); }
+function osc(when, type, f0, f1, dur, vol, dest, filt){
+  const c = ac(), o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.setValueAtTime(f0, when); if (f1) o.frequency.exponentialRampToValueAtTime(f1, when + dur);
+  env(g, when, .004, vol, dur); let n = o; if (filt){ const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(filt[0], when); f.frequency.exponentialRampToValueAtTime(filt[1], when + dur); f.Q.value = filt[2] || 4; o.connect(f); n = f; }
+  n.connect(g).connect(dest || MASTER); o.start(when); o.stop(when + dur + .05); }
+function nz(when, dur, vol, type, f0, f1, q = 1, dest){
+  const c = ac(), s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = noise(); f.type = type; f.Q.value = q;
+  f.frequency.setValueAtTime(f0, when); if (f1) f.frequency.exponentialRampToValueAtTime(f1, when + dur);
+  env(g, when, .003, vol, dur); s.connect(f).connect(g).connect(dest || MASTER); s.start(when, (f0 % 97) / 97); s.stop(when + dur + .05); }
+const SFX = {
+  shutter: w => { nz(w, .05, .6, 'bandpass', 3200, 0, 1.2); osc(w, 'square', 140, 60, .06, .25); nz(w + .07, .06, .45, 'bandpass', 2400, 0, 1.5); osc(w + .07, 'sine', 90, 50, .14, .3); },
+  shutterSoft: w => { nz(w, .04, .25, 'bandpass', 3400, 0, 1.2); nz(w + .06, .04, .18, 'bandpass', 2600, 0, 1.5); },
+  whoosh: w => nz(w - .17, .3, .25, 'bandpass', 400, 3600, 1.3),
+  pop: (w, i = 0) => { osc(w, 'sine', 420 + i * 120, 1300 + i * 200, .1, .25); },
+  chime: w => [1046.5, 1318.5, 1568, 2093].forEach((f, i) => osc(w + i * .06, 'triangle', f, 0, .5, .13)),
+  beep: (w, hi) => { osc(w, 'sine', hi ? 1320 : 880, 0, .18, .22); osc(w, 'triangle', hi ? 2640 : 1760, 0, .1, .05); },
+  riser: w => nz(w, 3.0, .12, 'bandpass', 300, 6000, 2),
+  crash: w => nz(w, 1.4, .22, 'highpass', 5000, 3000, .5),
+};
+// SFX terjadwal di waktu timeline
+const CUES = [];
+CRASH.forEach(([t]) => CUES.push([t, 'whoosh']));
+FLASHES.forEach(([t, a]) => CUES.push([t, a >= .8 ? 'shutter' : 'shutterSoft']));
+[[8.0, 'chime'], [12.0, 'pop', 2], [2.0, 'pop', 0], [3.0, 'pop', 1], [4.0, 'pop', 2], [5.0, 'pop', 3], [14.5, 'beep'], [15.5, 'beep'], [16.5, 'beep', true],
+ [20.5, 'pop', 0], [21.0, 'pop', 1], [21.5, 'pop', 2], [10.5, 'pop', 0], [11.0, 'pop', 1], [11.5, 'pop', 2], [14.5, 'riser'], [17.5, 'crash'], [26.5, 'crash'], [28.5, 'chime']]
+  .forEach(c => CUES.push(c));
+for (let k = 0; k < 12; k++) CUES.push([25 + k * .125, 'shutterSoft']);
+// musik 120 BPM: grid 16th (0.125 s). vi-IV-I-V (Am F C G) per bar 2 s
+const ROOTS = [110, 87.31, 130.81, 98], CH = [[220, 261.6, 329.6], [174.6, 220, 261.6], [261.6, 329.6, 392], [196, 246.9, 293.7]];
+function music(step, w){
+  const t = step * .125; if (t < 1 || t >= 29.75) return;
+  const pos = step % 16, bar = Math.floor(t / 2) % 4, inCount = t >= 14.5 && t < 17.5, climax = t >= 25 && t < 26.5;
+  const kick = () => { osc(w, 'sine', 150, 42, .22, .9, MUS); osc(w, 'triangle', 300, 60, .03, .25, MUS); };
+  if (pos % 4 === 0) kick();
+  if (inCount) return;                                   // 3-2-1: hanya kick + riser
+  if (pos === 4 || pos === 12){ nz(w, .16, .45, 'bandpass', 1500, 900, .9, MUS); nz(w + .012, .1, .3, 'highpass', 2000, 0, .7, MUS); }
+  if (pos % 4 === 2) nz(w, .05, .22, 'highpass', 8000, 0, .7, MUS);
+  if (climax && pos % 2 === 1) nz(w, .03, .12, 'highpass', 9000, 0, .7, MUS);
+  if (climax && pos % 2 === 0 && pos % 4) nz(w, .07, .25, 'bandpass', 1800, 1200, 1, MUS);
+  if (pos % 4 === 2) osc(w, 'sawtooth', ROOTS[bar], 0, .2, .2, MUS, [900, 180, 6]);
+  if (pos === 0 || pos === 6 || pos === 10) CH[bar].forEach(f => osc(w, 'square', f, 0, .16, .045, MUS, [3200, 500, 2]));
+}
+
+/* ---------- VO (HTMLAudio, aman di file://) ---------- */
+// Waktu mulai per suara (onset ucapan disamakan; angka 3-2-1 jatuh di ketukan 14.5 / 15.5 / 16.5)
+const VOICES = {
+  serena: { dir: 'assets/vo_serena/', ext: 'm4a', start: [0.47, 6.45, 10.33, 14.44, 15.44, 16.48, 18.44, 21.7, 26.12] },
+  sarah:  { dir: 'assets/vo_eleven/', ext: 'mp3', start: [0.52, 6.32, 10.3, 14.46, 15.5, 16.48, 18.44, 21.76, 26.16] },
+  gadis:  { dir: 'assets/vo/',        ext: 'mp3', start: [0.3, 6.3, 10.2, 14.3, 15.3, 16.28, 18.3, 21.6, 26.0] },
+};
+const DEFAULT_VOICE = 'serena';
+let VO_START = VOICES[DEFAULT_VOICE].start, vos = [];
+function loadVoice(key){
+  vos.forEach(a => a.pause());
+  const v = VOICES[key] || VOICES[DEFAULT_VOICE]; VO_START = v.start;
+  vos = VO_START.map((_, i) => { const a = new Audio(`${v.dir}vo${i + 1}.${v.ext}`); a.preload = 'auto'; return a; });
+}
+loadVoice(params.get('voice') || DEFAULT_VOICE);
+let started = false, schedTo = 0, lastT = 0;
+function syncVO(t){
+  const live = started && !tl.paused() && !muted && !CLEAN; let on = false;
+  vos.forEach((a, i) => { const loc = t - VO_START[i], d = isFinite(a.duration) ? a.duration : 2, inW = loc >= 0 && loc < d - .04; if (inW) on = true;
+    if (live && inW){ if (a.paused){ a.currentTime = loc; a.play().catch(() => {}); } else if (Math.abs(a.currentTime - loc) > .25) a.currentTime = loc; }
+    else if (!a.paused) a.pause(); });
+  if (MUS) MUS.gain.setTargetAtTime(on ? .42 : .8, AC.currentTime, .06);
+}
+function scheduleAudio(t){
+  if (!started || tl.paused() || muted || CLEAN || !AC) { schedTo = t; return; }
+  if (t < schedTo - .6 || t > schedTo + .6) schedTo = t;      // seek / loop
+  const until = Math.min(DUR, t + .15);
+  if (until <= schedTo) return;
+  const now = AC.currentTime;
+  for (let s = Math.floor(schedTo / .125) + 1; s * .125 <= until; s++){ const ts = s * .125; if (ts > schedTo) music(s, now + Math.max(0, ts - t)); }
+  if (schedTo === 0 && t < .15) music(0, now);
+  for (const [ct, n, arg] of CUES) if (ct > schedTo && ct <= until) SFX[n](now + Math.max(0, ct - t), arg);
+  schedTo = until;
+}
+
+tl.eventCallback('onUpdate', () => { const t = tl.time(); updateSceneForTime(t);
+  if (t < lastT - 1) schedTo = t - .001;                      // loop
+  scheduleAudio(t); syncVO(t); lastT = t; });
+
+/* ---------- transport ---------- */
+function syncBtn(){ const b = Q('#d-play'); if (b) b.textContent = tl.paused() ? '▶ Play' : '❚❚ Pause'; }
+function begin(){ started = true; try { ac().resume(); } catch (e) {} schedTo = -.001; tl.play(0); syncBtn(); }
+function togglePlay(){ if (!started) return begin(); tl.paused(!tl.paused()); if (!tl.paused() && AC) AC.resume(); schedTo = tl.time(); syncVO(tl.time()); syncBtn(); }
+function restart(){ if (!started) return begin(); schedTo = -.001; tl.play(0); syncBtn(); }
+function setMuted(m){ muted = m; if (MASTER) MASTER.gain.value = m ? 0 : .9; syncVO(tl.time()); const b = Q('#d-mute'); if (b) b.textContent = m ? '🔇 Unmute' : '🔊 Mute'; }
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.code !== 'Space') return;
+  if (e.code === 'Space'){ e.preventDefault(); togglePlay(); } else if (e.key === 'r' || e.key === 'R') restart(); else if (e.key === 'm' || e.key === 'M') setMuted(!muted);
+});
+if (DEBUG){
+  Q('#dbg').style.display = 'flex';
+  Q('#d-play').onclick = togglePlay; Q('#d-restart').onclick = restart; Q('#d-mute').onclick = () => setMuted(!muted);
+  const vs = Q('#d-voice'); vs.value = params.get('voice') || DEFAULT_VOICE; vs.onchange = () => { loadVoice(vs.value); syncVO(tl.time()); };
+  const sl = Q('#d-slider'); sl.addEventListener('input', () => { started = true; tl.pause(); tl.time(+sl.value); syncVO(+sl.value); syncBtn(); });
+}
+
+/* ---------- boot ---------- */
+updateSceneForTime(0);
+const ready = Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise(r => setTimeout(r, 2500))]);
+ready.then(() => {
+  tl.time(0); updateSceneForTime(0);
+  if (CLEAN){ window.__seek = s => { tl.pause(); tl.time(s); updateSceneForTime(s); }; if (params.has('t')) window.__seek(+params.get('t')); return; }
+  const probe = vos[0];
+  probe.play().then(() => { probe.pause(); begin(); }).catch(err => {
+    if (err && err.name === 'NotAllowedError'){
+      const go = e => { if (e.type === 'keydown') e.stopPropagation(); removeEventListener('pointerdown', go); removeEventListener('keydown', go, true); if (!started) begin(); };
+      addEventListener('pointerdown', go); addEventListener('keydown', go, true);
+    } else begin();
+  });
+});
+window.__tl = tl;
+})();
+</script>
+</body>
+</html>

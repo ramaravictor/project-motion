@@ -1,0 +1,81 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  body { margin:0; background:#fff; font-family: sans-serif; }
+  .grid { display:grid; grid-template-columns: repeat(3, 400px); width:1200px; }
+  .tile { --bg:#fff; background:var(--bg); height:460px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:1px solid #eee; box-sizing:border-box; }
+  .tile.dark { --bg:#141619; border-color:#141619; }
+  .tile svg.big { width:300px; height:380px; }
+  .sizes { grid-column: 1 / -1; height:200px; flex-direction:row; gap:64px; }
+  .sizes .grp { display:flex; align-items:flex-end; gap:20px; }
+  .lbl { font: 600 15px monospace; color:#888; margin-top:10px; }
+</style></head><body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- Huruf dasar (sama dengan tangga.html): tinggi 120, garis 18, potongan sudut 14 -->
+    <path id="Rp" fill="none" d="M0 120 V0 H66 L80 14 V48 L66 62 H0"/>
+    <polygon id="Rl" points="35.27,62 60.73,62 127.73,129 102.27,129"/>
+    <!-- S untuk anyaman: ekor utuh, lewat di balik batang R bawah lalu muncul lagi di kiri -->
+    <path id="Sa" fill="none" d="M90 0 H14 L0 14 V46 L14 60 H76 L90 74 V106 L76 120 H0"/>
+    <path id="Sp" fill="none" d="M90 0 H14 L0 14 V46 L14 60 H76 L90 74 V106 L76 120 H0"/>
+
+    <g id="Rr"><use href="#Rp" style="stroke:currentColor" stroke-width="18"/><use href="#Rl" style="fill:currentColor"/></g>
+    <g id="Rk"><use href="#Rp" style="stroke:var(--bg)" stroke-width="34"/><use href="#Rl" style="fill:var(--bg);stroke:var(--bg)" stroke-width="16"/></g>
+    <g id="Sr"><use href="#Sp" style="stroke:currentColor" stroke-width="18"/></g>
+    <g id="Sk"><use href="#Sp" style="stroke:var(--bg)" stroke-width="34"/></g>
+
+
+    <!-- Tangga-1 lama (pembanding) -->
+    <symbol id="t1" viewBox="-25 -25 372 278"><g stroke-linejoin="miter" stroke-linecap="square" stroke-miterlimit="10">
+      <use href="#Rr"/>
+      <g transform="translate(105 50)"><use href="#Sk"/><use href="#Sr"/></g>
+      <g transform="translate(200 100)"><use href="#Rk"/><use href="#Rr"/></g>
+    </g></symbol>
+
+    <!-- Tangga-1 anyam: R1 (0,0) → S (32,95) → R2 (80,180)
+         Silang 1: kaki R1 DI ATAS garis atas S
+         Silang 2: S DI ATAS garis atas mangkuk R2 (S masuk ke mangkuk)
+         Silang 3: batang R2 DI ATAS garis bawah S (S keluar dari mangkuk) -->
+    <!-- Celah anyaman via mask (tiap huruf digambar sekali, tanpa jahitan clip).
+         Koordinat absolut: R1 (0,0), S (32,95), R2 (80,180). Celah 8px tiap sisi. -->
+    <mask id="mS" maskUnits="userSpaceOnUse" x="-60" y="-60" width="400" height="460">
+      <rect x="-60" y="-60" width="400" height="460" fill="#fff"/>
+      <!-- kaki R1 lewat di atas garis atas S -->
+      <polygon points="35.27,62 60.73,62 127.73,129 102.27,129" fill="#000" stroke="#000" stroke-width="16" stroke-linejoin="miter"/>
+      <!-- batang R2 lewat di atas garis bawah S: celah = bentuk R2 + 8px, dibatasi area silang -->
+      <g clip-path="url(#xR2stem)" fill="none" stroke="#000" stroke-width="34" stroke-linejoin="miter" stroke-linecap="square" stroke-miterlimit="10">
+        <use href="#Rp" transform="translate(80 180)"/>
+      </g>
+    </mask>
+    <mask id="mR2" maskUnits="userSpaceOnUse" x="-60" y="-60" width="400" height="460">
+      <rect x="-60" y="-60" width="400" height="460" fill="#fff"/>
+      <!-- sisi kanan S lewat di atas garis atas mangkuk R2: celah = bentuk S + 8px (ikut sudut 45°) -->
+      <!-- hanya segmen S yang menyilang (miring + tegak), supaya batang tengah S tidak menggerus kepala R -->
+      <path d="M108 155 L122 169 V201" fill="none" stroke="#000" stroke-width="34" stroke-linejoin="miter" stroke-linecap="butt" stroke-miterlimit="10"/>
+    </mask>
+    <!-- batas area silang; tepinya jatuh di ruang kosong, jadi tidak membuat jahitan -->
+    <clipPath id="xR2stem" clipPathUnits="userSpaceOnUse"><rect x="55" y="198" width="50" height="36"/></clipPath>
+
+    <symbol id="anyam" viewBox="-30 -30 262 370"><g stroke-linejoin="miter" stroke-linecap="square" stroke-miterlimit="10">
+      <g mask="url(#mR2)"><g transform="translate(80 180)"><use href="#Rr"/></g></g>
+      <g mask="url(#mS)"><g transform="translate(32 95)"><use href="#Sa" style="stroke:currentColor" stroke-width="18"/></g></g>
+      <use href="#Rr"/>
+    </g></symbol>
+  </defs>
+</svg>
+
+<div class="grid">
+  <div class="tile"><svg class="big" style="color:#E2231A;opacity:.45"><use href="#t1"/></svg><div class="lbl">Tangga-1 lama</div></div>
+  <div class="tile" id="n"><svg class="big" style="color:#E2231A"><use href="#anyam"/></svg><div class="lbl">Tangga-1 · S menembus R</div></div>
+  <div class="tile dark"><svg class="big" style="color:#E2231A"><use href="#anyam"/></svg><div class="lbl">latar gelap</div></div>
+
+  <div class="tile sizes">
+    <div class="grp" style="color:#E2231A">
+      <svg width="85" height="120"><use href="#anyam"/></svg>
+      <svg width="43" height="60"><use href="#anyam"/></svg>
+      <svg width="22" height="30"><use href="#anyam"/></svg>
+    </div>
+  </div>
+</div>
+</body></html>

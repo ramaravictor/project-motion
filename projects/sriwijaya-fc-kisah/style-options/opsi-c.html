@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Opsi C · Malam di Jakabaring</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#070b18}
+#c{position:relative;width:1080px;height:1920px;overflow:hidden;background:linear-gradient(180deg,#0b1430 0%,#070b18 55%,#04060d 100%)}
+.beam{position:absolute;top:0;width:260px;height:1500px;transform-origin:top center;background:linear-gradient(180deg,rgba(255,226,150,.38),rgba(255,226,150,0) 85%);clip-path:polygon(42% 0,58% 0,100% 100%,0 100%)}
+.pole{position:absolute;top:120px;width:90px;height:44px;border-radius:8px;background:#1b2440;border:3px solid #2a355c}
+.pole.on{background:#ffe7a6;box-shadow:0 0 60px 20px rgba(255,220,130,.55)}
+.stands{position:absolute;left:-60px;right:-60px;top:1180px;height:420px;background:repeating-linear-gradient(180deg,#141c36 0 26px,#0d1328 26px 52px);transform:perspective(900px) rotateX(38deg);transform-origin:bottom}
+.seat{position:absolute;width:26px;height:20px;border-radius:5px 5px 2px 2px;background:#2f3a5e}
+.seat.lit{background:#f5c400;box-shadow:0 0 22px rgba(245,196,0,.5)}
+.pitch{position:absolute;left:0;right:0;top:1560px;height:360px;background:linear-gradient(180deg,#0e2a1d,#06120c)}
+.board{position:absolute;left:150px;top:300px;width:780px;padding:28px 34px;background:#05070d;border:6px solid #1d2647;border-radius:14px;box-shadow:0 0 0 2px #000 inset}
+.board div{font:400 52px/1.25 'DotGothic16';color:#ffb340;letter-spacing:.04em;text-shadow:0 0 12px rgba(255,170,60,.7)}
+.board .r{color:#ff5a4a;text-shadow:0 0 12px rgba(255,80,60,.7)}
+.ele{position:absolute;left:90px;top:780px;width:900px;font:600 104px/1.02 'Cormorant Garamond';color:#e9e2cf}
+.ele i{color:#f0c35a}
+.cap{position:absolute;left:90px;top:1010px;font:italic 600 46px 'Cormorant Garamond';color:#9aa6c4}
+.conf{position:absolute;width:10px;height:18px;background:#f5c400;opacity:.5}
+</style></head><body><div id="c">
+<div class="beam" style="left:640px;transform:rotate(14deg)"></div>
+<div class="pole" style="left:120px"></div><div class="pole" style="left:380px"></div><div class="pole" style="left:620px"></div><div class="pole on" style="left:725px"></div>
+<div class="board">
+  <div>LIGA NUSANTARA 26/27</div>
+  <div class="r">SRIWIJAYA FC · TIDAK LOLOS</div>
+  <div>UTANG ±RP4,1 MILIAR</div>
+</div>
+<div class="ele">Lampu terakhir<br>di <i>Jakabaring</i></div>
+<div class="cap">satu per satu padam, sejak 2018</div>
+<div class="stands"></div>
+<div class="seat lit" style="left:700px;top:1470px"></div>
+<div class="seat" style="left:420px;top:1470px"></div><div class="seat" style="left:480px;top:1470px"></div><div class="seat" style="left:540px;top:1470px"></div><div class="seat" style="left:600px;top:1470px"></div><div class="seat" style="left:760px;top:1470px"></div><div class="seat" style="left:820px;top:1470px"></div>
+<div class="conf" style="left:300px;top:1640px;transform:rotate(30deg)"></div><div class="conf" style="left:880px;top:1700px;transform:rotate(-20deg)"></div>
+<div class="pitch"></div>
+</div></body></html>

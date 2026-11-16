@@ -1,0 +1,15 @@
+# Voice ElevenLabs: Putra - Smooth, Clear and Engaging (sama dengan video ChillDev sebelumnya)
+# Perkiraan durasi: ~52 detik + ±1 detik end card · 6 paragraf = 6 scene · beri jeda ±0,6 detik antar paragraf
+# Cara baca: "git add titik" = git add . · "dot env" = .env · "dot env dot keys" = .env.keys · "dotenvx" dibaca "dot-env-x" · "pre-commit" dibaca "pri-komit"
+
+Jam dua pagi, fitur kelar di Antigravity IDE. Langsung git add titik, commit, push. Lega? Tunggu dulu.
+
+File dot env lo ikut ke-push ke repo publik, isinya API key OpenAI, Claude, sampai AWS. Bot scraper nyisir GitHub nonstop, key bocor bisa kepake dalam hitungan menit.
+
+Begitu ketemu, key lo dipake buat model paling mahal. Tagihan jalan sendiri. Dihapus di commit baru pun telat, history git masih nyimpen.
+
+Obatnya gitleaks, hampir tiga puluh satu ribu bintang. Tambahin ke pre-commit config, jalanin pre-commit install. Tiap commit di-scan dulu. Ketemu API key? Commit-nya langsung ditolak.
+
+Bonus: enkripsi dot env pakai dotenvx. Repo cuma nyimpen versi terenkripsi, kuncinya di dot env dot keys, jangan di-commit.
+
+Mau config pre-commit sama dotenvx yang tinggal tempel? Ketik AMAN di kolom komentar. Gas!

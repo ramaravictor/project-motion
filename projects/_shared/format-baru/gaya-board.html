@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Gaya Bang Motion v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1640px;background:#F4EFE8;color:#141619;font-family:'Plus Jakarta Sans',sans-serif;padding:40px}
+h1{font-size:36px;font-weight:800;letter-spacing:-.03em}
+h1+p{font-size:16px;color:#555;margin:6px 0 24px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.c img{width:100%;aspect-ratio:9/16;border-radius:14px;display:block;box-shadow:0 12px 26px rgba(0,0,0,.18)}
+.c b{display:block;font:700 13px 'JetBrains Mono';color:#FF5500;margin-top:10px}
+.c span{font-size:14px;color:#333;line-height:1.35}
+</style>
+</head>
+<body>
+<h1>Kerangka v2 × gaya Bang Motion</h1>
+<p>Header, safe zone, dan Rama voxel sama · latar, font, warna, dan cara teks masuk mengikuti gaya</p>
+<div class="grid" id="g"></div>
+<script>
+const O = [
+  ['1', 'Sinematik gelap', 'Nebula + partikel menembus kamera, teks masuk push-through'],
+  ['2', 'Poster color-block', 'Bidang warna menyapu tiap ketukan, teks menabrak dari tepi'],
+  ['3', 'Editorial terang', 'Krem, garis & lingkaran menggambar sendiri, serif tenang'],
+  ['4', 'Kertas & cetak', 'Potongan kertas terbang lalu mendarat, stempel, tulisan tangan'],
+  ['5', 'Retro / analog', 'Matahari bergaris, scanline, pita VHS, teks chromatic'],
+  ['6', 'Brutalis mono', 'Grid keras, blok lompat ke sel, terminal & kursor'],
+  ['7', 'Grainy gradient', 'Bentuk bercahaya berputar, lubang membesar, butiran hidup'],
+  ['8', 'Kartun panggung', 'Langit, awan jalan, server berkedip, paket data mengalir'],
+];
+document.getElementById('g').innerHTML = O.map(([k, t, d]) => `<div class="c"><img src="gaya/gaya-${k}.png"><b>${k} · ${t.toUpperCase()}</b><span>${d}</span></div>`).join('');
+</script>
+</body>
+</html>

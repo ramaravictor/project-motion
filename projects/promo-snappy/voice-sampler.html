@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snappy Photo Corner — Referensi Karakter Suara Voice Over</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --nb-void: #120f17;
+  --nb-accent: #b497cf;
+  --nb-ink: #f3f1f7;
+  --ui-primary: #5227ff;
+  --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--nb-void);
+  color: var(--nb-ink);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 24px;
+}
+.container {
+  max-width: 840px;
+  width: 100%;
+}
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.eyebrow {
+  color: var(--nb-accent);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+h1 {
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 14px;
+}
+p.subtitle {
+  color: rgba(243, 241, 247, 0.7);
+  font-size: 18px;
+  line-height: 1.5;
+}
+.cards-grid {
+  display: grid;
+  gap: 20px;
+}
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s, border-color 0.2s, background 0.2s;
+}
+.card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--nb-accent);
+  transform: translateY(-2px);
+}
+.card.featured {
+  border-color: var(--ui-primary);
+  background: rgba(82, 39, 255, 0.08);
+}
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.badge {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--nb-accent);
+}
+.card.featured .badge {
+  background: var(--ui-primary);
+  color: #fff;
+}
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.card-title {
+  font-size: 22px;
+  font-weight: 700;
+}
+.card-desc {
+  color: rgba(243, 241, 247, 0.65);
+  font-size: 15px;
+  line-height: 1.45;
+}
+.quote {
+  font-style: italic;
+  color: rgba(243, 241, 247, 0.85);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 12px 18px;
+  border-left: 3px solid var(--nb-accent);
+  border-radius: 6px;
+  font-size: 15px;
+}
+audio {
+  width: 100%;
+  height: 40px;
+  margin-top: 4px;
+}
+.footer-cta {
+  margin-top: 48px;
+  text-align: center;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--ui-primary);
+  color: #fff;
+  border-radius: 9999px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  transition: transform 0.15s;
+}
+.back-btn:hover { transform: scale(1.03); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <p class="eyebrow">✦ Referensi Karakter Suara AI</p>
+    <h1>Pilih Gaya Suara Voice Over</h1>
+    <p class="subtitle">Dengarkan 4 pilihan karakter suara di bawah ini untuk video promosi Snappy Photo Corner.</p>
+  </div>
+
+  <div class="cards-grid">
+    <!-- Option 1 -->
+    <div class="card featured">
+      <div class="card-top">
+        <div class="title-row">
+          <span class="card-title">1. Gadis Neural — Hangat & Ceria (Recommended ✦)</span>
+        </div>
+        <span class="badge">REKOMENDASI</span>
+      </div>
+      <p class="card-desc">Suara wanita muda Indonesia alami, ramah, artikulatif, ekspresif, dan tidak kaku. Cocok sekali untuk tema booth foto anak muda dan gaya kekinian.</p>
+      <div class="quote">"Hai! Selamat datang di Snappy Photo Corner. Pose dulu, sisanya urusan kami!"</div>
+      <audio controls src="assets/samples/sample1_gadis_hangat.mp3"></audio>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="card">
+      <div class="card-top">
+        <div class="title-row">
+          <span class="card-title">2. Gadis Neural — Enerjik & Upbeat (Tempo Reels/TikTok)</span>
+        </div>
+        <span class="badge">PROMO CEPAT</span>
+      </div>
+      <p class="card-desc">Karakter suara yang sama dengan pitch sedikit lebih tinggi dan tempo lebih cepat (+12%). Sangat pas untuk video promosi sosial media bertempo dinamis.</p>
+      <div class="quote">"Mau foto aesthetic bareng bestie? Masuk ke Snappy Photo Corner, pilih frame favoritmu, dan cetak hasilnya dalam hitungan detik!"</div>
+      <audio controls src="assets/samples/sample2_gadis_upbeat.mp3"></audio>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="card">
+      <div class="card-top">
+        <div class="title-row">
+          <span class="card-title">3. Ardi Neural — Pria Santai & Modern</span>
+        </div>
+        <span class="badge">MALE VOICE</span>
+      </div>
+      <p class="card-desc">Suara pria muda dengan intonasi kasual, ramah, dan percaya diri. Memberikan nuansa tech-modern dan profesional.</p>
+      <div class="quote">"Snappy Photo Corner. Cukup scan QRIS, pilih gayamu, dan bawa pulang cetakan empat R berkualitas studio."</div>
+      <audio controls src="assets/samples/sample3_ardi_modern.mp3"></audio>
+    </div>
+
+    <!-- Option 4 -->
+    <div class="card">
+      <div class="card-top">
+        <div class="title-row">
+          <span class="card-title">4. Damayanti — macOS Native Voice</span>
+        </div>
+        <span class="badge">MACOS TTS</span>
+      </div>
+      <p class="card-desc">Suara bawaan sistem macOS dengan pengucapan khas sistem otomatis.</p>
+      <div class="quote">"Snappy Photo Corner. Pose dulu, sisanya urusan kami. Cetak kenanganmu sekarang."</div>
+      <audio controls src="assets/samples/sample4_damayanti.m4a"></audio>
+    </div>
+  </div>
+
+  <div class="footer-cta">
+    <a href="index.html?debug=1" class="back-btn">← Kembali ke Video Promo (Debug Mode)</a>
+  </div>
+</div>
+
+</body>
+</html>

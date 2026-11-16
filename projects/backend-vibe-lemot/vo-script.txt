@@ -1,0 +1,15 @@
+# Voice ElevenLabs: Putra - Smooth, Clear and Engaging (sama dengan video ChillDev sebelumnya)
+# Perkiraan durasi: ~49 detik + 2 detik end card · 6 paragraf = 6 scene · beri jeda ±0,6 detik antar paragraf
+# "N+1" = "en plus satu" · "JOIN" = "join" · "localhost" = "lokal host"
+
+Pas dites sendirian di localhost, web hasil vibe coding lo ngebut banget. Satu user, satu request, loading sekejap.
+
+Begitu dibuka seratus user barengan, langsung lima nol empat, gateway timeout. Request numpuk di depan database kayak tol pas mudik.
+
+Biangnya namanya N plus satu query. AI naruh await db query di dalam for loop. Seratus post, jadi seratus satu kali ngetuk database.
+
+Obat pertama, ganti jadi satu query JOIN. Post sama nama penulisnya diambil sekaligus, sekali jalan.
+
+Obat kedua, tambah index di kolom yang sering dicari, terus pakai connection pool biar koneksi dipakai ulang. Loading langsung turun drastis.
+
+Mau checklist prompt audit backend-nya? Ketik BACKEND di kolom komentar. Gas!

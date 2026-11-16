@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lampu Terakhir · Part 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DotGothic16&family=IBM+Plex+Mono:wght@600&family=Playfair+Display:wght@900&family=Old+Standard+TT:wght@700&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../_world/stadium.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="../_world/stadium.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;background:#000;overflow:hidden}
+  #stage{position:absolute;left:50%;top:50%;width:1080px;height:1920px;overflow:hidden;background:#070b18;transform-origin:50% 50%}
+  body.render #stage{left:0;top:0;transform:none!important}
+  #shake{position:absolute;left:0;top:0;width:1080px;height:1920px}
+  #scrim{position:absolute;left:0;right:0;top:700px;height:520px;background:radial-gradient(70% 55% at 50% 50%,rgba(4,6,14,.78),rgba(4,6,14,0) 72%);pointer-events:none;opacity:0}
+  #hud{position:absolute;inset:0;pointer-events:none}
+
+  .say{position:absolute;left:70px;width:940px;font:600 108px/1.02 'Cormorant Garamond',serif;color:#e9e2cf;letter-spacing:-.01em;text-shadow:0 4px 30px rgba(0,0,0,.6)}
+  .say.c{text-align:center}
+  .say i{font-style:italic;color:#f0c35a}
+  .say i.red{color:#ff7a66}
+  .say i.st{font-style:normal;color:#e9e2cf;position:relative;display:inline-block}
+  .say .ln{position:absolute;left:-8px;right:-8px;top:56%;height:8px;border-radius:4px;background:#ff5a4a;transform-origin:0 50%;transform:scaleX(0);box-shadow:0 0 16px rgba(255,90,74,.6)}
+  .say .w{display:inline-block;white-space:nowrap;opacity:0}
+  .say .wd{display:inline-block;white-space:nowrap}
+  .say .ch{opacity:0}
+  .lbl{position:absolute;left:74px;font:600 34px 'IBM Plex Mono',monospace;color:#b8c2dc;letter-spacing:.08em;white-space:nowrap;opacity:0}
+  .lbl.c{left:0;right:0;text-align:center}
+
+  /* scene 3: angka nol */
+  #zero{position:absolute;left:0;right:0;top:470px;text-align:center;font:600 380px/1 'IBM Plex Mono',monospace;color:#f5c400;text-shadow:0 0 60px rgba(245,196,0,.35);opacity:0}
+  /* scene 4: tanda tanya yang dioper */
+  #q{position:absolute;left:0;top:0;width:140px;height:220px;text-align:center;font:italic 600 240px/220px 'Cormorant Garamond',serif;color:#f0c35a;text-shadow:0 0 40px rgba(240,195,90,.45);display:none;transform-origin:50% 50%}
+
+  /* scene 2: timbangan (objek dunia) */
+  #scale{position:absolute;left:190px;top:770px;width:700px;height:420px;display:none}
+  #scale .post{position:absolute;left:340px;top:60px;width:20px;height:330px;background:linear-gradient(90deg,#2a3558,#1a2240)}
+  #scale .base{position:absolute;left:240px;top:384px;width:220px;height:20px;border-radius:6px;background:#2a3558}
+  #scale .pivot{position:absolute;left:334px;top:44px;width:32px;height:32px;border-radius:50%;background:#e8c46a;box-shadow:0 0 24px rgba(232,196,106,.5);z-index:3}
+  #beam{position:absolute;left:70px;top:52px;width:560px;height:16px;border-radius:8px;background:linear-gradient(#f0d48a,#b88d33);transform-origin:280px 8px;z-index:2}
+  .pan{position:absolute;width:220px;height:160px}
+  .pan .str{position:absolute;left:109px;top:0;width:2px;height:120px;background:#a8945f}
+  .pan .dish{position:absolute;left:0;top:120px;width:220px;height:26px;border-radius:0 0 110px 110px;background:linear-gradient(#e8c46a,#9c7428)}
+  .pan .pl{position:absolute;left:0;right:0;top:160px;text-align:center;font:600 26px 'IBM Plex Mono',monospace;color:#9aa6c4;letter-spacing:.12em}
+  #gold{position:absolute;left:15px;top:48px;width:190px;height:72px;border-radius:6px;background:#f5c400;color:#14110a;text-align:center;padding-top:6px;box-shadow:0 0 30px rgba(245,196,0,.35)}
+  #gold small{display:block;font:600 17px 'IBM Plex Mono',monospace;letter-spacing:.1em}
+  #gold b{display:block;font:600 34px/1.1 'IBM Plex Mono',monospace}
+  .debt{position:absolute;width:120px;height:56px;border-radius:6px;background:#b3261e;border:3px solid #ff5a4a;color:#ffe2dc;text-align:center;font:600 40px/50px 'IBM Plex Mono',monospace;box-shadow:0 0 22px rgba(255,90,74,.4)}
+
+  /* scene 3: stempel di papan skor */
+  #stamp{position:absolute;left:540px;top:536px;font:400 66px/1.05 'Special Elite',monospace;color:#ff4a3a;border:7px solid #ff4a3a;padding:10px 26px;text-align:center;white-space:nowrap;letter-spacing:.05em;text-shadow:0 0 18px rgba(255,74,58,.55);box-shadow:0 0 30px rgba(255,74,58,.35),inset 0 0 18px rgba(255,74,58,.25);opacity:0;visibility:hidden}
+
+  /* scene 5: bulu elang */
+  #feather{position:absolute;left:0;top:0;width:130px;height:44px;visibility:hidden;filter:drop-shadow(0 0 14px rgba(255,231,166,.55))}
+
+  #tag{position:absolute;left:60px;right:60px;top:1640px;text-align:center;font:600 34px 'IBM Plex Mono',monospace;color:#9aa6c4;letter-spacing:.12em;opacity:0}
+  #next{position:absolute;left:60px;right:60px;top:1700px;text-align:center;font:italic 600 40px 'Cormorant Garamond',serif;color:#e9e2cf;opacity:0}
+  #next i{color:#f0c35a}
+  #grain{position:absolute;inset:-60px;opacity:.09;mix-blend-mode:overlay;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+  #vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(85% 60% at 50% 48%,transparent 50%,rgba(0,0,0,.6) 100%)}
+  #dbg{position:fixed;left:10px;right:10px;bottom:10px;display:none;gap:10px;align-items:center;font:600 13px monospace;color:#ccc;z-index:99}
+  #dbg input{flex:1}
+  body.debug #dbg{display:flex}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="shake">
+    <div id="world">
+      <canvas id="cv" width="1080" height="1920"></canvas>
+      <div id="board"><div class="row"></div><div class="row"></div><div class="row"></div></div>
+      <div id="stamp">TIDAK MEMENUHI<br>SYARAT</div>
+      <div id="scale">
+        <div class="post"></div><div class="base"></div>
+        <div id="beam"></div><div class="pivot"></div>
+        <div class="pan" id="panL"><div class="str"></div><div id="gold"><small>HARGA KLUB</small><b>RP4 M</b></div><div class="dish"></div><div class="pl">HARGA</div></div>
+        <div class="pan" id="panR"><div class="str"></div><div class="debt">?</div><div class="debt">?</div><div class="debt">?</div><div class="debt">?</div><div class="debt">?</div><div class="dish"></div><div class="pl">UTANG</div></div>
+      </div>
+      <svg id="feather" viewBox="0 0 120 40"><path d="M4 21 C30 3 82 1 116 17 C82 31 34 35 4 21 Z" fill="#efe6d2"/><path d="M2 21 L116 17" stroke="#9c8f74" stroke-width="2.4"/><path d="M40 12 L52 21 M62 9 L72 19 M84 10 L92 18 M44 30 L54 21 M66 30 L74 20" stroke="#cfc3a8" stroke-width="1.6"/></svg>
+    </div>
+  </div>
+  <div id="scrim"></div>
+  <div id="hud">
+    <div id="zero">0</div>
+    <div id="q">?</div>
+  </div>
+  <div id="tag">@ramarvctr_ · PART 3/4</div>
+  <div id="next">Selanjutnya: <i>Lampu di tiang sebelah</i></div>
+  <div id="grain"></div>
+  <div id="vig"></div>
+</div>
+<div id="dbg"><button id="pp">▶</button><input id="scr" type="range" min="0" step="0.01"><span id="tt"></span></div>
+<audio id="vo" src="vo.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+  const S = window.Stadium, Q = new URLSearchParams(location.search);
+  const RENDER = Q.get('render') === '1', DEBUG = Q.get('debug') === '1';
+  if (RENDER) document.body.classList.add('render');
+  if (DEBUG) document.body.classList.add('debug');
+  const $ = (q) => document.querySelector(q);
+  const { clamp, lerp } = S, ease = S.EASE.out;
+
+  /* Batas adegan = titik tengah jeda paragraf di vo.mp3 (silencedetect -32 dB / 0,22 s) */
+  const SCENES = [
+    { id: 's01', t0: 0.00,  t1: 7.95,  line: 'sempat ada cahaya' },
+    { id: 's02', t0: 7.95,  t1: 18.32, line: 'utang lebih gede dari harga klub' },
+    { id: 's03', t0: 18.32, t1: 31.97, line: 'kalah di meja administrasi' },
+    { id: 's04', t0: 31.97, t1: 41.44, line: 'nggak ada yang berani bicara' },
+    { id: 's05', t0: 41.44, t1: 54.40, line: 'elang itu belum mati' },
+  ];
+  const DURATION = 54.4, FPS = 30;
+
+  /* ---------- dunia: lanjutan Part 2, tinggal lampu 4 ---------- */
+  const INIT = [0, 0, 0, 1];
+  const LIGHTS = [
+    { i: 2, t: 1.5, type: 'on' },        // "sempat ada cahaya"
+    { i: 2, t: 16.95, type: 'off' },     // "Bang Gumay mundur"
+    { i: 3, t: 37.15, type: 'flick' },   // "takut salah"
+  ];
+  function worldState(t) {
+    const crowd = t < 17 ? .12 : lerp(.12, .02, clamp((t - 17) / 10));
+    return { lights: [0, 1, 2, 3].map(i => S.light(LIGHTS, i, t, INIT[i])), crowd, cheer: 0, confetti: 0, confettiT: 0, players: { mode: 'walk', a: 0 } };
+  }
+
+  /* ---------- kamera ---------- */
+  const CAM0 = { s: 1.9, x: 695, y: 330 };                                  // close-up lampu 3
+  const MOVES = [
+    { t0: 2.4, t1: 5.8, to: { s: 1.25, x: 600, y: 1250 } },                 // turun mengikuti sinar ke kursi
+    { t0: 5.8, t1: 7.95, to: { s: 1.32, x: 570, y: 1200 } },
+    { t0: 7.95, cut: true, to: { s: 1.34, x: 540, y: 940 } },               // timbangan
+    { t0: 7.95, t1: 9.2, to: { s: 1.24, x: 540, y: 900 }, ease: 'out' },
+    { t0: 13.3, t1: 14.4, to: { s: 1.3, x: 560, y: 960 } },                 // condong ke piring utang
+    { t0: 15.9, t1: 16.9, to: { s: 1.22, x: 540, y: 880 } },
+    { t0: 17.85, t1: 18.32, to: { s: 2.3, x: 540, y: 536 }, ease: 'in' },   // push-through ke papan
+    { t0: 18.32, t1: 19.3, to: { s: 1.36, x: 540, y: 540 }, ease: 'out' },
+    { t0: 24.0, t1: 25.4, to: { s: 1.2, x: 540, y: 1650 } },                // turun ke lapangan kosong
+    { t0: 28.0, t1: 29.2, to: { s: 1.05, x: 540, y: 960 } },                // wide: papan berstempel
+    { t0: 31.97, cut: true, to: { s: 1.7, x: 700, y: 1320 } },              // kursi kosong
+    { t0: 32.0, t1: 41.3, to: { s: 1.55, x: 640, y: 1280 }, ease: 'lin' },  // dolly pelan
+    { t0: 41.44, cut: true, to: { s: 1.7, x: 950, y: 340 } },               // lampu terakhir
+    { t0: 42.0, t1: 46.2, to: { s: 1.6, x: 830, y: 1440 } },                // turun ke kursi + kliping
+    { t0: 51.0, t1: 54.2, to: { s: 1.0, x: 540, y: 960 } },                 // pull back
+  ];
+
+  /* ---------- papan skor ---------- */
+  const BOARD = [
+    { t0: 0, rows: [] },
+    { t0: 7.95, rows: [['PERMINTAAN · RP4 M', 8.4, ''], ['BUKU DIBUKA ...', 11.6, ''], ['AKUISISI · BATAL', 16.95, 'r']] },
+    { t0: 18.32, rows: [['KEPUTUSAN PT LIB', 18.8, ''], ['SRIWIJAYA FC', 20.75, 'g'], ['LIGA NUSANTARA 26/27', 21.6, '']] },
+    { t0: 31.97, rows: [] },
+    { t0: 41.44, rows: [['SRIWIJAYA FC', 42.0, 'g'], ['SEJAK 2004', 43.5, ''], ['1 LAMPU TERSISA', 45.0, 'g']] },
+  ];
+  const rowEls = [...document.querySelectorAll('#board .row')];
+  function board(t) {
+    let b = BOARD[0]; for (const x of BOARD) if (t >= x.t0) b = x;
+    rowEls.forEach((el, k) => {
+      const r = b.rows[k]; let s = '', cls = '';
+      if (r) {
+        const [txt, at, c] = r; cls = c;
+        if (t >= at) { const n = Math.min(txt.length, Math.floor((t - at) * 24) + 1); s = txt.slice(0, n) + (n < txt.length && Math.floor(t * 6) % 2 ? '_' : ''); }
+      }
+      el.textContent = s; el.className = 'row' + (cls ? ' ' + cls : '');
+    });
+  }
+
+  /* ---------- teks: tiap adegan punya cara masuk sendiri ---------- */
+  const hud = $('#hud');
+  const tl = gsap.timeline({ paused: true });
+  const SCRIM = [];
+  const words = (html) => html.split(/(<i[^>]*>.*?<\/i>|\s+)/).filter(s => s && !/^\s+$/.test(s)).map(w => {
+    const m = w.match(/^<i([^>]*)>(.*?)<\/i>$/);
+    if (m) return m[2].split(' ').map(x => `<span class="w"><i${m[1]}>${x}</i></span>`).join(' ');
+    return `<span class="w">${w}</span>`;
+  }).join(' ');
+  const chars = (txt) => txt.split(' ').map(w => `<span class="wd">${[...w].map(c => `<span class="ch">${c}</span>`).join('')}</span>`).join(' ');
+
+  function say(html, at, out, o = {}) {
+    const { size, center, mode = 'rise', nowrap } = o;
+    const top = o.top === 'auto' ? (S.pickTop((t) => S.cam(t, CAM0, MOVES), at, out) || 790) : (o.top ?? 790);
+    const el = document.createElement('div'); el.className = 'say' + (center ? ' c' : '');
+    if (nowrap) el.style.whiteSpace = 'nowrap';
+    el.style.top = top + 'px'; if (size) el.style.fontSize = size + 'px';
+    hud.appendChild(el);
+    if (mode === 'rise' || mode === 'drop') {
+      el.innerHTML = words(html);
+      const ws = el.querySelectorAll('.w');
+      if (mode === 'rise') tl.fromTo(ws, { opacity: 0, yPercent: 55, filter: 'blur(10px)' }, { opacity: 1, yPercent: 0, filter: 'blur(0px)', duration: .95, stagger: .1, ease: 'power4.out' }, at);
+      else tl.fromTo(ws, { opacity: 0, yPercent: -150 }, { opacity: 1, yPercent: 0, duration: .6, stagger: .16, ease: 'bounce.out' }, at);
+      tl.fromTo(ws, { opacity: 1, yPercent: 0, filter: 'blur(0px)' }, { opacity: 0, yPercent: -30, filter: 'blur(8px)', duration: .4, stagger: .03, ease: 'power2.in', immediateRender: false }, out);
+    } else {
+      el.innerHTML = html;
+      if (mode === 'sweep') {   // cahaya menyapu huruf dari kiri
+        tl.fromTo(el, { clipPath: 'inset(-20% 100% -20% 0%)', opacity: 1 }, { clipPath: 'inset(-20% 0% -20% 0%)', duration: 1.5, ease: 'power2.inOut' }, at);
+        tl.fromTo(el, { textShadow: '0 0 60px rgba(255,231,166,.9)' }, { textShadow: '0 4px 30px rgba(0,0,0,.6)', duration: 1.8, ease: 'power1.out' }, at + .4);
+      } else if (mode === 'track') {   // pelan, merapat dari spasi lebar: sunyi
+        tl.fromTo(el, { opacity: 0, letterSpacing: '.35em', filter: 'blur(6px)' }, { opacity: 1, letterSpacing: '-.01em', filter: 'blur(0px)', duration: 1.6, ease: 'power3.out' }, at);
+      }
+      tl.fromTo(el, { opacity: 1, y: 0 }, { opacity: 0, y: -30, filter: 'blur(8px)', duration: .45, ease: 'power2.in', immediateRender: false }, out);
+    }
+    SCRIM.push([at - .2, out + .5, top]);
+    return el;
+  }
+  function label(text, at, out, top, center) {
+    const lb = document.createElement('div'); lb.className = 'lbl' + (center ? ' c' : ''); lb.textContent = text; lb.style.top = top + 'px'; hud.appendChild(lb);
+    tl.fromTo(lb, { opacity: 0, x: center ? 0 : -24, y: center ? 14 : 0 }, { opacity: 1, x: 0, y: 0, duration: .7, ease: 'power3.out' }, at);
+    tl.fromTo(lb, { opacity: 1 }, { opacity: 0, duration: .3, ease: 'power2.in', immediateRender: false }, out);
+    return lb;
+  }
+
+  // s01 · cahaya menyapu kalimat
+  const s1 = say('Sempat ada <i>cahaya</i>', 1.9, 7.3, { top: 'auto', size: 124, mode: 'sweep' });
+  label('NOV 2026 · BANG GUMAY, PENGUSAHA SUMSEL', 4.2, 7.3, parseFloat(s1.style.top) + 150);
+
+  // s02 · kata jatuh seberat balok utang
+  say('Utang <i class="red">lebih gede</i> dari harga', 13.5, 17.9, { top: 1380, size: 92, mode: 'drop' });
+  label('BANG GUMAY MUNDUR', 17.0, 18.05, 1500);
+
+  // s03 · nol besar, lalu coretan
+  tl.fromTo('#zero', { opacity: 0, scale: .55 }, { opacity: 1, scale: 1, duration: .9, ease: 'back.out(1.8)' }, 24.6);
+  tl.to('#zero', { y: -1100, x: 220, rotation: 75, opacity: 0, duration: .75, ease: 'power3.in' }, 27.3);
+  label('LAGA KASTA TIGA DIMAINKAN', 25.2, 27.3, 880, true);
+  SCRIM.push([24.4, 27.8, 560]);
+  const lineA = say('Kalah bukan di <i class="st">lapangan</i>', 28.5, 31.55, { top: 740, size: 80, nowrap: true });
+  const ln = document.createElement('span'); ln.className = 'ln'; lineA.querySelector('i.st').appendChild(ln);
+  tl.fromTo(ln, { scaleX: 0 }, { scaleX: 1, duration: .45, ease: 'power3.inOut' }, 29.35);
+  say('tapi di <i class="red">meja administrasi</i>', 30.15, 31.6, { top: 850, size: 74, nowrap: true });
+
+  // s04 · kutipan diketik, "?" dioper, sunyi
+  label('WARTAWAN BERTANYA KE PENGELOLA', 32.4, 35.3, 330, true);
+  const quote = document.createElement('div'); quote.className = 'say c'; quote.style.cssText = 'top:250px;font-size:92px;font-style:italic';
+  quote.innerHTML = `<span id="qa">${chars('“Saya nggak berani statement,')}</span><br><span id="qb">${chars('takut salah.”')}</span>`;
+  hud.appendChild(quote);
+  const qa = quote.querySelectorAll('#qa .ch'), qb = quote.querySelectorAll('#qb .ch');
+  tl.fromTo(qa, { opacity: 0 }, { opacity: 1, duration: .03, stagger: 1.25 / qa.length, ease: 'none' }, 35.5);
+  tl.fromTo(qb, { opacity: 0 }, { opacity: 1, duration: .03, stagger: .6 / qb.length, ease: 'none' }, 37.1);
+  tl.fromTo(quote, { opacity: 1 }, { opacity: 0, y: -24, filter: 'blur(8px)', duration: .4, ease: 'power2.in', immediateRender: false }, 38.15);
+  SCRIM.push([35.3, 38.6, 250]);
+  label('— PIHAK PENGELOLA', 36.1, 38.15, 600, true);
+  say('Nggak ada yang <i>berani bicara</i>', 39.75, 41.1, { top: 380, size: 76, center: true, mode: 'track' });
+
+  // s05 · lampu terakhir
+  say('Tinggal <i>satu lampu</i>', 44.9, 46.65, { top: 250, size: 104, center: true, mode: 'sweep' });
+  say('Elang itu <i>belum mati</i>', 46.9, 48.55, { top: 240, size: 104, center: true, nowrap: true });
+  say('Cuma lupa <i>cara terbang</i>', 48.8, 50.45, { top: 240, size: 92, center: true, nowrap: true });
+  label('NUNGGU YANG MAU NGAJARIN LAGI', 50.7, 54.4, 1110, true);
+  tl.fromTo('#tag', { opacity: 0 }, { opacity: 1, duration: .8 }, 52.6);
+  tl.fromTo('#next', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .9, ease: 'power3.out' }, 53.1);
+  tl.fromTo('#stamp', { autoAlpha: 0, xPercent: -50, yPercent: -50, rotation: -9, scale: 2.6 }, { autoAlpha: 1, scale: 1, duration: .17, ease: 'power3.in' }, 22.63);
+  tl.set('#stamp', { autoAlpha: 0 }, 31.97);
+  tl.set({}, {}, DURATION);
+
+  /* ---------- timbangan: harga vs utang ---------- */
+  const SC = $('#scale'), beam = $('#beam'), panL = $('#panL'), panR = $('#panR'), gold = $('#gold'), debts = [...document.querySelectorAll('.debt')];
+  const FALL = .45, GOLD_T = 9.0, DEBT_T = [13.5, 14.0, 14.5, 14.95, 15.35];
+  debts.forEach((el, k) => { el.style.left = (50 + (k % 2 ? 8 : -8)) + 'px'; el.style.top = (120 - 58 * (k + 1)) + 'px'; });
+  const SPRING = [[GOLD_T + FALL, -9], ...DEBT_T.map((t, k) => [t + FALL, k < 3 ? 6 : 5])];
+  const spring = (d) => 1 - Math.exp(-3.5 * d) * Math.cos(8 * d);
+  function drop(el, T, t0) {
+    if (T < t0) { el.style.visibility = 'hidden'; return; }
+    el.style.visibility = 'visible';
+    const p = clamp((T - t0) / FALL), d = T - t0 - FALL;
+    const y = -(1 - p * p) * 700 + (d > 0 ? -Math.abs(Math.sin(d * 14)) * 10 * Math.exp(-d * 6) : 0);
+    el.style.transform = `translateY(${y.toFixed(1)}px)`;
+  }
+  function scaleAt(T) {
+    const vis = T >= 7.95 && T < 18.32; SC.style.display = vis ? 'block' : 'none'; if (!vis) return;
+    const k = ease(clamp((T - 7.95) / .8));
+    SC.style.opacity = k.toFixed(3);
+    SC.style.transform = `translateY(${((1 - k) * 60).toFixed(1)}px)`;
+    SC.style.filter = `brightness(${lerp(1, .55, clamp((T - 16.95) / .9)).toFixed(3)})`;
+    let a = Math.sin(T * 1.3) * .6; for (const [t0, d] of SPRING) if (T >= t0) a += d * spring(T - t0);
+    const r = a * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+    beam.style.transform = `rotate(${a.toFixed(2)}deg)`;
+    panL.style.left = (350 - 280 * c - 110).toFixed(1) + 'px'; panL.style.top = (60 - 280 * s).toFixed(1) + 'px';
+    panR.style.left = (350 + 280 * c - 110).toFixed(1) + 'px'; panR.style.top = (60 + 280 * s).toFixed(1) + 'px';
+    drop(gold, T, GOLD_T);
+    debts.forEach((el, k) => drop(el, T, DEBT_T[k]));
+  }
+
+  /* ---------- "?" dioper seperti bola ---------- */
+  const qEl = $('#q');
+  const HOPS = [[38.2, [140, 1180]], [38.75, [540, 1040]], [39.3, [920, 1180]], [39.85, [1260, 980]]];
+  function qball(T) {
+    if (T < HOPS[0][0] || T > HOPS[3][0]) { qEl.style.display = 'none'; return; }
+    qEl.style.display = 'block';
+    let k = 0; while (k < 2 && T >= HOPS[k + 1][0]) k++;
+    const [t0, A] = HOPS[k], [t1, B] = HOPS[k + 1], p = (T - t0) / (t1 - t0);
+    const x = lerp(A[0], B[0], p), y = lerp(A[1], B[1], p) - 4 * 230 * p * (1 - p);
+    qEl.style.opacity = clamp((T - 38.2) / .15).toFixed(3);
+    qEl.style.transform = `translate(${(x - 70).toFixed(1)}px,${(y - 110).toFixed(1)}px) rotate(${((k + p) * 360).toFixed(1)}deg)`;
+  }
+
+  /* ---------- benang merah: kliping 2008 + bulu elang ---------- */
+  const world = $('#world'), feather = $('#feather');
+  const oldClip = S.clipping({ mast: 'OLAHRAGA', date: 'MUSIM 2007/08', head: 'Double winner pertama di Indonesia', photo: 'trophy' });
+  oldClip.style.left = '0px'; oldClip.style.top = '0px';
+  oldClip.style.transform = 'translate(540px,1205px) rotate(-8deg) scale(.42)';
+  oldClip.style.filter = 'grayscale(.85) sepia(.35) brightness(.88)';
+  world.insertBefore(oldClip, feather);
+  function finale(T) {
+    oldClip.style.visibility = T >= 41.44 ? 'visible' : 'hidden';
+    if (T < 45.0) { feather.style.visibility = 'hidden'; return; }
+    feather.style.visibility = 'visible';
+    const p = clamp((T - 45.0) / 4.2);
+    const y = lerp(700, 1540, S.EASE.io(p)), x = lerp(910, 840, p) + Math.sin(p * 10) * 55 * (1 - p);
+    const rot = Math.sin(p * 10) * 38 * (1 - p) + 14 * p;
+    feather.style.transform = `translate(${(x - 65).toFixed(1)}px,${(y - 22).toFixed(1)}px) rotate(${rot.toFixed(2)}deg)`;
+  }
+
+  /* ---------- seek ---------- */
+  const cv = $('#cv'), ctx = cv.getContext('2d', { willReadFrequently: true }), grain = $('#grain'), shake = $('#shake'), scrim = $('#scrim');
+  function seek(t) {
+    const T = Math.max(0, Math.min(DURATION, t));
+    tl.pause(T, false);
+    S.render(ctx, T, worldState(T));
+    S.applyCam(world, T, S.cam(T, CAM0, MOVES));
+    board(T); scaleAt(T); qball(T); finale(T);
+    const d = T - 22.8; let dx = 0, dy = 0;
+    if (d >= 0 && d < 1) { const k = Math.exp(-6 * d); dx = Math.sin(d * 70) * 16 * k; dy = Math.cos(d * 53) * 12 * k; }
+    shake.style.transform = `translate(${dx.toFixed(2)}px,${dy.toFixed(2)}px)`;
+    let sc = 0, stop = 790; for (const [a, b, tp] of SCRIM) { const v = clamp((T - a) / .6) * clamp((b - T) / .5); if (v > sc) { sc = v; stop = tp; } }
+    scrim.style.opacity = sc.toFixed(3); scrim.style.top = (stop - 90) + 'px';
+    const gk = Math.floor(T * 12);
+    grain.style.transform = `translate(${((gk * 37) % 60) - 30}px,${((gk * 53) % 60) - 30}px)`;
+    if (DEBUG) { $('#scr').value = T; $('#tt').textContent = T.toFixed(2) + ' s'; }
+    return T;
+  }
+  window.seekTo = seek;
+
+  const SFX = [
+    { t: 1.5, file: 'sfx_click.wav', vol: .15 },                                     // lampu menyala lagi
+    { t: 7.95, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 9.45, file: 'sfx_pop.wav', vol: .15 },                                      // harga klub mendarat
+    ...DEBT_T.map((t) => ({ t: t + FALL, file: 'sfx_click.wav', vol: .14 })),       // balok utang
+    { t: 15.85, file: 'sfx_glitch.wav', vol: .14 },                                  // timbangan terbalik
+    { t: 16.95, file: 'sfx_glitch.wav', vol: .14 }, { t: 17.8, file: 'sfx_click.wav', vol: .16 },   // padam lagi
+    { t: 17.85, file: 'sfx_whoosh.wav', vol: .15 },                                  // push-through
+    { t: 22.8, file: 'sfx_pop.wav', vol: .16 }, { t: 22.8, file: 'sfx_glitch.wav', vol: .15 },      // stempel
+    { t: 24.0, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 27.3, file: 'sfx_whoosh.wav', vol: .14 },                                   // nol terlempar
+    { t: 29.35, file: 'sfx_click.wav', vol: .15 },                                   // coretan
+    { t: 31.97, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 37.15, file: 'sfx_glitch.wav', vol: .14 },                                  // lampu goyang "takut salah"
+    { t: 38.2, file: 'sfx_pop.wav', vol: .14 }, { t: 38.75, file: 'sfx_pop.wav', vol: .14 }, { t: 39.3, file: 'sfx_pop.wav', vol: .14 },   // dioper
+    { t: 41.44, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 46.9, file: 'sfx_success.wav', vol: .14 },                                  // elang belum mati
+  ];
+  window.OPENER = { ready: true, DURATION, FPS, WIDTH: 1080, HEIGHT: 1920, SCENES, SFX, seek };
+
+  /* ---------- tampilan & pemutaran ---------- */
+  const stage = $('#stage');
+  function fit() { if (RENDER) return; const s = Math.min(innerWidth / 1080, (innerHeight - (DEBUG ? 50 : 0)) / 1920); stage.style.transform = `translate(-50%,-50%) scale(${s})`; }
+  addEventListener('resize', fit); fit();
+  seek(Number(Q.get('t')) || 0);
+  if (RENDER || Q.get('clean') === '1') return;
+
+  const vo = $('#vo'); let playing = false, w0 = 0, p0 = 0;
+  vo.addEventListener('error', () => {});
+  function loop(now) {
+    if (!playing) return;
+    let t = p0 + (now - w0) / 1000;
+    if (t >= DURATION) { p0 = 0; w0 = now; t = 0; try { vo.currentTime = 0; } catch (e) {} }
+    seek(t);
+    if (vo.readyState >= 2 && t < vo.duration && Math.abs(vo.currentTime - t) > .15) vo.currentTime = t;
+    requestAnimationFrame(loop);
+  }
+  function play() { playing = true; w0 = performance.now(); p0 = +($('#scr').value || 0); if (p0 >= DURATION - .05) p0 = 0; vo.currentTime = p0; vo.play().catch(() => {}); requestAnimationFrame(loop); $('#pp').textContent = '❚❚'; }
+  function pause() { playing = false; vo.pause(); $('#pp').textContent = '▶'; }
+  $('#scr').max = DURATION;
+  $('#scr').oninput = (e) => { pause(); seek(+e.target.value); };
+  $('#pp').onclick = () => playing ? pause() : play();
+  addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); } if (e.key === 'r') { $('#scr').value = 0; pause(); play(); } });
+  document.fonts.ready.then(() => {
+    if (DEBUG) return;
+    vo.play().then(() => { vo.pause(); play(); }).catch(() => { addEventListener('pointerdown', play, { once: true }); addEventListener('keydown', play, { once: true }); });
+  });
+})();
+</script>
+</body>
+</html>

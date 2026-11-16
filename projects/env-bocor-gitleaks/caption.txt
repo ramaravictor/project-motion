@@ -1,0 +1,66 @@
+JUDUL (pilih satu)
+API Key Lo Ke-push ke GitHub? Tagihan Jalan Sendiri! #shorts
+Jangan Push .env ke GitHub! Pasang Gitleaks #shorts
+Sekali Lupa .env, Boncos Tagihan API 💸 #shorts
+
+DESKRIPSI
+Fitur kelar jam 2 pagi, langsung git add titik, commit, push… terus file .env lo ikut naik ke repo publik 💀 Isinya API key OpenAI, Claude, sampai AWS. Bot scraper nyisir GitHub nonstop, key bocor bisa kepake dalam hitungan menit.
+
+Dan dihapus di commit baru pun telat, history git masih nyimpen semuanya.
+
+Obatnya:
+1. gitleaks (30k+ ⭐, MIT) sebagai pre-commit hook. Tiap commit di-scan dulu, ketemu secret? Commit ditolak.
+2. Bonus: dotenvx encrypt. Repo cuma nyimpen .env terenkripsi, kuncinya di .env.keys (jangan di-commit).
+
+Config yang tinggal tempel ada di komentar yang gue pin. Ketik "AMAN" di komentar 👇
+
+(Angka tagihan di video cuma simulasi.)
+
+#vibecoding #antigravityide #gitleaks #dotenvx #github #apikey #cybersecurity #devsecops #git #programmer #ngoding #shorts
+
+KOMENTAR PIN
+Config gitleaks pre-commit 👇
+
+1) Bikin file .pre-commit-config.yaml di root repo:
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+2) Jalanin:
+pip install pre-commit
+pre-commit install
+
+Sekarang tiap git commit otomatis di-scan. Kalau ada API key → "leaks found" dan commit ditolak ✅
+
+Bonus dotenvx:
+npx @dotenvx/dotenvx encrypt
+→ .env jadi terenkripsi, kunci privat di .env.keys. Masukin .env.keys ke .gitignore!
+
+⚠️ Udah terlanjur ke-push? ROTATE key-nya sekarang di dashboard provider. Hapus commit doang nggak cukup.
+
+BALASAN KOMENTAR
+
+[Yang ketik "AMAN"]
+Gas! Config-nya udah gue taruh di komentar pin paling atas 📌 Tinggal tempel .pre-commit-config.yaml, terus pre-commit install. Repo lo aman 🔒
+
+[Variasi biar nggak keliatan bot]
+Siap bro, cek pin ya 📌 Habis pasang, coba commit file berisi key palsu, harusnya langsung ditolak 😎
+Mantap, langkah pertama udah bener 🔒 Config ada di komentar pin!
+
+["Udah terlanjur ke-push, gimana?"]
+Langsung rotate/revoke key-nya di dashboard OpenAI/Anthropic/AWS, itu yang paling penting. Hapus file atau commit nggak cukup karena history git dan fork orang masih nyimpen. Abis itu baru pasang gitleaks biar nggak kejadian lagi.
+
+["Repo gue private, aman dong?"]
+Lebih aman, tapi bukan jaminan. Repo bisa jadi publik, di-fork, atau token akses lo bocor. Kebiasaan nggak nge-commit secret itu tetap wajib 👌
+
+["Bisa scan repo yang udah ada?"]
+Bisa. Jalanin "gitleaks git -v" di folder repo, dia scan seluruh history commit.
+
+[".gitignore aja cukup kan?"]
+.gitignore cuma nyegah file .env. Kalau key ke-hardcode di file lain (config.ts, dll), tetep lolos. Gitleaks nangkep dua-duanya.
+
+["Harus install Go/brew?"]
+Nggak wajib. Pre-commit hook gitleaks bisa langsung jalan lewat config di atas, atau install via brew install gitleaks.

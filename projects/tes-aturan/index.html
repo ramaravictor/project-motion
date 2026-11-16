@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tes Aturan Video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  :root {
+    --bg: #F4EFE8; --text-main: #141619; --orange: #FF5500; --card-bg: #FFFFFF; --card-border: #DFD8CE;
+    --indigo: #2563EB; --danger: #DC2626; --emerald: #059669;
+    --t-ui: #FF5500; --t-logic: #141619; --t-data: #6E6A63; --t-util: #C4B9AA;
+    --radius-card: 28px; --shadow-soft: 0 20px 48px -12px rgba(20, 22, 25, 0.09);
+    --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif; --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+  html, body { width: 100%; height: 100%; background: #0A0A0B; overflow: hidden; font-family: var(--font-sans); }
+  body { display: flex; align-items: center; justify-content: center; gap: 24px; }
+  body.render { display: block; }
+
+  /* ---------- Kanvas 1080 x 1920 ---------- */
+  #stage-wrap { position: relative; flex-shrink: 0; }
+  #viewport { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background: var(--bg); overflow: hidden; transform-origin: 0 0; }
+  .bg-grid { position: absolute; inset: 0; pointer-events: none; background-size: 48px 48px;
+    background-image: linear-gradient(to right, rgba(20,22,25,0.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(20,22,25,0.035) 1px, transparent 1px); }
+
+  /* ---------- Safe zone (acuan fullstack-explainer) ---------- */
+  /* safe zone: top 180, left 80, right 130, bottom 450 */
+  #safe { position: absolute; top: 180px; left: 80px; width: 870px; height: 1290px; z-index: 20; }
+
+  /* Zona 1: header (y 180 - 254) */
+  .brand-header { position: absolute; top: 0; left: 0; right: 0; height: 74px; display: flex; flex-direction: column; gap: 14px; }
+  .brand-top-row { display: flex; justify-content: space-between; align-items: center; }
+  .brand-logo-badge { display: flex; align-items: center; gap: 14px; }
+  .brand-monogram { width: 56px; height: 42px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 6px 14px rgba(255,0,0,0.22)); }
+  .brand-monogram img { width: 100%; height: 100%; object-fit: contain; }
+  .brand-text-col { display: flex; flex-direction: column; line-height: 1.08; }
+  .brand-title { font-size: 25px; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em; }
+  .brand-sub { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--orange); }
+  .header-right-group { display: flex; align-items: center; gap: 10px; }
+  .scene-tag-pill { font-family: var(--font-mono); font-size: 14px; font-weight: 800; color: #fff; background: var(--orange); padding: 8px 14px; border-radius: 99px; white-space: nowrap; max-width: 470px; overflow: hidden; text-overflow: ellipsis; }
+  .brand-handle { font-family: var(--font-mono); font-size: 17px; font-weight: 700; color: var(--text-main); background: rgba(255,255,255,0.9); border: 1.5px solid var(--card-border); padding: 7px 14px 7px 10px; border-radius: 99px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .handle-ig-icon { width: 24px; height: 24px; display: flex; flex-shrink: 0; }
+  .handle-ig-icon img { width: 100%; height: 100%; object-fit: contain; }
+  .story-progress-bar { display: grid; gap: 6px; width: 100%; }
+  .story-seg { height: 6px; border-radius: 99px; background: rgba(20,22,25,0.12); }
+  .story-seg.done { background: #141619; }
+  .story-seg.current { background: #FF5500; }
+
+  /* Zona 2: kartu (y 270 - 920) */
+  #top-card-container { position: absolute; top: 90px; left: 0; width: 870px; height: 650px; }
+  article.mockup-card { position: absolute; inset: 0; container-type: inline-size; background: var(--card-bg); border-radius: var(--radius-card);
+    border: 2px solid var(--card-border); box-shadow: var(--shadow-soft); padding: 26px 32px; display: flex; flex-direction: column; gap: 16px;
+    opacity: 0; visibility: hidden; transform: translateY(24px); translate: 0px; rotate: 0deg; scale: 1; }
+  .win-bar { display: flex; align-items: center; gap: 14px; height: 40px; flex-shrink: 0; }
+  .win-dots { display: flex; gap: 8px; }
+  .win-dot { width: 14px; height: 14px; border-radius: 50%; }
+  .dot-r { background: #FF5F57; } .dot-y { background: #FEBC2E; } .dot-g { background: #28C840; }
+  .win-path { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .win-badge { font-family: var(--font-mono); font-size: 13px; font-weight: 800; padding: 7px 12px; border-radius: 99px; white-space: nowrap; background: #FFF1E8; color: var(--orange); }
+  .win-badge.err { background: #FEF2F2; color: var(--danger); }
+  .win-badge.ok { background: #ECFDF5; color: var(--emerald); }
+  .mono { font-family: var(--font-mono); }
+  .banner { background: #141619; color: #A7F3D0; padding: 12px 18px; border-radius: 14px; font-family: var(--font-mono); font-size: 15px; font-weight: 800;
+    display: flex; justify-content: space-between; gap: 12px; white-space: nowrap; flex-shrink: 0; }
+  .banner.err { background: var(--danger); color: #fff; }
+
+  /* Kartu 1: Antigravity IDE */
+  .c1-grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; flex: 1; min-height: 0; }
+  .c1-chat { background: #F8F6F2; border: 1.5px solid var(--card-border); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .c1-label { font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: #6B7280; letter-spacing: .04em; white-space: nowrap; }
+  .bubble { font-size: 17px; font-weight: 600; line-height: 1.4; padding: 12px 14px; border-radius: 14px; }
+  .bubble.me { background: #141619; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .bubble.ai { background: #fff; border: 1.5px solid var(--card-border); color: #374151; border-bottom-left-radius: 4px; }
+  .c1-files { border: 1.5px solid var(--card-border); border-radius: 18px; padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; align-content: start; }
+  .c1-files .c1-label { grid-column: 1 / -1; }
+  .gen-file { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: #C9C2B8; display: flex; justify-content: space-between; padding: 7px 10px; border-radius: 10px; background: #FAF8F5; white-space: nowrap; }
+  .gen-file.on { color: var(--text-main); background: #ECFDF5; }
+  .gen-file .ck { color: transparent; }
+  .gen-file.on .ck { color: var(--emerald); }
+  .c1-term { background: #141619; border-radius: 16px; padding: 14px 18px; font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: #9CA3AF; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .c1-term .ln { white-space: nowrap; visibility: hidden; }
+  .c1-term .ln.on { visibility: visible; }
+  .c1-term .g { color: #34D399; } .c1-term .o { color: #FF8A4C; }
+
+  /* Kartu 2: spaghetti code */
+  .spag-area { position: relative; flex: 1; min-height: 0; }
+  .spag-grid { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(8, 1fr); grid-auto-flow: column; gap: 9px 22px; height: 100%; }
+  .spag-file { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 12px; border-radius: 10px; background: rgba(250,248,245,0.94);
+    border: 1.5px solid var(--card-border); font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: #374151; white-space: nowrap; }
+  .spag-file .q { color: #9CA3AF; font-weight: 800; }
+  .spag-file.trigger { background: var(--indigo); border-color: var(--indigo); color: #fff; }
+  .spag-file.trigger .q { color: #fff; }
+  .spag-file.err { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .spag-file.err .q { color: #fff; }
+  .spag-wires { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+  .spag-wire { fill: none; stroke: #C8C1B6; stroke-width: 2.2; stroke-dasharray: 6 5; }
+  .spag-wire.hot { stroke: var(--danger); stroke-width: 3; stroke-dasharray: none; }
+
+  /* Kartu 3: GitHub + rontgen AST */
+  .gh-card { border: 1.5px solid var(--card-border); border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+  .gh-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .gh-owner { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 600; color: #374151; white-space: nowrap; }
+  .gh-owner strong { color: var(--text-main); font-weight: 800; }
+  .gh-avatar { width: 38px; height: 38px; border-radius: 50%; background: #141619; color: #fff; font: 800 14px var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .gh-public { font: 700 12px var(--font-mono); color: #6B7280; border: 1.5px solid var(--card-border); border-radius: 99px; padding: 3px 9px; }
+  .gh-stats { display: flex; gap: 8px; }
+  .gh-stat-box { font: 700 13px var(--font-mono); color: #374151; background: #F8F6F2; border: 1.5px solid var(--card-border); border-radius: 10px; padding: 6px 10px; white-space: nowrap; }
+  .gh-desc { font-size: 16px; font-weight: 500; line-height: 1.4; color: #4B5563; }
+  .gh-topics { display: flex; flex-wrap: wrap; gap: 7px; }
+  .gh-topic { font: 700 13px var(--font-mono); color: #2563EB; background: #EFF6FF; border-radius: 99px; padding: 5px 11px; white-space: nowrap; }
+  .gh-topic.agy { color: #fff; background: var(--orange); }
+  .xray { display: grid; grid-template-columns: 290px 1fr; gap: 14px; flex: 1; min-height: 0; }
+  .xray-files { background: #F8F6F2; border: 1.5px solid var(--card-border); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .mini-file { display: flex; justify-content: space-between; font: 700 14px var(--font-mono); color: #374151; background: #fff; border-radius: 8px; padding: 5px 9px; white-space: nowrap; }
+  .mini-file .st { color: #C9C2B8; }
+  .mini-file.on .st { color: var(--emerald); }
+  .xray-ast { border: 1.5px solid var(--card-border); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .xray-ast svg { flex: 1; width: 100%; min-height: 0; }
+
+  /* Kartu 4: peta jaringan */
+  .graph-area { position: relative; flex: 1; min-height: 0; }
+  .graph-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .net-edge { fill: none; stroke: #D3CBC0; stroke-width: 2; }
+  .net-edge.flow { stroke: var(--orange); stroke-width: 4; }
+  .net-node { position: absolute; transform: translate(-50%, -50%); font: 800 15px var(--font-mono); padding: 8px 15px; border-radius: 99px; color: #fff; white-space: nowrap;
+    box-shadow: 0 6px 14px rgba(20,22,25,0.12); translate: 0px; rotate: 0deg; scale: 1; }
+  .net-node.ui { background: var(--t-ui); } .net-node.logic { background: var(--t-logic); }
+  .net-node.data { background: var(--t-data); } .net-node.util { background: var(--t-util); color: #141619; }
+  .net-node.dim { opacity: .35; }
+  .net-node.flow { outline: 4px solid rgba(255,85,0,0.35); }
+  .legend { display: flex; justify-content: center; gap: 26px; font: 800 14px var(--font-mono); color: #374151; flex-shrink: 0; }
+  .legend .lg-item { white-space: nowrap; }
+  .legend i { font-style: normal; margin-right: 6px; }
+
+  /* Kartu 5: CTA */
+  .cta-grid { display: grid; grid-template-columns: 1fr 330px; gap: 16px; flex: 1; min-height: 0; }
+  .cmt-panel { border: 1.5px solid var(--card-border); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 9px; }
+  .cmt { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; color: #374151; visibility: hidden; }
+  .cmt.on { visibility: visible; }
+  .cmt .av { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; }
+  .cmt b { font-family: var(--font-mono); font-size: 14px; color: #6B7280; }
+  .cmt .kw { color: var(--orange); font-weight: 800; }
+  .cmt-input { margin-top: auto; border: 2px solid var(--orange); border-radius: 99px; padding: 10px 16px; font: 800 18px var(--font-mono); color: var(--text-main); display: flex; justify-content: space-between; white-space: nowrap; }
+  .caret { color: var(--orange); }
+  .dm-card { background: #141619; color: #fff; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .dm-card .dm-h { font: 800 13px var(--font-mono); color: #FF8A4C; letter-spacing: .04em; white-space: nowrap; }
+  .dm-msg { background: #26292E; border-radius: 14px; padding: 12px 14px; font-size: 15px; font-weight: 600; line-height: 1.45; visibility: hidden; }
+  .dm-msg.on { visibility: visible; }
+  .dm-msg .link { font-family: var(--font-mono); color: #93C5FD; font-size: 13px; }
+  #c5-share { display: flex; flex-direction: column; gap: 8px; }
+  .share-row { display: flex; align-items: center; gap: 10px; background: #26292E; border-radius: 12px; padding: 9px 12px; white-space: nowrap; }
+  .share-row .av { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+  .share-row .su { flex: 1; font: 700 14px var(--font-mono); color: #E5E7EB; }
+  .share-row .sk { font: 800 15px var(--font-mono); color: #6B7280; }
+  .share-row.on { background: #3A2A20; }
+  .share-row.on .sk { color: #FF8A4C; }
+  .cmt { white-space: nowrap; }
+
+  /* Zona 3: headline (y 936 - 1156) */
+  #headline-dock { position: absolute; top: 756px; left: 0; width: 870px; height: 220px; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 0 6px; }
+  .headline-main { font-size: 48px; font-weight: 800; line-height: 1.1; letter-spacing: -0.035em; color: var(--text-main); }
+  .highlight-orange { color: var(--orange); }
+  .genz-caption-pill { background: rgba(255,255,255,0.86); border: 1.5px solid var(--card-border); padding: 12px 20px; border-radius: 16px; font-size: 20px; font-weight: 600; line-height: 1.35; color: #374151; box-shadow: 0 6px 20px rgba(0,0,0,0.04); }
+
+  /* Zona 4: karakter (y 1180 - 1920, di luar #safe) */
+  #character-stage { position: absolute; left: 80px; width: 870px; bottom: 0; height: 740px; display: flex; justify-content: center; align-items: flex-end; z-index: 10; }
+  #character-rig { position: relative; width: 740px; height: 740px; transform-origin: bottom center; will-change: transform; contain: layout paint; z-index: 5; translate: 0px; rotate: 0deg; scale: 1; }
+  .char-pose { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 20px 45px rgba(0,0,0,0.14)); opacity: 0; visibility: hidden; z-index: 1; }
+  .char-viseme, .char-eye-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; opacity: 0; visibility: hidden; z-index: 3; }
+  .char-pose.active, .char-viseme.active, .char-eye-overlay.active { opacity: 1; visibility: visible; }
+  .char-ground-shadow { position: absolute; bottom: 20px; width: 500px; height: 44px; background: radial-gradient(ellipse at center, rgba(0,0,0,0.18) 0%, transparent 70%); pointer-events: none; z-index: 1; }
+
+  /* ---------- Overlay garis bantu (tidak ikut render) ---------- */
+  #guides { position: absolute; inset: 0; z-index: 90; pointer-events: none; display: none; }
+  #viewport.show-guides #guides { display: block; }
+  .g-unsafe { position: absolute; background: repeating-linear-gradient(45deg, rgba(220,38,38,0.16) 0 14px, rgba(220,38,38,0.06) 14px 28px); }
+  .g-safe { position: absolute; left: 80px; top: 180px; width: 870px; height: 1290px; outline: 3px dashed #059669; }
+  .g-zone { position: absolute; left: 80px; width: 870px; border: 2px solid rgba(37,99,235,0.7); }
+  .g-zone.char { border-color: rgba(147,51,234,0.8); border-style: dashed; }
+  .g-label { position: absolute; font: 800 16px var(--font-mono); color: #fff; background: rgba(20,22,25,0.82); padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
+
+  /* ---------- Panel cek (di luar kanvas) ---------- */
+  #panel { width: 420px; max-height: 96vh; overflow: auto; background: #16181C; color: #E5E7EB; border-radius: 16px; padding: 18px; font: 500 13px var(--font-mono); display: flex; flex-direction: column; gap: 12px; }
+  body.render #panel { display: none; }
+  #panel h2 { font: 800 16px var(--font-sans); color: #fff; }
+  .ctrl { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ctrl button { font: 700 13px var(--font-mono); background: #FF5500; color: #fff; border: 0; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  .ctrl button.sec { background: #2A2D33; }
+  #scrub { width: 100%; accent-color: #FF5500; }
+  #tread { color: #9CA3AF; }
+  .chk { display: grid; grid-template-columns: 22px 1fr; gap: 4px 6px; padding: 7px 0; border-top: 1px solid #2A2D33; line-height: 1.45; }
+  .chk .ic { font-weight: 800; }
+  .chk.pass .ic { color: #34D399; } .chk.fail .ic { color: #F87171; } .chk.warn .ic { color: #FBBF24; }
+  .chk .dt { grid-column: 2; color: #9CA3AF; font-size: 12px; }
+  #summary { font: 800 14px var(--font-sans); padding: 10px 12px; border-radius: 10px; background: #2A2D33; }
+</style>
+</head>
+<body>
+
+<div id="stage-wrap">
+<div id="viewport">
+  <div class="bg-grid"></div>
+
+  <div id="safe">
+    <!-- Zona 1 -->
+    <header class="brand-header">
+      <div class="brand-top-row">
+        <div class="brand-logo-badge">
+          <div class="brand-monogram"><img src="../_shared/brand/logo-youtube.svg" alt="YouTube"></div>
+          <div class="brand-text-col"><span class="brand-title">ChillDev</span><span class="brand-sub">@chilldevibe</span></div>
+        </div>
+        <div class="header-right-group">
+          <div class="scene-tag-pill" id="scene-tag-pill">01 / VIBE CODING DI ANTIGRAVITY IDE</div>
+          <div class="brand-handle"><span class="handle-ig-icon"><img src="../_shared/brand/logo-instagram.svg" alt="Instagram"></span><span>@ramarvctr_</span></div>
+        </div>
+      </div>
+      <div class="story-progress-bar" id="story-progress-bar"></div>
+    </header>
+
+    <!-- Zona 2 -->
+    <section id="top-card-container">
+
+      <!-- Kartu 1: vibe coding di Antigravity IDE -->
+      <article class="mockup-card" id="card-01">
+        <div class="win-bar">
+          <div class="win-dots"><span class="win-dot dot-r"></span><span class="win-dot dot-y"></span><span class="win-dot dot-g"></span></div>
+          <span class="win-path">~/kasir-app — Antigravity IDE</span>
+          <span class="win-badge ok" id="c1-badge">AGENT AKTIF ●</span>
+        </div>
+        <div class="c1-grid">
+          <div class="c1-chat">
+            <span class="c1-label">💬 PROMPT KE AGENT</span>
+            <div class="bubble me">bikinin aplikasi kasir, ada login, keranjang, sama bayar pakai Midtrans ya 🙏</div>
+            <div class="bubble ai">Siap! Lagi bikin 12 file, auth, database, sama halaman kasir. Santai aja, ngopi dulu ☕</div>
+            <div class="bubble ai" style="margin-top:auto;">✓ Beres. App udah jalan di <span class="mono" style="color:#FF5500;font-weight:800;">localhost:3000</span></div>
+          </div>
+          <div class="c1-files" id="c1-files">
+            <span class="c1-label">📁 FILE YANG DIBIKIN AGENT</span>
+          </div>
+        </div>
+        <div class="c1-term" id="c1-term">
+          <span class="ln"><span class="o">$</span> npm install</span>
+          <span class="ln"><span class="g">✓</span> 214 paket terpasang (6.2s)</span>
+          <span class="ln"><span class="o">$</span> npm run dev</span>
+          <span class="ln"><span class="g">✓ ready</span> di http://localhost:3000 · 0.8s</span>
+        </div>
+      </article>
+
+      <!-- Kartu 2: spaghetti code + domino error -->
+      <article class="mockup-card" id="card-02">
+        <div class="win-bar">
+          <div class="win-dots"><span class="win-dot dot-r"></span><span class="win-dot dot-y"></span><span class="win-dot dot-g"></span></div>
+          <span class="win-path">~/kasir-app/src — 128 file</span>
+          <span class="win-badge" id="c2-badge">128 FILE ? ? ?</span>
+        </div>
+        <div class="spag-area">
+          <svg class="spag-wires" id="c2-wires" viewBox="0 0 806 420" preserveAspectRatio="none"></svg>
+          <div class="spag-grid" id="c2-grid"></div>
+        </div>
+        <div class="banner" id="c2-banner"><span id="c2-banner-text">🍝 SEMUA FILE SALING NYAMBUNG, NGGAK ADA YANG PAHAM</span><span id="c2-banner-count">0 ERROR</span></div>
+      </article>
+
+      <!-- Kartu 3: repo GitHub + rontgen AST -->
+      <article class="mockup-card" id="card-03">
+        <div class="win-bar">
+          <div class="win-dots"><span class="win-dot dot-r"></span><span class="win-dot dot-y"></span><span class="win-dot dot-g"></span></div>
+          <span class="win-path">github.com/Egonex-AI/Understand-Anything</span>
+          <span class="win-badge ok">RONTGEN REPO ⚡</span>
+        </div>
+        <div class="gh-card">
+          <div class="gh-top">
+            <div class="gh-owner"><div class="gh-avatar">EA</div><span>Egonex-AI / <strong>Understand-Anything</strong></span><span class="gh-public">Public</span></div>
+            <div class="gh-stats">
+              <div class="gh-stat-box">★ Star <strong style="color:#FF5500;">86.4k</strong></div>
+              <div class="gh-stat-box">⑂ Fork <strong>7.3k</strong></div>
+              <div class="gh-stat-box">MIT License</div>
+            </div>
+          </div>
+          <div class="gh-desc">Turn any codebase, knowledge base, or docs into an interactive knowledge graph you can explore, search, and ask questions about via MCP.</div>
+          <div class="gh-topics" id="gh-topics">
+            <span class="gh-topic agy">antigravity-ide</span><span class="gh-topic">claude-code</span><span class="gh-topic">knowledge-graph</span>
+            <span class="gh-topic">vibe-coding</span><span class="gh-topic">ast-parser</span><span class="gh-topic">cursor-mcp</span>
+          </div>
+        </div>
+        <div class="xray">
+          <div class="xray-files" id="c3-files"><span class="c1-label">📁 REPO GIT (128 FILE)</span></div>
+          <div class="xray-ast">
+            <div style="display:flex;justify-content:space-between;" class="c1-label"><span style="color:#FF5500;">🔬 HASIL RONTGEN AST</span><span style="color:#059669;" id="c3-rel">0 RELASI</span></div>
+            <svg viewBox="0 0 460 200" id="c3-ast"></svg>
+          </div>
+        </div>
+        <div class="banner" id="c3-banner"><span id="c3-status">⚡ X-RAY AST PARSER: SCAN SELURUH FOLDER...</span><span>128 FILE ➔ 0.7 DETIK</span></div>
+      </article>
+
+      <!-- Kartu 4: peta jaringan /understand-dashboard -->
+      <article class="mockup-card" id="card-04">
+        <div class="win-bar">
+          <div class="win-dots"><span class="win-dot dot-r"></span><span class="win-dot dot-y"></span><span class="win-dot dot-g"></span></div>
+          <span class="win-path">/understand-dashboard — knowledge graph</span>
+          <span class="win-badge">16 NODE · 25 RELASI</span>
+        </div>
+        <div class="graph-area" id="c4-area">
+          <svg class="graph-svg" id="c4-svg" viewBox="0 0 806 420" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="legend">
+          <span class="lg-item"><i style="color:#FF5500">●</i>UI</span>
+          <span class="lg-item"><i style="color:#141619">●</i>LOGIKA</span>
+          <span class="lg-item"><i style="color:#6E6A63">●</i>DATA</span>
+          <span class="lg-item"><i style="color:#C4B9AA">●</i>UTIL</span>
+        </div>
+        <div class="banner" id="c4-banner"><span id="c4-banner-text">🗺️ 128 FILE · 312 KONEKSI KEBACA DI 1 LAYAR</span><span>3 LAYER</span></div>
+      </article>
+
+      <!-- Kartu 5: CTA -->
+      <article class="mockup-card" id="card-05">
+        <div class="win-bar">
+          <div class="win-dots"><span class="win-dot dot-r"></span><span class="win-dot dot-y"></span><span class="win-dot dot-g"></span></div>
+          <span class="win-path">komentar — @ramarvctr_</span>
+          <span class="win-badge" id="c5-badge">TAG TEMEN LO 👥</span>
+        </div>
+        <div class="cta-grid">
+          <div class="cmt-panel" id="c5-cmts">
+            <span class="c1-label">💬 KOLOM KOMENTAR</span>
+          </div>
+          <div class="dm-card">
+            <span class="dm-h">↗ BAGIKAN KE TEMEN</span>
+            <div id="c5-share"></div>
+            <div class="dm-msg" id="c5-sent" style="background:#FF5500;">✓ Terkirim ke 4 temen. Biar nggak rungkad sendirian 😎</div>
+          </div>
+        </div>
+        <div class="banner"><span>👥 TAG TEMEN YANG MASIH RUNGKAD</span><span>↗ SHARE · BIAR NGGAK HALU</span></div>
+      </article>
+
+    </section>
+
+    <!-- Zona 3 -->
+    <section id="headline-dock">
+      <h1 class="headline-main" id="headline-text"></h1>
+      <div class="genz-caption-pill" id="caption-text"></div>
+    </section>
+  </div>
+
+  <!-- Zona 4 -->
+  <section id="character-stage">
+    <div class="char-ground-shadow"></div>
+    <div id="character-rig">
+      <img class="char-pose active" id="pose-present" src="../_shared/rama/rama_pose_presenting.png" alt="Rama Presenting">
+      <img class="char-pose" id="pose-shocked" src="../_shared/rama/rama_pose_shocked.png" alt="Rama Shocked">
+      <img class="char-pose" id="pose-point" src="../_shared/rama/rama_pose_point_up.png" alt="Rama Point Up">
+      <img class="char-pose" id="pose-thumbs" src="../_shared/rama/rama_pose_thumbsup.png" alt="Rama Thumbs Up">
+      <img class="char-viseme active" id="viseme-v0" src="../_shared/rama/mouth_v0_closed.png" alt="">
+      <img class="char-viseme" id="viseme-v1" src="../_shared/rama/mouth_v1_teeth.png" alt="">
+      <img class="char-viseme" id="viseme-v2" src="../_shared/rama/mouth_v2_small.png" alt="">
+      <img class="char-viseme" id="viseme-v3" src="../_shared/rama/mouth_v3_med.png" alt="">
+      <img class="char-viseme" id="viseme-v4" src="../_shared/rama/mouth_v4_wide.png" alt="">
+      <img class="char-viseme" id="viseme-v5" src="../_shared/rama/mouth_v5_shock.png" alt="">
+      <img class="char-eye-overlay" id="eye-blink" src="../_shared/rama/eye_blink_both.png" alt="">
+      <img class="char-eye-overlay" id="eye-wink" src="../_shared/rama/eye_wink_right.png" alt="">
+    </div>
+  </section>
+
+  <!-- Garis bantu safe zone & zona -->
+  <div id="guides">
+    <div class="g-unsafe" style="left:0;top:0;width:1080px;height:180px;"></div>
+    <div class="g-unsafe" style="left:0;top:1470px;width:1080px;height:450px;"></div>
+    <div class="g-unsafe" style="left:0;top:180px;width:80px;height:1290px;"></div>
+    <div class="g-unsafe" style="left:950px;top:180px;width:130px;height:1290px;"></div>
+    <div class="g-safe"></div>
+    <div class="g-zone" style="top:180px;height:74px;"></div>
+    <div class="g-zone" style="top:270px;height:650px;"></div>
+    <div class="g-zone" style="top:936px;height:220px;"></div>
+    <div class="g-zone char" style="top:1180px;height:740px;"></div>
+    <span class="g-label" style="left:8px;top:8px;">TOP 180 · status bar / notch</span>
+    <span class="g-label" style="left:8px;top:1478px;">BOTTOM 450 · caption, username, audio platform</span>
+    <span class="g-label" style="left:956px;top:190px;">R 130</span>
+    <span class="g-label" style="left:84px;top:1162px;">Z3 berakhir y=1156</span>
+    <span class="g-label" style="left:84px;top:1186px;">Z4 karakter y=1180–1920</span>
+  </div>
+</div>
+</div>
+
+<aside id="panel">
+  <h2>Tes Aturan Video</h2>
+  <div class="ctrl">
+    <button id="btn-play">▶ Play</button>
+    <button class="sec" id="btn-guides">Garis bantu: ON</button>
+    <button class="sec" id="btn-recheck">Cek ulang</button>
+  </div>
+  <input type="range" id="scrub" min="0" max="1" step="0.01" value="0">
+  <div id="tread">0.00 / 0.00 s</div>
+  <div id="summary">Menjalankan cek…</div>
+  <div id="checks"></div>
+</aside>
+
+<audio id="vo" src="vo.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+  const Q = new URLSearchParams(location.search);
+  const RENDER = Q.get('render') === '1';
+  if (RENDER) document.body.classList.add('render');
+
+  /* ---------- Envelope lip-sync: JANGAN edit manual. Isi lewat: node projects/_shared/scripts/envelope.mjs projects/tes-aturan ---------- */
+  const AUDIO_ENV = /*ENV*/[0.001,0.077,0.264,0.441,0.474,0.609,0.956,0.965,0.841,0.388,0.095,0.061,0.205,0.69,0.871,0.921,0.846,0.703,0.666,0.608,0.294,0.282,0.189,0.107,0.083,0.038,0.015,0.012,0.007,0.003,0.002,0.003,0.005,0.015,0.061,0.112,0.138,0.153,0.352,0.885,0.959,1,0.609,0.096,0.126,1,0.952,0.208,0.352,0.473,0.225,0.158,0.264,0.375,0.223,0.286,0.372,0.422,0.4,0.482,0.754,0.594,0.264,0.485,0.738,0.853,0.717,0.175,0.156,0.51,0.282,0.022,0.225,0.415,0.025,0.054,0.418,0.832,0.685,0.386,0.393,0.379,0.55,0.758,0.906,0.601,0.383,0.352,0.103,0.09,0.085,0.693,0.88,0.695,0.313,0.075,0.035,0.047,0.125,0.543,0.905,0.884,0.287,0.157,0.142,0.61,0.391,0.257,0.284,0.176,0.043,0.036,0.832,0.374,0.032,0.021,0.342,0.435,0.343,0.107,0.013,0.014,0.382,0.705,0.44,0.252,0.086,0.02,0.077,0.419,0.268,0.116,0.134,0.512,0.558,0.929,0.7,0.118,0.061,0.267,0.413,0.099,0.019,0.011,0.221,0.287,0.262,0.138,0.046,0.015,0.005,0.206,0.575,0.658,0.596,0.472,0.245,0.129,0.118,0.279,0.244,0.172,0.092,0.037,0.151,0.213,0.2,0.146,0.087,0.056,0.037,0.015,0.005,0.002,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.194,0.257,0.385,0.407,0.59,0.805,0.724,0.236,0.027,0.145,0.312,0.041,0.023,0.451,0.128,0.033,0.011,0.005,0.002,0.277,0.637,0.725,0.758,0.28,0.311,0.233,0.191,0.158,0.528,0.683,0.423,0.366,0.183,0.19,0.13,0.025,0.014,0.534,0.588,0.589,0.517,0.356,0.144,0.371,0.637,0.38,0.371,0.255,0.632,0.72,0.435,0.29,0.292,0.567,0.556,0.464,0.25,0.02,0.009,0.002,0.035,0.327,0.343,0.328,0.235,0.144,0.05,0.003,0.002,0.001,0.001,0.001,0.024,0.677,0.449,0.363,0.331,0.259,0.15,0.081,0.06,0.038,0.008,0.002,0.235,0.47,0.529,0.602,0.557,0.081,0.018,0.352,0.701,0.78,0.876,0.574,0.764,0.924,0.922,0.13,0.084,0.514,0.464,0.211,0.108,0.484,0.853,0.564,0.143,0.135,0.371,0.552,0.661,0.746,0.983,0.642,0.544,0.208,0.755,0.619,0.182,0.114,0.493,0.894,0.737,0.604,0.745,0.756,0.298,0.232,0.326,0.453,0.615,0.692,0.868,0.499,0.284,0.196,0.215,0.653,1,0.834,0.445,0.145,0.069,0.024,0.009,0.003,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.046,0.113,0.644,0.165,0.155,0.373,0.424,0.073,0.04,0.449,0.657,0.612,0.608,1,0.589,0.188,0.178,0.524,0.782,0.5,0.843,0.606,0.364,0.187,0.634,0.585,0.335,0.386,0.892,0.567,0.474,0.441,0.24,0.246,0.123,0.139,0.506,0.613,0.065,0.119,0.454,0.265,0.025,0.06,0.803,0.757,0.234,0.224,0.408,0.918,0.906,0.733,0.391,0.165,0.583,0.842,1,0.949,0.926,0.815,0.678,0.422,0.348,0.148,0.148,0.18,0.141,0.089,0.026,0.007,0.004,0.001,0.001,0.001,0.008,0.259,0.226,0.168,0.799,0.756,0.059,0.024,0.178,0.286,0.297,0.203,0.163,0.174,1,0.971,0.817,0.436,0.386,0.51,0.939,0.795,0.749,0.763,0.154,0.287,0.741,0.277,0.313,0.54,0.843,0.802,0.281,0.116,0.176,0.512,0.279,0.21,0.092,0.123,0.377,0.612,0.695,0.743,0.52,0.529,0.55,0.755,0.939,0.985,1,0.943,0.638,0.507,0.472,0.217,0.058,0.015,0.005,0.003,0.001,0.003,0.085,0.559,0.618,0.11,0.027,0.545,0.72,0.359,0.154,0.399,0.66,0.421,0.189,0.138,0.051,0.165,0.273,0.613,0.781,0.856,0.546,0.273,0.253,0.14,0.024,0.021,0.104,0.58,1,0.857,0.037,0.019,0.013,0.003,0.001,0.001,0.008,0.076,0.143,0.179,0.281,0.685,0.21,0.219,0.262,0.492,0.667,1,1,0.927,0.813,0.407,0.378,0.637,0.609,0.486,0.346,0.057,0.063,0.499,0.446,0.063,0.033,0.515,0.454,0.739,0.664,0.733,0.421,0.358,0.122,0.023,0.026,0.654,1,0.342,0.056,0.111,0.167,0.654,0.516,0.175,0.11,0.584,0.987,0.694,0.326,0.659,0.684,0.35,0.202,0.283,0.363,0.22,0.136,0.131,0.072,0.039,0.01,0.002,0.002,0.001,0.001,0.001,0.001,0,0.001,0.001,0.049,0.271,0.386,0.903,0.956,0.928,0.658,0.471,0.35,0.292,0.24,0.24,0.198,0.116,0.083,0.084,0.108,0.129,0.246,0.336,0.394,0.991,0.797,0.655,0.501,0.318,0.446,0.952,1,1,0.9,0.17,0.207,0.761,0.568,0.112,0.031,0.146,0.644,0.33,0.285,0.28,0.103,0.018,0.173,0.347,0.342,0.234,0.199,0.231,0.217,0.151,0.061,0.01,0.004,0.002,0.026,0.161,0.421,0.718,1,0.626,0.218,0.276,0.18,0.181,0.167,0.508,0.377,0.274,0.277,0.107,0.012,0.022,0.148,0.791,0.618,0.055,0.03,0.143,0.338,0.558,0.674,0.51,0.034,0.021,0.302,0.729,0.63,0.135,0.107,0.168,0.498,0.355,0.036,0.087,0.177,0.263,0.465,0.903,0.676,0.052,0.026,0.027,0.015,0.006,0.239,0.602,0.438,0.127,0.144,0.603,0.862,0.618,0.281,0.345,0.541,0.204,0.133,0.151,0.101,0.019,0.009,0.245,0.571,0.555,0.455,0.189,0.033,0.207,0.482,0.731,0.682,0.581,0.479,0.346,0.145,0.098,0.106,0.119,0.13,0.102,0.344,0.516,0.689,0.747,0.558,0.193,0.221,0.262,0.139,0.012,0.005,0.009,0.583,0.841,0.244,0.253,0.187,0.565,0.548,0.337,0.214,0.128,0.039,0.027,0.65,0.77,0.68,0.299,0.182,0.058,0.02,0.162,0.571,0.702,0.382,0.365,0.36,0.284,0.067,0.053,0.045,0.283,0.249,0.161,0.054,0.045,0.034,0.023,0.01,0.005,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.163,0.34,0.389,0.291,0.32,0.43,0.528,0.79,0.684,0.866,0.825,0.566,0.68,0.645,0.255,0.148,0.135,0.207,0.619,0.774,0.805,0.219,0.124,0.119,0.421,0.846,0.662,0.274,0.295,0.19,0.026,0.182,0.537,0.841,0.611,0.311,0.324,0.354,0.152,0.307,1,0.882,0.556,0.53,0.192,0.185,0.354,0.821,0.725,0.089,0.064,0.117,0.271,0.267,0.031,0.087,0.383,0.282,0.351,0.208,0.075,0.18,0.366,0.337,0.05,0.018,0.215,0.314,0.283,0.353,0.54,0.523,0.168,0.134,0.089,0.092,0.515,0.592,0.243,0.141,0.129,0.275,0.228,0.027,0.065,0.62,0.092,0.023,0.019,0.395,0.592,0.43,0.047,0.014,0.627,1,0.597,0.246,0.889,1,0.959,1,0.952,0.97,0.865,0.801,0.823,0.462,0.15,0.101,0.067,0.024,0.009,0.003,0.002,0.002,0.001,0.001,0.001,0,0.001,0.002,0.048,0.173,0.756,0.626,0.213,0.129,0.13,0.471,0.585,0.552,0.599,0.673,0.925,0.935,0.386,0.286,0.124,0.162,0.545,0.274,0.292,0.147,0.066,0.768,0.854,0.848,0.373,0.146,0.124,0.266,0.263,0.257,0.248,0.287,0.207,0.274,0.405,0.548,0.764,0.823,0.417,0.204,0.232,0.173,0.164,0.149,0.269,0.437,0.28,0.298,0.238,0.259,0.32,0.269,0.401,0.503,0.414,0.124,0.11,0.549,0.983,0.531,0.382,0.264,0.069,0.204,0.585,0.393,0.104,0.405,0.247,0.058,0.042,0.044,0.292,0.395,0.253,0.263,0.275,0.258,0.409,0.921,0.755,0.668,0.436,0.234,0.416,0.635,0.695,0.529,0.374,0.637,0.363,0.028,0.157,0.193,0.024,0.103,0.236,0.461,0.591,0.643,0.312,0.08,0.052,0.08,0.271,0.408,0.409,0.149,0.142,0.134,0.177,0.2,0.204,0.206,0.193,0.185,0.358,0.365,0.202,0.047,0.002,0.002,0.449,0.892,0.605,0.533,0.576,0.783,0.769,0.669,0.069,0.025,0.017,0.029,0.192,0.162,0.111,0.07,0.037,0.016,0.004,0.001,0.001,0.001,0.001,0.001,0.073,0.236,0.425,0.463,0.205,0.208,0.119,0.013,0.003,0.117,0.698,0.943,0.351,0.03,0.061,0.109,0.394,0.773,0.63,0.316,0.346,0.053,0.015,0.494,0.561,0.266,0.167,0.052,0.321,0.337,0.418,0.503,0.305,0.303,0.178,0.324,0.143,0.014,0.007,0.001,0.183,0.698,0.736,0.393,0.21,0.192,0.103,0.123,0.121,0.113,0.124,0.514,0.415,0.461,0.185,0.178,0.108,0.016,0.007,0.658,0.774,0.643,0.336,0.038,0.305,0.322,0.017,0.134,0.642,0.689,0.161,0.121,0.532,0.574,0.496,0.208,0.45,0.561,0.19,0.011,0.348,0.475,0.409,0.115,0.122,0.252,0.191,0.115,0.094,0.099,0.112,0.113,0.091,0.061,0.027,0.004,0.002,0.001,0.001,0.001,0.001,0.005,0.958,0.978,0.171,0.071,0.062,0.05,0.038,0.585,0.459,0.344,0.366,0.784,0.49,0.45,0.408,0.76,0.951,1,1,1,1,1,0.931,0.368,0.341,0.31,0.723,0.554,0.159,0.144,0.405,0.596,0.507,0.448,0.548,0.68,0.432,0.371,0.108,0.151,0.867,0.417,0.096,0.139,0.34,0.514,0.421,0.127,0.11,0.315,0.884,0.96,0.396,0.398,0.609,0.622,0.39,0.248,0.059,0.128,0.326,0.784,0.653,0.293,0.237,0.184,0.044,0.023,0.136,0.79,0.555,0.13,0.177,0.184,0.081,0.073,0.659,0.778,0.568,0.112,0.029,0.033,0.037,0.399,0.779,0.825,0.455,0.163,0.166,0.589,0.276,0.368,0.449,0.219,0.506,0.543,0.399,0.473,0.304,0.121,0.196,0.325,0.111,0.13,0.266,0.524,0.668,0.517,0.122,0.098,0.356,0.544,0.377,0.036,0.022,0.152,0.431,0.389,0.225,0.135,0.088,0.054,0.021,0.007,0.002,0.002,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.002,0.26,0.649,0.266,0.221,0.497,0.437,0.041,0.165,1,1,1,1,0.304,0.219,0.424,0.383,0.947,1,0.904,0.513,0.294,0.251,0.141,0.07,0.023,0.006,0.001,0.001,0.001,0.001,0.001,0.001,0.051,0.494,0.727,0.191,0.447,0.921,0.567,0.035,0.031,0.038,0.847,0.103,0.037,0.028,0.021,0.014,0.92,1,0.915,0.761,0.406,0.352,0.268,0.121,0.076,0.096,0.228,0.448,0.711,0.782,0.444,0.397,0.134,0.215,0.569,0.669,0.213,0.141,0.295,0.37,0.258,0.312,0.325,0.605,0.627,0.375,0.395,0.574,0.76,0.378,0.518,0.555,0.594,0.889,0.777,0.615,0.702,0.682,0.67,0.933,1,1,0.984,0.498,0.212,0.209,0.245,0.334,0.349,0.321,0.31,0.357,0.26,0.145,0.068,0.052,0.03,0.014,0.005,0.002,0.001,0]/*ENV*/;
+
+  /* ---------- Scene: src0/src1 = posisi di vo_tes.mp3 (s1–s4 potongan VO asli, s5 VO baru ElevenLabs) ---------- */
+  const RAW = [
+    { src0: 0.00,   src1: 11.15,  card: '#card-01', sub: 'vibe',  pose: 'present', tag: '01 / VIBE CODING DI ANTIGRAVITY IDE',
+      headline: 'Ngaku! Kecanduan <span class="highlight-orange">vibe coding</span> di Antigravity IDE?',
+      caption: 'Ngaku! Siapa di sini yang lagi kecanduan vibe coding pakai Antigravity IDE? Tinggal ketik prompt santai sambil ngopi, eh tahu-tahu aplikasi lo udah jalan aja!' },
+    { src0: 11.15,  src1: 19.25,  card: '#card-02', sub: 'spag',  pose: 'shocked', tag: '02 / EFEK DOMINO RUNGKAD',
+      headline: 'Benerin 1 tombol, <span class="highlight-orange">rungkad berjamaah!</span>',
+      caption: 'Begitu lo suruh benerin satu tombol doang, tiba-tiba halaman login error, database nyangkut, semuanya ikut rungkad berjamaah!' },
+    { src0: 19.25,  src1: 29.95,  card: '#card-03', sub: 'scan',  pose: 'point',   tag: '03 / REPO GITHUB: UNDERSTAND-ANYTHING',
+      headline: 'Repo GitHub: <span class="highlight-orange">Understand-Anything!</span>',
+      caption: 'Nah, biar nggak overthinking, langsung cek repo GitHub Egonex-AI/Understand-Anything! Ini rahasia game changer buat bikin GPS arsitektur kode lo!' },
+    { src0: 29.95,  src1: 38.29,  card: '#card-04', sub: 'graph', pose: 'present', tag: '04 / VISUAL KNOWLEDGE GRAPH',
+      headline: 'Langsung jadi <span class="highlight-orange">peta 3 layer</span> super rapi!',
+      caption: 'Hasil rontgen tadi langsung diubah jadi visual knowledge graph yang super rapi, lengkap dari tampilan depan sampai ke tabel database.' },
+    { src0: 38.29,  src1: 46.65, card: '#card-05', sub: 'cta',   pose: 'thumbs',  tag: '05 / TAG TEMEN LO YANG RUNGKAD!',
+      headline: 'Tag temen lo yang <span class="highlight-orange">masih rungkad!</span>',
+      caption: 'Tag temen lo yang masih rungkad berjamaah pas vibe coding di Antigravity IDE. Kasih tau dia, ada peta biar AI-nya nggak halu lagi!' },
+  ];
+  let acc = 0;
+  const SCENES = RAW.map((s, i) => { const t0 = acc; acc += (s.src1 - s.src0); return { ...s, idx: i, t0, t1: acc }; });
+  const DURATION = +acc.toFixed(2);
+
+  /* poseSwitchTime deterministik: t0 scene pertama yang posenya beda dari scene sebelumnya */
+  const POSE_SWITCH = [];
+  SCENES.forEach((s, i) => {
+    if (i === 0) POSE_SWITCH.push(-10);
+    else POSE_SWITCH.push(s.pose !== SCENES[i - 1].pose ? s.t0 : POSE_SWITCH[i - 1]);
+  });
+
+  const $ = (q) => document.querySelector(q);
+
+  /* ---------- Bangun progress bar ---------- */
+  const prog = $('#story-progress-bar');
+  prog.style.gridTemplateColumns = `repeat(${SCENES.length}, 1fr)`;
+  SCENES.forEach((_, i) => { const d = document.createElement('div'); d.className = 'story-seg'; d.id = 'prog-seg-' + i; prog.appendChild(d); });
+
+  /* ---------- Kartu 1: file yang dibuat ---------- */
+  const C1_FILES = ['app.tsx', 'auth.ts', 'db.ts', 'kasir.tsx', 'keranjang.ts', 'bayar.ts', 'midtrans.ts', 'login.tsx', 'produk.tsx', 'stok.ts', 'router.tsx', 'config.ts'];
+  const c1Files = $('#c1-files');
+  C1_FILES.forEach(f => { const d = document.createElement('div'); d.className = 'gen-file'; d.innerHTML = `<span>${f}</span><span class="ck">✓</span>`; c1Files.appendChild(d); });
+  const c1FileEls = [...c1Files.querySelectorAll('.gen-file')];
+  const c1TermEls = [...document.querySelectorAll('#c1-term .ln')];
+
+  /* ---------- Kartu 2: 24 file spaghetti ---------- */
+  const SPAG = ['app.tsx', 'auth.ts', 'db.ts', 'kasir.tsx', 'bayar.ts', 'midtrans.ts', 'login.tsx', 'tombol.tsx',
+                'keranjang.ts', 'produk.tsx', 'stok.ts', 'laporan.tsx', 'user.ts', 'sesi.ts', 'api.ts', 'utils.ts',
+                'config.ts', 'router.tsx', 'hooks.ts', 'store.ts', 'invoice.tsx', 'diskon.ts', 'notif.ts', 'layout.tsx'];
+  const SPAG_TRIGGER = 7;
+  const SPAG_ERR = [6, 1, 13, 2, 4, 5, 8, 14, 0, 10, 16, 19, 20, 22]; // urutan domino, lintas 3 kolom
+  const c2Grid = $('#c2-grid');
+  SPAG.forEach(f => { const d = document.createElement('div'); d.className = 'spag-file'; d.innerHTML = `<span>📄 ${f}</span><span class="q">?</span>`; c2Grid.appendChild(d); });
+  const c2FileEls = [...c2Grid.children];
+  const WIRES = [
+    'M60 26 C 300 120, 120 300, 420 390', 'M150 80 C 500 20, 260 260, 700 140', 'M80 190 C 380 330, 520 40, 760 300',
+    'M400 30 C 120 160, 640 250, 260 400', 'M690 60 C 420 200, 760 280, 140 340', 'M240 140 C 620 90, 80 380, 600 400',
+    'M120 400 C 300 230, 520 360, 740 30', 'M560 120 C 280 60, 420 380, 90 250', 'M330 250 C 760 200, 380 20, 640 360',
+    'M30 320 C 260 40, 560 330, 790 200', 'M700 390 C 560 120, 220 380, 300 20', 'M460 200 C 220 300, 760 100, 520 300'
+  ];
+  const HOT_WIRES = [0, 3, 5, 8, 10];
+  $('#c2-wires').innerHTML = WIRES.map((d, i) => `<path class="spag-wire" id="wire-${i}" d="${d}"/>`).join('');
+  const wireEls = WIRES.map((_, i) => document.getElementById('wire-' + i));
+
+  /* ---------- Kartu 3: file repo + mini AST ---------- */
+  const C3_FILES = ['src/app.tsx', 'src/auth.ts', 'src/kasir.tsx', 'src/bayar.ts', 'src/db.ts', 'src/midtrans.ts', 'src/sesi.ts', 'src/router.tsx'];
+  const c3Files = $('#c3-files');
+  C3_FILES.forEach(f => { const d = document.createElement('div'); d.className = 'mini-file'; d.innerHTML = `<span>${f}</span><span class="st">AST ✓</span>`; c3Files.appendChild(d); });
+  const c3FileEls = [...c3Files.querySelectorAll('.mini-file')];
+  const AST_N = [
+    ['index.html', 120, 22, 'ui'], ['app.tsx', 300, 22, 'ui'],
+    ['login()', 80, 92, 'logic'], ['pesan()', 230, 92, 'logic'], ['bayar()', 380, 92, 'logic'],
+    ['sesi.ts', 120, 165, 'data'], ['db.ts', 230, 165, 'data'], ['midtrans.ts', 360, 165, 'data']
+  ];
+  const AST_E = [[0, 2], [1, 3], [1, 4], [0, 3], [2, 5], [3, 6], [4, 6], [4, 7]];
+  const TIER_COL = { ui: '#FF5500', logic: '#141619', data: '#6E6A63', util: '#C4B9AA' };
+  $('#c3-ast').innerHTML =
+    AST_E.map(([a, b], i) => { const A = AST_N[a], B = AST_N[b], my = (A[2] + B[2]) / 2;
+      return `<path class="ast-e" id="ast-e-${i}" d="M${A[1]} ${A[2]} C ${A[1]} ${my}, ${B[1]} ${my}, ${B[1]} ${B[2]}" stroke="#C8C1B6" stroke-width="2.2" fill="none"/>`; }).join('') +
+    AST_N.map(([n, x, y, t], i) => { const w = n.length * 8.2 + 22;
+      return `<g class="ast-n" id="ast-n-${i}"><rect x="${x - w / 2}" y="${y - 13}" width="${w}" height="26" rx="13" fill="${TIER_COL[t]}"/><text x="${x}" y="${y + 4.5}" text-anchor="middle" fill="#fff" font-family="JetBrains Mono" font-size="12.5" font-weight="800">${n}</text></g>`; }).join('');
+  const astNodeEls = AST_N.map((_, i) => document.getElementById('ast-n-' + i));
+  const astEdgeEls = AST_E.map((_, i) => document.getElementById('ast-e-' + i));
+
+  /* ---------- Kartu 4: graf 16 node / 25 edge ---------- */
+  const GW = 806, GH = 420;
+  const NODES = [
+    ['index.html', 110, 44, 'ui'], ['app.tsx', 320, 40, 'ui'], ['kasir.tsx', 520, 48, 'ui'], ['dashboard.tsx', 690, 42, 'ui'],
+    ['login()', 150, 150, 'logic'], ['pesan()', 360, 156, 'logic'], ['bayar()', 560, 148, 'logic'], ['hitungDiskon()', 700, 160, 'logic'],
+    ['sesi.ts', 110, 262, 'data'], ['db.ts', 300, 258, 'data'], ['produk.sql', 500, 266, 'data'], ['midtrans.ts', 690, 260, 'data'],
+    ['format.ts', 180, 372, 'util'], ['logger.ts', 380, 376, 'util'], ['env.ts', 560, 370, 'util'], ['validasi.ts', 712, 374, 'util']
+  ];
+  const EDGES = [[0, 4], [0, 5], [1, 4], [1, 5], [1, 6], [2, 5], [2, 6], [2, 7], [3, 6], [3, 7],
+                 [4, 8], [4, 9], [5, 9], [5, 10], [6, 9], [6, 11], [7, 10], [7, 11],
+                 [8, 12], [9, 13], [10, 12], [11, 14], [9, 15], [7, 15], [4, 13]];
+  const FLOW_NODES = [2, 6, 11, 14];
+  const FLOW_EDGES = [6, 15, 21];
+  $('#c4-svg').innerHTML = EDGES.map(([a, b], i) => { const A = NODES[a], B = NODES[b], my = (A[2] + B[2]) / 2;
+    return `<path class="net-edge" id="net-e-${i}" d="M${A[1]} ${A[2]} C ${A[1]} ${my}, ${B[1]} ${my}, ${B[1]} ${B[2]}"/>`; }).join('');
+  const c4Area = $('#c4-area');
+  NODES.forEach(([n, x, y, t], i) => { const d = document.createElement('div'); d.className = 'net-node ' + t; d.id = 'net-n-' + i; d.textContent = n;
+    d.style.left = (x / GW * 100) + '%'; d.style.top = (y / GH * 100) + '%'; c4Area.appendChild(d); });
+  const netNodeEls = NODES.map((_, i) => document.getElementById('net-n-' + i));
+  const netEdgeEls = EDGES.map((_, i) => document.getElementById('net-e-' + i));
+
+  /* ---------- Kartu 5: komentar ---------- */
+  const CMTS = [['@dev.santuy', '#FF5500', '@budi.ngoding', 'ini lo banget 😭'], ['@ngoding.malam', '#2563EB', '@sari.fe', 'wajib coba!'],
+                ['@kopi.dan.kode', '#059669', '@tim.backend', 'nah ini solusinya'], ['@frontend.galau', '#D97706', '@rizky.dev', 'stop halu bro 💀'],
+                ['@si.paling.debug', '#6E6A63', '@anak.magang', 'liat nih'], ['@junior.bergerak', '#141619', '@mentor.gue', 'boleh dicoba?']];
+  const c5 = $('#c5-cmts');
+  CMTS.forEach(([u, c, tagU, msg]) => { const d = document.createElement('div'); d.className = 'cmt'; d.innerHTML = `<span class="av" style="background:${c}"></span><b>${u}</b><span class="kw">${tagU}</span><span>${msg}</span>`; c5.appendChild(d); });
+  const inp = document.createElement('div'); inp.className = 'cmt-input'; inp.innerHTML = '<span id="c5-typed"></span><span class="caret">Kirim ➤</span>'; c5.appendChild(inp);
+  const cmtEls = [...c5.querySelectorAll('.cmt')];
+  const C5_TYPE = '@temen.lo cek ini 👀';
+  const SHARE = [['@budi.ngoding', '#FF5500'], ['@sari.fe', '#2563EB'], ['@tim.backend', '#059669'], ['@rizky.dev', '#D97706']];
+  $('#c5-share').innerHTML = SHARE.map(([u, c], i) => `<div class="share-row" id="share-${i}"><span class="av" style="background:${c}"></span><span class="su">${u}</span><span class="sk">○</span></div>`).join('');
+  const shareEls = SHARE.map((_, i) => document.getElementById('share-' + i));
+
+  /* ---------- Karakter ---------- */
+  const poses = { present: $('#pose-present'), shocked: $('#pose-shocked'), point: $('#pose-point'), thumbs: $('#pose-thumbs') };
+  const visemes = {}; ['v0', 'v1', 'v2', 'v3', 'v4', 'v5'].forEach(k => visemes[k] = $('#viseme-' + k));
+  const eyeBlink = $('#eye-blink'), eyeWink = $('#eye-wink');
+  const charRig = $('#character-rig');
+
+  const SYLLABLE_PATTERN = ['v3', 'v4', 'v1', 'v3', 'v2', 'v4', 'v0', 'v3', 'v1', 'v4', 'v2', 'v3'];
+  function computeVisemeForFrame(frameIdx, vol, poseKey) {
+    if (vol < 0.14) return 'v0';
+    const step = Math.floor(frameIdx / 2);
+    if (vol < 0.32) return (step % 2 === 0) ? 'v2' : 'v1';
+    const patViseme = SYLLABLE_PATTERN[step % SYLLABLE_PATTERN.length];
+    if (poseKey === 'shocked' && patViseme === 'v4' && vol > 0.72) return 'v5';
+    return patViseme;
+  }
+  const only = (map, key) => Object.keys(map).forEach(k => map[k].classList.toggle('active', k === key));
+
+  /* ---------- GSAP: masuk/keluar kartu ---------- */
+  const tl = gsap.timeline({ paused: true });
+  SCENES.forEach((s, i) => {
+    const enterT = i === 0 ? 0.05 : s.t0;
+    tl.to(s.card, { autoAlpha: 1, y: 0, duration: 0.42, ease: 'back.out(1.4)' }, enterT);
+    if (i < SCENES.length - 1) tl.to(s.card, { autoAlpha: 0, y: -22, duration: 0.28 }, Math.max(enterT + 0.5, s.t1 - 0.28));
+  });
+
+  const headlineEl = $('#headline-text'), captionEl = $('#caption-text'), tagEl = $('#scene-tag-pill');
+
+  /* ---------- Sub-state per kartu (hanya ganti kelas, tanpa transition) ---------- */
+  function updateSubStates(sc, lt) {
+    // Kartu 1
+    const nOn = sc.sub === 'vibe' ? Math.min(C1_FILES.length, Math.floor(lt * 1.6)) : 0;
+    c1FileEls.forEach((el, i) => el.classList.toggle('on', i < nOn));
+    c1TermEls.forEach((el, i) => el.classList.toggle('on', sc.sub === 'vibe' && lt > 7.4 + i * 0.6));
+
+    // Kartu 2
+    const spag = sc.sub === 'spag';
+    const trig = spag && lt >= 1.6;
+    const errN = spag ? Math.max(0, Math.min(SPAG_ERR.length, Math.floor((lt - 2.2) / 0.28) + 1)) : 0;
+    const errSet = new Set(SPAG_ERR.slice(0, errN));
+    c2FileEls.forEach((el, i) => {
+      el.classList.toggle('trigger', trig && i === SPAG_TRIGGER);
+      const isErr = errSet.has(i);
+      el.classList.toggle('err', isErr);
+      el.querySelector('.q').textContent = (trig && i === SPAG_TRIGGER) ? '✎ EDIT' : (isErr ? '✕ ERR' : '?');
+    });
+    wireEls.forEach((el, i) => el.classList.toggle('hot', errN > 0 && HOT_WIRES.includes(i)));
+    const b2 = $('#c2-badge'); b2.classList.toggle('err', errN > 0); b2.textContent = errN > 0 ? `✕ ${errN} ERROR` : '128 FILE ? ? ?';
+    $('#c2-banner').classList.toggle('err', errN > 0);
+    $('#c2-banner-text').textContent = errN > 0 ? '💥 BENERIN tombol.tsx ➔ RUNGKAD BERJAMAAH' : (trig ? '✎ AI BENERIN tombol.tsx…' : '🍝 SEMUA FILE SALING NYAMBUNG, NGGAK ADA YANG PAHAM');
+    $('#c2-banner-count').textContent = errN + ' ERROR';
+
+    // Kartu 3
+    const scan = sc.sub === 'scan';
+    const scanned = scan ? Math.min(C3_FILES.length, Math.floor((lt - 2.0) / 0.45) + 1) : 0;
+    c3FileEls.forEach((el, i) => el.classList.toggle('on', i < scanned));
+    const astShown = scan ? Math.max(0, Math.min(AST_N.length, Math.floor((lt - 2.4) / 0.4) + 1)) : 0;
+    astNodeEls.forEach((el, i) => el.setAttribute('opacity', i < astShown ? 1 : 0.12));
+    astEdgeEls.forEach((el, i) => { const [a, b] = AST_E[i]; el.setAttribute('opacity', (a < astShown && b < astShown) ? 1 : 0.15); });
+    const done = scan && lt > 7.2;
+    $('#c3-rel').textContent = done ? '312 RELASI' : (Math.round(312 * astShown / AST_N.length) + ' RELASI');
+    $('#c3-status').textContent = done ? '✓ SELESAI: 128 FILE ➔ 312 RELASI' : '⚡ X-RAY AST PARSER: SCAN SELURUH FOLDER...';
+
+    // Kartu 4
+    const flow = sc.sub === 'graph' && lt > 4.2;
+    netNodeEls.forEach((el, i) => { el.classList.toggle('flow', flow && FLOW_NODES.includes(i)); el.classList.toggle('dim', flow && !FLOW_NODES.includes(i)); });
+    netEdgeEls.forEach((el, i) => el.classList.toggle('flow', flow && FLOW_EDGES.includes(i)));
+    $('#c4-banner-text').textContent = flow ? '➔ ALUR: kasir.tsx ➔ bayar() ➔ midtrans.ts ➔ env.ts' : '🗺️ 128 FILE · 312 KONEKSI KEBACA DI 1 LAYAR';
+
+    // Kartu 5
+    const cta = sc.sub === 'cta';
+    const chars = [...C5_TYPE];
+    const typed = cta ? chars.slice(0, Math.max(0, Math.min(chars.length, Math.floor((lt - 0.6) / 0.09) + 1))).join('') : '';
+    $('#c5-typed').textContent = typed || 'Tambahkan komentar…';
+    cmtEls.forEach((el, i) => el.classList.toggle('on', cta && lt > 2.4 + i * 0.5));
+    let nSent = 0;
+    shareEls.forEach((el, i) => { const on = cta && lt > 5.0 + i * 0.45; if (on) nSent++; el.classList.toggle('on', on); el.querySelector('.sk').textContent = on ? '✓' : '○'; });
+    $('#c5-sent').classList.toggle('on', cta && lt > 7.0);
+    $('#c5-badge').textContent = nSent ? `↗ ${nSent} TEMEN DI-TAG` : 'TAG TEMEN LO 👥';
+  }
+
+  /* ---------- Timeline utama: semuanya dari curT ---------- */
+  let lastIdx = -1;
+  function seekTimeline(t) {
+    const curT = Math.max(0, Math.min(DURATION, t));
+    tl.seek(curT, false);
+
+    let idx = SCENES.findIndex(s => curT >= s.t0 && curT < s.t1);
+    if (idx === -1) idx = SCENES.length - 1;
+    const sc = SCENES[idx];
+    const lt = curT - sc.t0;
+
+    if (idx !== lastIdx) {
+      lastIdx = idx;
+      headlineEl.innerHTML = sc.headline;
+      captionEl.textContent = sc.caption;
+      tagEl.textContent = sc.tag;
+      SCENES.forEach((_, i) => { document.getElementById('prog-seg-' + i).className = 'story-seg' + (i < idx ? ' done' : (i === idx ? ' current' : '')); });
+    }
+    only(poses, sc.pose);
+    updateSubStates(sc, lt);
+
+    // volume dari envelope asli, dipetakan ke waktu sumber
+    const srcT = sc.src0 + lt;
+    const frameIdx = Math.min(AUDIO_ENV.length - 1, Math.max(0, Math.floor(srcT * 30)));
+    const vol = AUDIO_ENV[frameIdx] || 0;
+    only(visemes, computeVisemeForFrame(frameIdx, vol, sc.pose));
+
+    const isWinking = (curT >= DURATION - 5.5 && curT <= DURATION - 4.4);
+    const blinkMod = (curT + 1.2) % 3.4;
+    const isBlinking = !isWinking && (blinkMod >= 0 && blinkMod < 0.13);
+    eyeWink.classList.toggle('active', isWinking);
+    eyeBlink.classList.toggle('active', isBlinking);
+
+    const poseSwitchTime = POSE_SWITCH[idx];
+    const dtSwitch = Math.max(0, curT - poseSwitchTime);
+    const switchPop = dtSwitch < 0.25 ? Math.sin((dtSwitch / 0.25) * Math.PI) * 0.025 : 0;
+    const talkBobY = vol > 0.15 ? -Math.abs(Math.sin(curT * 18)) * (2.0 + vol * 3.5) : 0;
+    const breatheY = Math.sin(curT * 2.8) * 2.5;
+    const subtleTilt = Math.sin(curT * 2.2) * (0.6 + vol * 0.8);
+    const subtleSwayX = Math.sin(curT * 1.6) * 2.5;
+    const posX = subtleSwayX.toFixed(2);
+    const posY = (breatheY + talkBobY).toFixed(2);
+    const rot = subtleTilt.toFixed(2);
+    const scaleVal = (1 + switchPop + vol * 0.008).toFixed(4);
+    charRig.style.transform = 'translate(' + posX + 'px, ' + posY + 'px) rotate(' + rot + 'deg) scale(' + scaleVal + ')';
+
+    if (!RENDER) { $('#scrub').value = curT; $('#tread').textContent = curT.toFixed(2) + ' / ' + DURATION.toFixed(2) + ' s · ' + sc.pose + ' · vol ' + vol.toFixed(2); }
+    return { idx, srcT };
+  }
+
+  let currentT = 0;
+  window.seekTo = (sec) => { currentT = sec; return seekTimeline(sec); };
+  window.OPENER = { ready: true, DURATION, FPS: 30, WIDTH: 1080, HEIGHT: 1920, SCENES, seek: (s) => window.seekTo(s) };
+
+  /* ---------- Skala tampilan ---------- */
+  const vp = $('#viewport'), wrap = $('#stage-wrap');
+  function fit() {
+    const s = RENDER ? 1 : Math.min((innerHeight - 24) / 1920, (innerWidth - 480) / 1080);
+    vp.style.transform = `scale(${s})`;
+    wrap.style.width = (1080 * s) + 'px'; wrap.style.height = (1920 * s) + 'px';
+  }
+  addEventListener('resize', fit); fit();
+
+  /* ---------- Preview: play + audio ---------- */
+  const vo = $('#vo');
+  let playing = false, t0Wall = 0, t0Pos = 0;
+  function loop(now) {
+    if (!playing) return;
+    const t = t0Pos + (now - t0Wall) / 1000;
+    if (t >= DURATION) { playing = false; vo.pause(); $('#btn-play').textContent = '▶ Play'; window.seekTo(DURATION); return; }
+    const { srcT } = window.seekTo(t);
+    if (Math.abs(vo.currentTime - srcT) > 0.15) vo.currentTime = srcT; // lompat ke potongan suara scene
+    requestAnimationFrame(loop);
+  }
+  if (!RENDER) {
+    $('#scrub').max = DURATION;
+    $('#btn-play').onclick = () => {
+      playing = !playing;
+      $('#btn-play').textContent = playing ? '❚❚ Pause' : '▶ Play';
+      if (playing) { if (currentT >= DURATION - 0.05) currentT = 0; t0Wall = performance.now(); t0Pos = currentT; vo.play().catch(() => {}); requestAnimationFrame(loop); }
+      else vo.pause();
+    };
+    $('#scrub').oninput = (e) => { if (playing) { playing = false; vo.pause(); $('#btn-play').textContent = '▶ Play'; } window.seekTo(+e.target.value); };
+    const setGuides = (on) => { vp.classList.toggle('show-guides', on); $('#btn-guides').textContent = 'Garis bantu: ' + (on ? 'ON' : 'OFF'); };
+    setGuides(Q.get('guides') !== '0');
+    $('#btn-guides').onclick = () => setGuides(!vp.classList.contains('show-guides'));
+    addEventListener('keydown', (e) => { if (e.key === 'g') $('#btn-guides').click(); if (e.key === ' ') { e.preventDefault(); $('#btn-play').click(); } });
+  }
+
+  /* ---------- Cek aturan otomatis ---------- */
+  function rectIn(el) {
+    const v = vp.getBoundingClientRect(), r = el.getBoundingClientRect(), s = v.width / 1080;
+    return { x: (r.left - v.left) / s, y: (r.top - v.top) / s, w: r.width / s, h: r.height / s };
+  }
+  const SAFE = { x0: 80, y0: 180, x1: 950, y1: 1470 };
+  const inside = (r) => r.x >= SAFE.x0 - 0.5 && r.y >= SAFE.y0 - 0.5 && r.x + r.w <= SAFE.x1 + 0.5 && r.y + r.h <= SAFE.y1 + 0.5;
+  const f1 = (n) => Math.round(n);
+
+  function runChecks() {
+    const out = [];
+    const add = (status, title, detail) => out.push({ status, title, detail });
+    const keepT = currentT;
+    const wasGuides = vp.classList.contains('show-guides');
+
+    // 1. Kanvas
+    add(vp.offsetWidth === 1080 && vp.offsetHeight === 1920 ? 'pass' : 'fail', 'Kanvas 1080 × 1920', `terukur ${vp.offsetWidth} × ${vp.offsetHeight}`);
+
+    // 2. #safe
+    const sr = rectIn($('#safe'));
+    const okSafe = f1(sr.x) === 80 && f1(sr.y) === 180 && f1(sr.w) === 870 && f1(sr.h) === 1290;
+    add(okSafe ? 'pass' : 'fail', 'Safe zone 80 / 180 / 130 / 450', `#safe = x${f1(sr.x)} y${f1(sr.y)} ${f1(sr.w)}×${f1(sr.h)}`);
+
+    // 3. Zona
+    const zones = [['Zona 1 header', '.brand-header', 180, 74], ['Zona 2 kartu', '#top-card-container', 270, 650], ['Zona 3 headline', '#headline-dock', 936, 220], ['Zona 4 karakter', '#character-stage', 1180, 740]];
+    zones.forEach(([n, q, y, h]) => { const r = rectIn($(q)); add(f1(r.y) === y && f1(r.h) === h ? 'pass' : 'fail', n, `y ${f1(r.y)}–${f1(r.y + r.h)} (target ${y}–${y + h})`); });
+
+    // 4. Semua teks di dalam safe zone, untuk tiap scene
+    let outside = [], dockOverflow = [], headLines = [], capLines = [];
+    SCENES.forEach((s) => {
+      window.seekTo(s.t0 + Math.min(9.5, (s.t1 - s.t0) - 0.4)); // akhir scene: semua sub-state aktif
+      const card = $(s.card);
+      [...card.querySelectorAll('*'), ...document.querySelectorAll('.brand-header *, #headline-dock *')].forEach(el => {
+        if (!el.childNodes.length || ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return;
+        const r = rectIn(el); if (r.w === 0) return;
+        if (!inside(r)) outside.push(`${s.tag.slice(0, 2)} "${el.textContent.trim().slice(0, 24)}" (x${f1(r.x)}–${f1(r.x + r.w)}, y${f1(r.y)}–${f1(r.y + r.h)})`);
+      });
+      const dock = $('#headline-dock'); if (dock.scrollHeight > dock.clientHeight + 1) dockOverflow.push(`${s.tag.slice(0, 2)} (+${dock.scrollHeight - dock.clientHeight}px)`);
+      const hl = Math.round($('#headline-text').offsetHeight / (48 * 1.1)); if (hl > 2) headLines.push(`${s.tag.slice(0, 2)}: ${hl} baris`);
+      const cp = $('#caption-text'); const cl = Math.round((cp.offsetHeight - 27) / 27); if (cl > 3) capLines.push(`${s.tag.slice(0, 2)}: ${cl} baris`); else capLines.push(null);
+    });
+    add(outside.length ? 'fail' : 'pass', 'Semua teks & UI di dalam safe zone', outside.length ? outside.slice(0, 6).join('<br>') + (outside.length > 6 ? `<br>…+${outside.length - 6} lagi` : '') : 'tidak ada teks di luar x 80–950 / y 180–1470');
+    add(headLines.length ? 'fail' : 'pass', 'Headline maksimal 2 baris', headLines.join(', ') || 'semua scene ≤ 2 baris');
+    const capBad = capLines.filter(Boolean);
+    add(capBad.length ? 'fail' : 'pass', 'Caption maksimal 3 baris', capBad.join(', ') || 'semua scene ≤ 3 baris');
+    add(dockOverflow.length ? 'warn' : 'pass', 'Headline + caption muat di 220px', dockOverflow.length ? 'meluap di scene ' + dockOverflow.join(', ') : 'tidak ada yang meluap');
+
+    // 5. Karakter tidak masuk kolom tombol kanan
+    const rr = rectIn(charRig);
+    add(rr.x >= 80 && rr.x + rr.w <= 950 ? 'pass' : 'fail', 'Rig karakter 740 di tengah kolom aman', `x ${f1(rr.x)}–${f1(rr.x + rr.w)} (batas 80–950)`);
+
+    // 6. Teks nowrap tidak terpotong / turun baris
+    window.seekTo(SCENES[3].t0 + 1);
+    const clipped = [];
+    document.querySelectorAll('.win-badge, .gh-stat-box, .net-node, .scene-tag-pill, .brand-handle').forEach(el => {
+      const cs = getComputedStyle(el);
+      if (cs.whiteSpace !== 'nowrap') clipped.push(`${el.className}: white-space ${cs.whiteSpace}`);
+      else if (el.scrollWidth > el.clientWidth + 1) clipped.push(`"${el.textContent.trim()}" terpotong`);
+    });
+    add(clipped.length ? 'fail' : 'pass', 'Badge / stat / node tidak terpotong (nowrap)', clipped.join('<br>') || 'semua aman');
+
+    // 7. Node graf tidak keluar dari area / saling tumpuk
+    const area = rectIn(c4Area), nodeR = netNodeEls.map(rectIn);
+    const outN = nodeR.filter(r => r.x < area.x - 1 || r.x + r.w > area.x + area.w + 1).length;
+    let overlap = 0; for (let i = 0; i < nodeR.length; i++) for (let j = i + 1; j < nodeR.length; j++) { const a = nodeR[i], b = nodeR[j]; if (a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) overlap++; }
+    add(outN || overlap ? 'fail' : 'pass', 'Node graf rapi', `${outN} keluar area, ${overlap} pasang bertumpuk`);
+
+    // 8. Kepadatan visual
+    add(SPAG.length >= 18 && SPAG.length <= 24 ? 'pass' : 'fail', 'Spaghetti: 18–24 file, 3 kolom, kabel SVG', `${SPAG.length} file · ${getComputedStyle(c2Grid).gridTemplateColumns.split(' ').length} kolom · ${WIRES.length} kabel`);
+    add(SPAG_ERR.length >= 6 ? 'pass' : 'fail', 'Domino error biru → merah', `1 pemicu biru, ${SPAG_ERR.length} file ✕ ERR`);
+    const nodes = netNodeEls.length, edges = netEdgeEls.length, tiers = new Set(NODES.map(n => n[3])).size;
+    add(nodes >= 14 && edges >= 20 && tiers === 4 ? 'pass' : 'fail', 'Peta jaringan: ≥14 node, ≥20 kurva, 4 tier + legenda', `${nodes} node · ${edges} kurva · ${tiers} tier · ${document.querySelectorAll('.legend .lg-item').length} legenda`);
+    const topics = [...document.querySelectorAll('.gh-topic')].map(e => e.textContent);
+    const ghOk = topics.includes('antigravity-ide') && topics.includes('claude-code') && document.querySelectorAll('.gh-stat-box').length >= 3;
+    add(ghOk ? 'pass' : 'fail', 'Kartu GitHub lengkap', `topik: ${topics.join(', ')}`);
+    const winOk = [...document.querySelectorAll('.mockup-card')].every(c => c.querySelector('.win-bar .dot-r') && c.querySelector('.win-path') && c.querySelector('.win-badge'));
+    add(winOk ? 'pass' : 'fail', 'Tiap kartu punya .win-bar (3 titik, path, badge)', `${document.querySelectorAll('.mockup-card').length} kartu dicek`);
+
+    // 9. Tanpa CSS transition
+    const withTr = [...document.querySelectorAll('.mockup-card *, #character-rig, #character-rig *, .story-seg')].filter(el => getComputedStyle(el).transitionDuration.split(',').some(d => parseFloat(d) > 0));
+    add(withTr.length ? 'fail' : 'pass', 'Tidak ada CSS transition pada state', withTr.length ? `${withTr.length} elemen masih punya transition` : '0 elemen');
+
+    // 10. Progress bar
+    const segs = document.querySelectorAll('.story-seg').length;
+    add(segs === SCENES.length ? 'pass' : 'fail', 'Progress bar = jumlah scene', `${segs} segmen / ${SCENES.length} scene`);
+
+    // 11. Header branding
+    const hb = $('.brand-title').textContent === 'ChillDev' && $('.brand-sub').textContent === '@chilldevibe' && $('.brand-handle').textContent.includes('@ramarvctr_');
+    add(hb ? 'pass' : 'fail', 'Header: ChillDev / @chilldevibe / @ramarvctr_', hb ? 'lengkap' : 'ada yang hilang');
+
+    // 12. Deterministik: seek acak harus memberi hasil sama
+    const snap = () => [charRig.style.transform, ...Object.keys(poses).filter(k => poses[k].classList.contains('active')), ...Object.keys(visemes).filter(k => visemes[k].classList.contains('active')),
+      eyeBlink.classList.contains('active'), eyeWink.classList.contains('active'), $('#c2-badge').textContent, headlineEl.textContent].join('|');
+    let mismatch = 0; const probes = [0.5, SCENES[1].t0 + 0.1, SCENES[1].t0 + 4.3, SCENES[2].t0 + 0.12, SCENES[4].t0 + 3, DURATION - 5];
+    probes.forEach(p => { window.seekTo(p); const a = snap(); window.seekTo(DURATION * 0.37); window.seekTo(0); window.seekTo(p); if (snap() !== a) mismatch++; });
+    add(mismatch ? 'fail' : 'pass', 'seekTo() deterministik (termasuk pop ganti pose)', `${probes.length - mismatch}/${probes.length} titik identik setelah seek acak`);
+
+    // 13. Pose & mata
+    const poseList = [...new Set(SCENES.map(s => s.pose))];
+    add(poseList.length === 4 ? 'pass' : 'warn', 'Keempat pose terpakai', poseList.join(', '));
+    window.seekTo(DURATION - 5); const winkOn = eyeWink.classList.contains('active');
+    window.seekTo(2.2); const blinkOn = eyeBlink.classList.contains('active');
+    add(winkOn && blinkOn ? 'pass' : 'fail', 'Kedip (3.4s) & wink (DURATION−5.5)', `kedip @2.2s: ${blinkOn ? 'ya' : 'tidak'} · wink @${(DURATION - 5).toFixed(1)}s: ${winkOn ? 'ya' : 'tidak'}`);
+    let vset = new Set(); for (let t = 0; t < DURATION; t += 1 / 30) { const sc = SCENES.find(s => t >= s.t0 && t < s.t1) || SCENES[4]; const fi = Math.floor((sc.src0 + t - sc.t0) * 30); vset.add(computeVisemeForFrame(fi, AUDIO_ENV[fi] || 0, sc.pose)); }
+    add(vset.size >= 5 ? 'pass' : 'warn', 'Lip-sync memakai banyak viseme', [...vset].sort().join(', ') + (vset.has('v5') ? '' : ' (v5 tidak muncul: butuh shocked + vol > 0.72 pas pola v4)'));
+    add(AUDIO_ENV.length > 0 ? 'pass' : 'fail', 'Envelope audio ter-inline', `${AUDIO_ENV.length} frame (${(AUDIO_ENV.length / 30).toFixed(1)} s)`);
+
+    // tampilkan
+    window.seekTo(keepT); vp.classList.toggle('show-guides', wasGuides);
+    const nP = out.filter(o => o.status === 'pass').length, nF = out.filter(o => o.status === 'fail').length, nW = out.filter(o => o.status === 'warn').length;
+    const sum = $('#summary'); sum.textContent = `${nP} lolos · ${nF} gagal · ${nW} peringatan`; sum.style.color = nF ? '#F87171' : (nW ? '#FBBF24' : '#34D399');
+    $('#checks').innerHTML = out.map(o => `<div class="chk ${o.status}"><span class="ic">${o.status === 'pass' ? '✓' : o.status === 'fail' ? '✕' : '!'}</span><span>${o.title}</span><span class="dt">${o.detail}</span></div>`).join('');
+    window.RULE_CHECKS = out;
+  }
+
+  window.seekTo(Number(Q.get('t')) || 0);
+  if (!RENDER) {
+    $('#btn-recheck').onclick = runChecks;
+    Promise.all([document.fonts.ready, ...[...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))]).then(() => setTimeout(runChecks, 80));
+  }
+})();
+</script>
+</body>
+</html>

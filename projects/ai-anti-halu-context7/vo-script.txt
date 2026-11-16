@@ -1,0 +1,15 @@
+# Voice ElevenLabs: Putra - Smooth, Clear and Engaging (sama dengan video ChillDev sebelumnya)
+# Durasi rekaman: 50,68 detik (+1,3 detik end card) · 6 paragraf = 6 scene · jeda ±0,6 detik antar paragraf
+# Cara baca: "Next.js" = "next jes" · "Tailwind" = "tel-wind" · "use context7" = "yus kontek seven" · "Context7" = "Kontek seven" · "Upstash" = "ap-stash"
+
+Lo minta AI bikin fitur pakai Next.js lima belas. Yang keluar malah pages router, getInitialProps, kode zaman batu.
+
+Bukan AI-nya bego, memorinya berhenti di knowledge cutoff. Sementara dokumentasi library terus update tiap bulan. Jadi dia ngarang dari ingatan lama.
+
+Hasilnya fungsi yang udah deprecated, import yang nggak nyambung, terminal merah semua. Lo yang debug sampe subuh.
+
+Obatnya Context7 dari Upstash, enam puluh empat ribu bintang di GitHub. Dia MCP server yang nyuapin dokumentasi versi terbaru langsung ke prompt.
+
+Colok ke Antigravity IDE, terus tambahin use context7 di prompt lo. Agen ambil docs yang relevan, kodenya pakai API yang beneran ada.
+
+Mau config MCP-nya? Ketik DOCS di kolom komentar. Gas!

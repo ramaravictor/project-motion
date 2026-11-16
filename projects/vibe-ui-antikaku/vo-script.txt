@@ -1,0 +1,15 @@
+# Voice ElevenLabs: Putra - Smooth, Clear and Engaging (sama dengan video ChillDev sebelumnya)
+# Perkiraan durasi: ~53 detik + 2 detik end card · 6 paragraf = 6 scene · beri jeda ±0,6 detik antar paragraf
+# "twenty-first" = cara baca 21st (21st MCP / 21st.dev)
+
+Ngaku, UI hasil vibe coding lo pasti mirip gini. Gradien ungu, judul penuh emoji, tiga kotak fitur kembar, tombol Get Started Free. Dan ada seribu website lain yang bentuknya persis sama.
+
+Itu karena AI polosan nggak punya selera desain. Dia nyusun layout dari pola yang paling umum, jadi hasilnya kaku dan pasaran. Klien lihat sedetik, langsung tahu.
+
+Parahnya, pas lo minta revisi satu bagian, CSS-nya nimpa halaman lain. Layout rungkad berjamaah!
+
+Obatnya? Colok twenty-first MCP ke Antigravity IDE. Tempel config HTTP plus API key gratis, beres.
+
+Sekarang AI nggak ngarang lagi. Dia ambil komponen beneran dari registry twenty-first dot dev, ada lebih dari dua belas ribu: hero, card, navbar, sampai background. Satu halaman langsung naik kelas.
+
+Mau config lengkapnya? Ketik UI di kolom komentar. Gas!

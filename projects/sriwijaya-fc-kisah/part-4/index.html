@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lampu di Tiang Sebelah · Part 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DotGothic16&family=IBM+Plex+Mono:wght@600&family=Playfair+Display:wght@900&family=Old+Standard+TT:wght@700&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../_world/stadium.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="../_world/stadium.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;background:#000;overflow:hidden}
+  #stage{position:absolute;left:50%;top:50%;width:1080px;height:1920px;overflow:hidden;background:#070b18;transform-origin:50% 50%}
+  body.render #stage{left:0;top:0;transform:none!important}
+  #shake{position:absolute;left:0;top:0;width:1080px;height:1920px}
+  #cv2{position:absolute;left:0;top:0;width:1080px;height:1920px}
+  #board .row.b{color:#8fd0ff;text-shadow:0 0 14px rgba(120,190,255,.8)}
+  #graph{position:absolute;left:34px;top:26px;width:700px;height:236px;display:none}
+  #glow5{position:absolute;left:90px;top:-245px;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(150,205,255,.55) 0%,rgba(150,205,255,.12) 30%,rgba(150,205,255,0) 62%);mix-blend-mode:screen;opacity:0;pointer-events:none}
+  #flare5{position:absolute;left:-260px;top:198px;width:1600px;height:14px;background:linear-gradient(90deg,rgba(170,220,255,0),rgba(200,232,255,.95) 50%,rgba(170,220,255,0));filter:blur(3px);mix-blend-mode:screen;opacity:0;pointer-events:none}
+  .sheen{position:absolute;top:-10%;bottom:-10%;left:0;width:60%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.75),rgba(255,255,255,0));mix-blend-mode:screen;pointer-events:none;transform:translateX(-130%)}
+
+  #scrim{position:absolute;left:0;right:0;top:700px;height:520px;background:radial-gradient(70% 55% at 50% 50%,rgba(4,6,14,.8),rgba(4,6,14,0) 72%);pointer-events:none;opacity:0}
+  #hud{position:absolute;inset:0;pointer-events:none}
+  .say{position:absolute;left:70px;width:940px;font:600 108px/1.02 'Cormorant Garamond',serif;color:#e9e2cf;letter-spacing:-.01em;text-shadow:0 4px 30px rgba(0,0,0,.6);transform-origin:50% 50%}
+  .say.c{text-align:center}
+  .say i{font-style:italic;color:#f0c35a}
+  .say i.red{color:#ff7a66}
+  .say i.blue{color:#8fd0ff}
+  .say .w{display:inline-block;white-space:nowrap;opacity:0}
+  .lbl{position:absolute;left:74px;font:600 34px 'IBM Plex Mono',monospace;color:#b8c2dc;letter-spacing:.08em;white-space:nowrap;opacity:0}
+  .lbl.c{left:0;right:0;text-align:center}
+
+  #yr{position:absolute;left:0;right:0;top:1150px;text-align:center;font:600 300px/1 'IBM Plex Mono',monospace;color:#f5c400;text-shadow:0 0 50px rgba(245,196,0,.4);opacity:0;transform-origin:50% 50%}
+  #yrl{position:absolute;left:0;right:0;top:1470px;text-align:center;font:600 36px 'IBM Plex Mono',monospace;color:#e9e2cf;letter-spacing:.2em;opacity:0}
+  #rew{position:absolute;left:90px;top:200px;font:600 44px 'IBM Plex Mono',monospace;color:#ff5a4a;letter-spacing:.1em;opacity:0;text-shadow:0 0 18px rgba(255,90,74,.6)}
+  #spoon{position:absolute;left:0;top:0;width:420px;height:120px;visibility:hidden;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
+
+  #scan{position:absolute;inset:-10px 0;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.07) 0 2px,rgba(0,0,0,0) 2px 6px)}
+  #band{position:absolute;left:0;right:0;top:0;height:90px;pointer-events:none;opacity:0;background:linear-gradient(rgba(255,255,255,0),rgba(255,255,255,.14),rgba(255,255,255,0))}
+  #flash{position:absolute;inset:0;pointer-events:none;opacity:0;background:#fff}
+  .lb{position:absolute;left:0;right:0;height:150px;background:#000;transform:scaleY(0)}
+  #lbT{top:0;transform-origin:50% 0}
+  #lbB{bottom:0;transform-origin:50% 100%}
+  #end{position:absolute;left:60px;right:60px;top:1580px;text-align:center;font:italic 600 52px 'Cormorant Garamond',serif;color:#e9e2cf;opacity:0}
+  #tag{position:absolute;left:60px;right:60px;top:1660px;text-align:center;font:600 32px 'IBM Plex Mono',monospace;color:#9aa6c4;letter-spacing:.12em;opacity:0}
+  #grain{position:absolute;inset:-60px;opacity:.09;mix-blend-mode:overlay;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+  #vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(85% 60% at 50% 48%,transparent 50%,rgba(0,0,0,.6) 100%)}
+  #dbg{position:fixed;left:10px;right:10px;bottom:10px;display:none;gap:10px;align-items:center;font:600 13px monospace;color:#ccc;z-index:99}
+  #dbg input{flex:1}
+  body.debug #dbg{display:flex}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="shake">
+    <div id="world">
+      <canvas id="cv" width="1080" height="1920"></canvas>
+      <canvas id="cv2" width="1080" height="1920"></canvas>
+      <div id="glow5"></div><div id="flare5"></div>
+      <div id="board"><div class="row"></div><div class="row"></div><div class="row"></div><canvas id="graph" width="700" height="236"></canvas></div>
+      <div id="clips"></div>
+    </div>
+  </div>
+  <div id="scrim"></div>
+  <div id="hud">
+    <div id="yr"></div><div id="yrl"></div>
+    <div id="rew">REW ◀◀</div>
+    <svg id="spoon" viewBox="0 0 420 120"><ellipse cx="70" cy="60" rx="62" ry="40" fill="#d9dde6" stroke="#8a93a8" stroke-width="4"/><ellipse cx="60" cy="50" rx="30" ry="14" fill="#f4f6fa" opacity=".7"/><rect x="124" y="50" width="290" height="20" rx="10" fill="#c5cbd8" stroke="#8a93a8" stroke-width="3"/><text x="270" y="67" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-weight="600" font-size="19" fill="#3a4258">APBD</text></svg>
+  </div>
+  <div id="scan"></div><div id="band"></div>
+  <div id="flash"></div>
+  <div class="lb" id="lbT"></div><div class="lb" id="lbB"></div>
+  <div id="end">Lampu Terakhir di Jakabaring</div>
+  <div id="tag">@ramarvctr_ · PART 4/4</div>
+  <div id="grain"></div>
+  <div id="vig"></div>
+</div>
+<div id="dbg"><button id="pp">▶</button><input id="scr" type="range" min="0" step="0.01"><span id="tt"></span></div>
+<audio id="vo" src="vo.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+  const S = window.Stadium, Q = new URLSearchParams(location.search);
+  const RENDER = Q.get('render') === '1', DEBUG = Q.get('debug') === '1';
+  if (RENDER) document.body.classList.add('render');
+  if (DEBUG) document.body.classList.add('debug');
+  const $ = (q) => document.querySelector(q);
+  const { clamp, lerp, EASE } = S;
+  const hh = (a, b) => { let h = (Math.imul(a + 1, 374761393) + Math.imul(b + 7, 668265263)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+
+  /* Batas adegan = jeda paragraf di vo.mp3 (silencedetect -32 dB / 0,22 s) */
+  const SCENES = [
+    { id: 's01', t0: 0.00,  t1: 13.31, line: 'lahir dari kantor gubernur' },
+    { id: 's02', t0: 13.31, t1: 25.84, line: 'Permendagri 22/2011, disuruh mandiri' },
+    { id: 's03', t0: 25.84, t1: 38.10, line: 'naik turun bareng kursi kekuasaan' },
+    { id: 's04', t0: 38.10, t1: 50.10, line: 'lahir klub baru' },
+    { id: 's05', t0: 50.10, t1: 63.00, line: 'kakaknya dibiarin gelap' },
+  ];
+  const DURATION = 63.0, FPS = 30;
+
+  /* ---------- dunia ---------- */
+  const INIT = [0, 0, 0, 1];                      // keadaan akhir Part 3
+  const LIGHTS = [
+    { i: 2, t: 1.2, type: 'on' }, { i: 1, t: 1.6, type: 'on' }, { i: 0, t: 2.0, type: 'on' },   // rewind ke 2004
+    { i: 0, t: 34.5, type: 'off' }, { i: 1, t: 35.3, type: 'off' }, { i: 2, t: 36.1, type: 'off' }, // 2018
+    { i: 3, t: 57.2, type: 'flick' },
+    { i: 3, t: 60.5, type: 'off' },                // "dibiarin gelap"
+  ];
+  const BLUE = [{ i: 0, t: 41.56, type: 'on' }];   // tiang kelima, warna lain
+  const lv5 = (t) => t < 41.0 ? 0 : S.light(BLUE, 0, t, 0);
+  function worldState(t) {
+    const crowd = t < .6 ? .03 : t < 2.8 ? lerp(.03, .88, EASE.io((t - .6) / 2.2)) : t < 13.31 ? .88 : t < 34.3 ? .72 : t < 37 ? lerp(.72, .12, clamp((t - 34.3) / 2.6)) : t < 50.1 ? .06 : .04;
+    const cheer = t >= 2.93 && t < 13.31 ? (t >= 11.9 ? .95 : .35) : 0;
+    const players = t >= 11.9 && t < 13.31 ? { mode: 'trophy', a: .9 } : t >= 2.93 && t < 13.31 ? { mode: 'run', a: .85 } : t >= 13.31 && t < 25.84 ? { mode: 'walk', a: .55 } : t >= 25.84 && t < 34.3 ? { mode: 'walk', a: .3 } : { mode: 'walk', a: 0 };
+    const st = { lights: [0, 1, 2, 3].map(i => S.light(LIGHTS, i, t, INIT[i])), crowd, cheer, players,
+      confetti: t >= 11.93 && t < 13.31 ? .7 : 0, confettiT: 11.93 };
+    if (t >= 41.0) st.extra = [{ x: 540, tx: 270 + Math.sin(t * .4) * 30, ty: 1400, lv: lv5(t), col: [150, 205, 255], head: '#cfe6ff' }];
+    return st;
+  }
+
+  /* ---------- kamera ---------- */
+  const CAM0 = { s: 1.08, x: 540, y: 900 };
+  const MOVES = [
+    { t0: .3, t1: 2.8, to: { s: 1.25, x: 540, y: 820 } },                  // rewind
+    { t0: 2.93, cut: true, to: { s: 1.0, x: 540, y: 960 } },               // tiba di 2004
+    { t0: 3.0, t1: 5.4, to: { s: 1.12, x: 540, y: 900 } },
+    { t0: 6.2, t1: 7.6, to: { s: 1.35, x: 520, y: 1300 } },                // kliping 2004
+    { t0: 9.1, t1: 10.2, to: { s: 1.2, x: 540, y: 760 } },                 // hujan APBD di sinar
+    { t0: 11.93, cut: true, to: { s: 1.5, x: 540, y: 700 } },              // montase gelar
+    { t0: 12.2, cut: true, to: { s: 1.35, x: 400, y: 1300 } },
+    { t0: 12.47, cut: true, to: { s: 1.6, x: 700, y: 600 } },
+    { t0: 12.74, cut: true, to: { s: 1.25, x: 540, y: 900 } },
+    { t0: 13.31, cut: true, to: { s: 1.3, x: 540, y: 560 } },              // 2011
+    { t0: 15.8, t1: 16.9, to: { s: 1.3, x: 520, y: 1250 } },               // dokumen
+    { t0: 20.4, t1: 21.4, to: { s: 1.15, x: 540, y: 820 } },
+    { t0: 22.5, t1: 23.4, to: { s: 1.05, x: 540, y: 900 } },
+    { t0: 25.84, cut: true, to: { s: 1.3, x: 540, y: 560 } },              // grafik naik turun
+    { t0: 26.6, t1: 27.4, to: { s: 1.32, x: 540, y: 500 } },
+    { t0: 27.4, t1: 28.2, to: { s: 1.32, x: 540, y: 620 } },
+    { t0: 28.2, t1: 29.0, to: { s: 1.32, x: 540, y: 500 } },
+    { t0: 29.0, t1: 29.8, to: { s: 1.32, x: 540, y: 600 } },
+    { t0: 30.44, cut: true, to: { s: 1.32, x: 540, y: 560 } },             // punch: pengurus
+    { t0: 31.55, cut: true, to: { s: 1.5, x: 300, y: 1350 } },             // sponsor
+    { t0: 32.85, cut: true, to: { s: 1.4, x: 760, y: 640 } },              // arah
+    { t0: 34.25, cut: true, to: { s: 1.0, x: 540, y: 960 } },              // 2018: lampu padam beruntun
+    { t0: 36.4, t1: 37.8, to: { s: 1.08, x: 540, y: 1000 } },
+    { t0: 38.10, cut: true, to: { s: 1.55, x: 540, y: 1150 } },            // kaki tiang baru
+    { t0: 38.6, t1: 41.0, to: { s: 1.5, x: 540, y: 330 } },                // ikut tiang tumbuh
+    { t0: 41.56, t1: 42.6, to: { s: 1.25, x: 540, y: 560 }, ease: 'out' },
+    { t0: 43.4, t1: 44.6, to: { s: 1.1, x: 500, y: 1000 } },               // papan + kliping baru di sinar biru
+    { t0: 45.4, t1: 46.8, to: { s: 1.15, x: 540, y: 980 } },
+    { t0: 47.9, t1: 49.6, to: { s: 1.0, x: 540, y: 960 } },                // kandang sama
+    { t0: 50.10, cut: true, to: { s: 1.35, x: 700, y: 1350 } },            // kursi kuning gelap
+    { t0: 50.2, t1: 54.3, to: { s: 1.45, x: 660, y: 1300 }, ease: 'lin' },
+    { t0: 54.5, t1: 55.8, to: { s: 1.0, x: 540, y: 960 } },
+    { t0: 56.36, t1: 57.8, to: { s: 1.45, x: 540, y: 360 } },              // tiang biru
+    { t0: 59.36, cut: true, to: { s: 1.7, x: 950, y: 340 } },              // lampu kakak
+    { t0: 61.0, cut: true, to: { s: 1.05, x: 540, y: 960 } },
+    { t0: 61.1, t1: 63.0, to: { s: 1.0, x: 540, y: 980 }, ease: 'out' },
+  ];
+  const camAt = (t) => S.cam(t, CAM0, MOVES);
+
+  /* ---------- papan skor: split-flap (karakter berputar acak lalu mengunci) ---------- */
+  const year = (t) => Math.round(lerp(2026, 2004, EASE.io(clamp((t - .5) / 2.1))));
+  const BOARD = [
+    { t0: 0, rows: [[(t) => '◀◀ ' + year(t), .35, 'r']] },
+    { t0: 2.93, rows: [['ERA APBD', 3.1, 'g'], ['23 OKT 2004', 5.5, ''], ['DANA: APBD', 9.3, 'g']] },
+    { t0: 13.31, rows: [['2011', 13.6, ''], ['ATURAN BERUBAH', 14.8, 'r'], ['PERMENDAGRI 22/2011', 16.2, '']] },
+    { t0: 18.25, rows: [['2011', 0, ''], ['APBD → KLUB PRO', 18.3, 'r'], ['✕ DILARANG', 18.6, 'r']] },
+    { t0: 20.59, rows: [['SUBSIDI APBD', 20.7, ''], ['RP 0', 21.2, 'r'], ['MANDIRI?', 21.8, 'g']] },
+    { t0: 25.84, rows: [] },
+    { t0: 30.44, rows: [['PENGURUS: GANTI', 30.5, ''], ['SPONSOR: GANTI', 31.6, ''], ['ARAH: GANTI', 32.9, 'r']] },
+    { t0: 34.25, rows: [['2018', 34.3, ''], ['MASA PERALIHAN', 35.0, ''], ['DEGRADASI', 35.9, 'r']] },
+    { t0: 38.10, rows: [['JUNI 2025', 38.5, '']] },
+    { t0: 42.85, rows: [['SUMSEL UNITED', 42.95, 'b'], ['EKS PERSIKAS SUBANG', 43.9, 'b'], ['PRESIDEN: CIK UJANG', 45.5, 'b']] },
+    { t0: 47.95, rows: [['KANDANG:', 48.0, 'b'], ['JAKABARING', 48.5, 'b'], ['SAMA-SAMA', 49.0, 'g']] },
+    { t0: 50.10, rows: [['SRIWIJAYA FC', 50.4, 'g'], ['SEJAK 2004', 51.0, '']] },
+    { t0: 59.36, rows: [['SRIWIJAYA FC', 0, 'g'], ['SEJAK 2004', 0, ''], ['LAMPU: PADAM', 60.6, 'r']] },
+  ];
+  const CH = 'ABCDEFGHIJKLMNOPRSTUVWXYZ0123456789#%&';
+  function flap(txt, t, at) {
+    let s = '';
+    for (let k = 0; k < txt.length; k++) {
+      const st = at + k * .03; if (t < st) break;
+      const c = txt[k];
+      s += (c === ' ' || t >= st + .16) ? c : CH[Math.floor(hh(Math.floor(t * 24), k) * CH.length)];
+    }
+    return s;
+  }
+  const boardEl = $('#board'), rowEls = [...document.querySelectorAll('#board .row')];
+  function board(t) {
+    let b = BOARD[0]; for (const x of BOARD) if (t >= x.t0) b = x;
+    rowEls.forEach((el, k) => {
+      const r = b.rows[k]; let s = '', cls = '';
+      if (r) { const [txt, at, c] = r; cls = c; if (t >= at) s = typeof txt === 'function' ? txt(t) : flap(txt, t, at); }
+      el.textContent = s; el.className = 'row' + (cls ? ' ' + cls : '');
+    });
+    const take = t >= 42.85 && t < 50.1;
+    boardEl.style.borderColor = take ? '#1f5a8f' : '';
+    const g = t >= 42.85 && t < 43.15;
+    boardEl.style.transform = g ? `translateX(${((hh(Math.floor(t * 30), 3) - .5) * 30).toFixed(1)}px)` : '';
+    boardEl.style.filter = g ? 'hue-rotate(160deg) saturate(1.6)' : t >= 60.5 ? `brightness(${lerp(1, .45, clamp((t - 60.5) / .9)).toFixed(3)})` : '';
+  }
+
+  /* ---------- grafik naik-turun di papan (scene 3) ---------- */
+  const gEl = $('#graph'), g2 = gEl.getContext('2d');
+  function graph(t) {
+    const on = t >= 25.84 && t < 30.44; gEl.style.display = on ? 'block' : 'none'; if (!on) return;
+    g2.clearRect(0, 0, 700, 236);
+    g2.font = '26px DotGothic16';
+    g2.fillStyle = '#ff5a4a'; g2.fillText('KURSI', 8, 28);
+    g2.fillStyle = '#ffb340'; g2.fillText('KLUB', 140, 28);
+    const xe = clamp((t - 26.1) / 3.4) * 700;
+    for (let x = 0; x <= xe; x += 9) {
+      const y1 = 124 - 70 * Math.sin(x * .021 + .4), y2 = 132 - 62 * Math.sin(x * .021 + .1);
+      const tip = x + 9 > xe ? 4 : 0;
+      g2.fillStyle = '#ffb340'; g2.fillRect(x - 3 - tip, y2 - 3 - tip, 6 + tip * 2, 6 + tip * 2);
+      g2.fillStyle = '#ff5a4a'; g2.fillRect(x - 3 - tip, y1 - 3 - tip, 6 + tip * 2, 6 + tip * 2);
+    }
+  }
+
+  /* ---------- hujan koin APBD di dalam sinar (scene 1 → berhenti di stempel scene 2) ---------- */
+  const c2 = $('#cv2').getContext('2d');
+  const TG = [[300, 1470], [470, 1360], [650, 1380], [830, 1480]];
+  const COIN0 = 8.9, COIN_STOP = 18.25;
+  function coins(T) {
+    c2.clearRect(0, 0, 1080, 1920);
+    if (T < COIN0 || T > 20.5) return;
+    for (let i = 0; i < 110; i++) {
+      const b = i % 4, P = 1.7 + hh(i, 2) * .9, ph = hh(i, 3) * P;
+      const k = Math.floor((T - COIN0 + ph) / P), spawn = COIN0 - ph + k * P;
+      if (spawn < COIN0 || spawn > COIN_STOP) continue;
+      let y = 230 + (1250 / P) * (T - spawn);
+      if (T > COIN_STOP) y += 1400 * (T - COIN_STOP) * (T - COIN_STOP);
+      if (y > 1520) continue;
+      const u = clamp((y - 230) / 1250);
+      const x = lerp(S.TOWERS[b], TG[b][0], u) + (hh(i, 1) * 2 - 1) * (40 + 190 * u) + Math.sin(T * 2 + hh(i, 5) * 6) * 8;
+      const r = 7 + hh(i, 4) * 7, w = r * Math.abs(Math.cos(T * 5 + hh(i, 5) * 9)) + 1.2;
+      c2.globalAlpha = clamp((1520 - y) / 120);
+      c2.fillStyle = '#9c7410'; c2.beginPath(); c2.ellipse(x, y, w + 1.6, r + 1.6, 0, 0, 6.283); c2.fill();
+      c2.fillStyle = '#f5c400'; c2.beginPath(); c2.ellipse(x, y, w, r, 0, 0, 6.283); c2.fill();
+      c2.fillStyle = '#fff3b0'; c2.beginPath(); c2.ellipse(x - w * .3, y - r * .3, w * .3, r * .3, 0, 0, 6.283); c2.fill();
+    }
+    c2.globalAlpha = 1;
+  }
+
+  /* ---------- tiang lampu kelima tumbuh dari tanah (scene 4) ---------- */
+  function pole(ctx, t) {
+    if (t < 38.1) return;
+    const g = EASE.out(clamp((t - 38.6) / 2.4)), yTop = lerp(1160, S.HEAD_Y + 20, g);
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+    ctx.fillStyle = '#18233f';
+    const y0 = g >= 1 ? S.HEAD_Y + 26 : yTop;
+    ctx.fillRect(532, y0, 16, 1160 - y0);
+    ctx.fillRect(514, yTop + 30, 52, 5);
+    if (g < 1) {
+      ctx.fillStyle = '#1b2440'; ctx.fillRect(484, yTop - 46, 112, 52);
+      ctx.strokeStyle = '#2a355c'; ctx.lineWidth = 3; ctx.strokeRect(484, yTop - 46, 112, 52);
+    }
+  }
+
+  /* ---------- kliping ---------- */
+  const clipBox = $('#clips');
+  const mk = (o) => { const el = S.clipping(o); clipBox.appendChild(el); return el; };
+  const CLIPS = [
+    { el: mk({ mast: 'HARIAN SUMSEL', date: '23 OKTOBER 2004', head: 'Pemprov beli lisensi Persijatim', w: 500 }), f: { t0: 6.4, x: 270, y: 1150, rot: -5, out: 9.0 } },
+    { el: mk({ mast: 'REGULASI', date: 'PERMENDAGRI 22/2011', head: 'APBD dilarang untuk klub pro', w: 500, stamp: 'DILARANG', stampPos: 'left:170px;top:150px' }), f: { t0: 16.15, dur: .9, x: 270, y: 1140, rot: 4, out: 20.0 } },
+    { el: mk({ mast: 'OLAHRAGA', date: 'MUSIM 2018', head: 'Degradasi di masa peralihan', w: 500, gray: .75, stamp: 'DEGRADASI', stampPos: 'left:110px;top:180px' }), f: { t0: 34.4, x: 290, y: 1170, rot: -6, out: 37.35 } },
+    { el: mk({ mast: 'HARIAN SUMSEL', date: 'JUNI 2025', head: 'Klub baru, kandang lama', w: 480 }), f: { t0: 43.2, dur: 1.1, x: 230, y: 1220, rot: 5, spin: 250, out: 49.3 } },
+  ];
+  const docStamp = CLIPS[1].el.querySelector('.stamp');
+  const newClip = CLIPS[3].el; newClip.style.overflow = 'hidden'; newClip.style.filter = 'saturate(1.15) brightness(1.06)';
+  const sheen = document.createElement('div'); sheen.className = 'sheen'; newClip.appendChild(sheen);
+
+  /* ---------- teks: tiap adegan punya bahasa masuknya sendiri ---------- */
+  const hud = $('#hud');
+  const tl = gsap.timeline({ paused: true });
+  const SCRIM = [];
+  const words = (html) => html.split(/(<i[^>]*>.*?<\/i>|\s+)/).filter(s => s && !/^\s+$/.test(s)).map(w => {
+    const m = w.match(/^<i([^>]*)>(.*?)<\/i>$/);
+    if (m) return m[2].split(' ').map(x => `<span class="w"><i${m[1]}>${x}</i></span>`).join(' ');
+    return `<span class="w">${w}</span>`;
+  }).join(' ');
+  const SHADOW = '0 4px 30px rgba(0,0,0,.6)';
+
+  function say(html, at, out, o = {}) {
+    const { size, center, mode = 'rise', nowrap, glow = 'rgba(255,231,166,.9)', quick, times, wave } = o;
+    const top = o.top === 'auto' ? (S.pickTop(camAt, at, out ?? DURATION) || 790) : (o.top ?? 790);
+    const el = document.createElement('div'); el.className = 'say' + (center ? ' c' : '');
+    el.style.top = top + 'px'; if (size) el.style.fontSize = size + 'px'; if (nowrap) el.style.whiteSpace = 'nowrap';
+    hud.appendChild(el);
+    if (['rise', 'drop', 'flip', 'slide', 'karaoke'].includes(mode)) {
+      el.innerHTML = words(html);
+      const ws = el.querySelectorAll('.w');
+      if (mode === 'rise') tl.fromTo(ws, { opacity: 0, yPercent: 55, filter: 'blur(10px)' }, { opacity: 1, yPercent: 0, filter: 'blur(0px)', duration: .95, stagger: .1, ease: 'power4.out' }, at);
+      if (mode === 'drop') tl.fromTo(ws, { opacity: 0, yPercent: -150 }, { opacity: 1, yPercent: 0, duration: .6, stagger: .16, ease: 'bounce.out' }, at);
+      if (mode === 'flip') tl.fromTo(ws, { opacity: 0, rotationX: -95, transformPerspective: 700, transformOrigin: '50% 0%' }, { opacity: 1, rotationX: 0, duration: .55, stagger: .09, ease: 'back.out(1.6)' }, at);
+      if (mode === 'slide') tl.fromTo(ws, { opacity: 0, x: -90, skewX: -18 }, { opacity: 1, x: 0, skewX: 0, duration: .7, stagger: .07, ease: 'power4.out' }, at);
+      if (mode === 'karaoke') {
+        tl.fromTo(ws, { opacity: 0 }, { opacity: .22, duration: .4 }, at);
+        times.forEach((tt, k) => { if (ws[k]) tl.to(ws[k], { opacity: 1, duration: .18, ease: 'power2.out' }, tt); });
+      }
+      if (wave) tl.to(ws, { y: -16, duration: .4, ease: 'sine.inOut', yoyo: true, repeat: 5, stagger: .08 }, at + 1.0);
+      if (out != null) tl.to(ws, { opacity: 0, yPercent: -30, filter: 'blur(8px)', duration: quick ? .15 : .4, stagger: .03, ease: 'power2.in' }, out);
+    } else {
+      el.innerHTML = html;
+      if (mode === 'sweep') {
+        tl.fromTo(el, { clipPath: 'inset(-20% 100% -20% 0%)' }, { clipPath: 'inset(-20% 0% -20% 0%)', duration: 1.4, ease: 'power2.inOut' }, at);
+        tl.fromTo(el, { textShadow: `0 0 60px ${glow}` }, { textShadow: SHADOW, duration: 1.8, ease: 'power1.out' }, at + .4);
+      } else if (mode === 'track') {
+        tl.fromTo(el, { opacity: 0, letterSpacing: '.35em', filter: 'blur(6px)' }, { opacity: 1, letterSpacing: '-.01em', filter: 'blur(0px)', duration: 1.3, ease: 'power3.out' }, at);
+      } else if (mode === 'glitch') {
+        tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: .04 }, at);
+        [-26, 18, -10, 30, -6, 12, 0].forEach((x, k) => tl.set(el, { x, textShadow: k < 6 ? `${(6 - k) * 2}px 0 rgba(255,59,107,.85),${-(6 - k) * 2}px 0 rgba(59,216,255,.85)` : SHADOW }, at + .04 + k * .06));
+      } else if (mode === 'punch') {
+        tl.fromTo(el, { opacity: 0, scale: 1.55 }, { opacity: 1, scale: 1, duration: .38, ease: 'power4.out' }, at);
+      } else if (mode === 'flicker') {
+        el.style.opacity = 0; tl.set(el, { opacity: 0 }, 0);
+        [[0, 1], [.06, .1], [.13, 1], [.22, .15], [.3, .95], [.42, .3], [.5, 1]].forEach(([d, v]) => tl.set(el, { opacity: v }, at + d));
+        tl.to(el, { opacity: .5, duration: 1.6, ease: 'power1.inOut' }, at + 1.0);
+      }
+      if (out != null) tl.to(el, { opacity: 0, y: -30, filter: 'blur(8px)', duration: quick ? .15 : .45, ease: 'power2.in' }, out);
+    }
+    SCRIM.push([at - .2, (out ?? DURATION) + .5, top]);
+    return el;
+  }
+  function label(text, at, out, top, center) {
+    const lb = document.createElement('div'); lb.className = 'lbl' + (center ? ' c' : ''); lb.textContent = text; lb.style.top = top + 'px'; hud.appendChild(lb);
+    tl.fromTo(lb, { opacity: 0, x: center ? 0 : -24, y: center ? 14 : 0 }, { opacity: 1, x: 0, y: 0, duration: .7, ease: 'power3.out' }, at);
+    tl.to(lb, { opacity: 0, duration: .3, ease: 'power2.in' }, out);
+  }
+
+  // s01 · rewind ke 2004, era APBD
+  say('Nggak lahir dari <i>kampung</i>', .25, 2.6, { top: 'auto', mode: 'glitch' });
+  say('Lahir dari <i>kantor gubernur</i>', 2.95, 5.3, { top: 'auto', mode: 'punch' });
+  say('Dana APBD <i>ngalir deras</i>', 9.4, 11.6, { top: 'auto', mode: 'drop' });
+  SCRIM.push([11.8, 13.2, 1150]);
+
+  // s02 · aturan berubah, keran ditutup
+  say('Aturan <i class="red">berubah</i>', 14.8, 16.0, { top: 'auto', mode: 'flip' });
+  tl.fromTo(docStamp, { autoAlpha: 0, scale: 2.6 }, { autoAlpha: 1, scale: 1, duration: .17, ease: 'power3.in' }, 18.08);
+  say('Disuruh <i>mandiri</i>', 20.65, 22.4, { top: 'auto', mode: 'track' });
+  say('Kebiasaan <i class="red">disuapin</i>', 22.75, 25.45, { top: 820, mode: 'slide' });
+  label('NGGAK HILANG SEMALAM', 24.3, 25.45, 960);
+  tl.fromTo('#spoon', { x: 1150, y: 1150, rotation: -25, autoAlpha: 0 }, { x: 600, y: 1170, rotation: -6, autoAlpha: 1, duration: .7, ease: 'power3.out' }, 22.8);
+  tl.to('#spoon', { x: 570, duration: .12, yoyo: true, repeat: 1, ease: 'power1.inOut' }, 23.6);
+  tl.to('#spoon', { x: 570, duration: .12, yoyo: true, repeat: 1, ease: 'power1.inOut' }, 24.0);
+  tl.to('#spoon', { x: 900, y: -300, rotation: -40, duration: .45, ease: 'power3.in' }, 24.45);
+
+  // s03 · naik turun bareng kekuasaan (penilaian, bukan tuduhan)
+  const tw = say('Naik turun bareng <i>kursi kekuasaan</i>', 26.6, 30.25, { top: 'auto', wave: true });
+  label('BANYAK YANG MENILAI', 26.1, 30.25, parseFloat(tw.style.top) - 60);
+  say('Pengurus <i>ganti</i>', 30.47, 31.5, { top: 'auto', mode: 'punch', center: true, quick: true });
+  say('Sponsor <i>ganti</i>', 31.58, 32.8, { top: 'auto', mode: 'punch', center: true, quick: true });
+  say('Arah <i class="red">ganti</i>', 32.88, 34.1, { top: 'auto', mode: 'punch', center: true });
+  say('Degradasi, pas <i>peralihan gubernur</i>', 34.4, 37.8, { top: 790 });
+
+  // s04 · tiang lampu kelima
+  say('Juni <i>2025</i>', 38.5, 41.2, { top: 'auto', mode: 'sweep', glow: 'rgba(160,210,255,.9)' });
+  say('Lahir <i class="blue">klub baru</i>', 41.6, 43.0, { top: 'auto', mode: 'punch', center: true });
+  tl.fromTo(sheen, { xPercent: -130 }, { xPercent: 180, duration: 1.1, ease: 'power2.inOut' }, 44.6);
+  tl.fromTo(sheen, { xPercent: -130 }, { xPercent: 180, duration: 1.1, ease: 'power2.inOut', immediateRender: false }, 47.0);
+  say('Kandangnya, <i>sama-sama</i> Jakabaring', 48.0, 50.0, { top: 'auto', center: true });
+
+  // s05 · kakaknya dibiarin gelap
+  const kq = say('“Nggak mau <i class="red">matiin</i> Sriwijaya”', 50.3, 52.75, { top: 'auto', mode: 'karaoke', size: 96, center: true, times: [51.0, 51.3, 51.6, 51.95] });
+  label('CIK UJANG · PRESIDEN SUMSEL UNITED', 50.6, 52.75, parseFloat(kq.style.top) + 230, true);
+  say('Malah nyebut dia <i>kakak</i>', 52.9, 54.35, { top: 'auto', center: true });
+  say('Di stadion <i>yang sama</i>', 54.6, 56.2, { top: 'auto', mode: 'sweep', center: true });
+  say('Satu lampu <i class="blue">menyala terang</i>', 56.45, 58.85, { top: 'auto', size: 90, nowrap: true, mode: 'sweep', glow: 'rgba(160,210,255,.95)', center: true });
+  say('Dan kakaknya,', 59.4, null, { top: 1240, size: 96, center: true });
+  say('<i>dibiarin gelap</i>', 60.5, null, { top: 1350, size: 124, center: true, mode: 'flicker' });
+
+  // letterbox: kilas balik 2004, lalu penutup
+  tl.fromTo('.lb', { scaleY: 0 }, { scaleY: 1, duration: .25, ease: 'power3.out' }, 2.93);
+  tl.set('.lb', { scaleY: 0 }, 13.31);
+  tl.to('.lb', { scaleY: 1, duration: 1.0, ease: 'power2.inOut' }, 61.3);
+  tl.fromTo('#end', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out' }, 61.9);
+  tl.fromTo('#tag', { opacity: 0 }, { opacity: 1, duration: .8 }, 62.3);
+  tl.set({}, {}, DURATION);
+
+  /* ---------- efek editing (semua dari t) ---------- */
+  const FLASH = [[2.93, '#ffffff', .55], [11.93, '#ffffff', .45], [12.2, '#ffffff', .45], [12.47, '#ffffff', .45], [12.74, '#ffffff', .45],
+    [18.25, '#ff6a5a', .35], [30.44, '#ffffff', .25], [31.55, '#ffffff', .25], [32.85, '#ffffff', .25], [41.56, '#9fd4ff', .6], [42.85, '#9fd4ff', .25]];
+  const SHK = [[18.25, 16], [30.44, 6], [31.55, 6], [32.85, 6], [41.56, 10]];
+  const YRS = [[11.93, '07/08', 'LIGA + COPA'], [12.2, '08/09', 'COPA'], [12.47, '2010', 'COPA'], [12.74, '11/12', 'LIGA SUPER']];
+  function grade(t) {
+    if (t >= .3 && t < 2.93) return 'contrast(1.2) saturate(.5) hue-rotate(-14deg)';
+    if (t >= 2.93 && t < 13.31) return 'sepia(.3) saturate(1.35) brightness(1.05)';
+    if (t >= 13.31 && t < 25.84) return 'sepia(.12) saturate(1.05)';
+    if (t >= 25.84 && t < 38.1) return 'saturate(.7) contrast(1.06)';
+    return 'none';
+  }
+
+  /* ---------- seek ---------- */
+  const cv = $('#cv'), ctx = cv.getContext('2d', { willReadFrequently: true }), world = $('#world'), grain = $('#grain'), shake = $('#shake'), scrim = $('#scrim');
+  const yr = $('#yr'), yrl = $('#yrl'), rew = $('#rew'), scan = $('#scan'), band = $('#band'), flash = $('#flash'), glow5 = $('#glow5'), flare5 = $('#flare5');
+  function seek(t) {
+    const T = Math.max(0, Math.min(DURATION, t));
+    tl.pause(T, false);
+    S.render(ctx, T, worldState(T));
+    pole(ctx, T);
+    coins(T);
+    S.applyCam(world, T, camAt(T));
+    world.style.filter = grade(T);
+    board(T); graph(T);
+    CLIPS.forEach((c) => S.fall(c.el, T, c.f));
+
+    // tiang biru: glow + anamorphic flare
+    const L5 = lv5(T), intens = clamp((T - 56.4) / 1.2), spike = T >= 41.56 ? Math.exp(-(T - 41.56) / .5) : 0;
+    glow5.style.opacity = (L5 * (.35 + .65 * intens)).toFixed(3);
+    flare5.style.opacity = clamp(L5 * (.25 + .6 * intens) + spike).toFixed(3);
+
+    // montase gelar
+    if (T >= 11.93 && T < 13.31) {
+      let k = 0; for (let j = 0; j < YRS.length; j++) if (T >= YRS[j][0]) k = j;
+      const d = T - YRS[k][0], op = T > 13.05 ? clamp((13.31 - T) / .26) : 1;
+      yr.textContent = YRS[k][1]; yrl.textContent = YRS[k][2];
+      yr.style.opacity = op.toFixed(3); yrl.style.opacity = op.toFixed(3);
+      yr.style.transform = `scale(${(1 + .4 * Math.exp(-d * 16)).toFixed(4)})`;
+    } else { yr.style.opacity = 0; yrl.style.opacity = 0; }
+
+    // rewind VHS
+    const rw = T >= .3 && T < 2.93;
+    rew.style.opacity = rw ? (Math.floor(T * 4) % 2 ? 1 : .35) : 0;
+    scan.style.opacity = rw ? .85 : 0; band.style.opacity = rw ? .9 : 0;
+    scan.style.transform = `translateY(${((T * 240) % 6).toFixed(1)}px)`;
+    band.style.top = ((((T - .3) * 1100) % 1920) - 60).toFixed(1) + 'px';
+
+    // flash frame
+    let fo = 0, fc = '#ffffff';
+    for (const [t0, c, pk] of FLASH) { const d = T - t0; if (d >= 0 && d < .4) { const v = pk * Math.exp(-d / .08); if (v > fo) { fo = v; fc = c; } } }
+    flash.style.opacity = fo.toFixed(3); flash.style.background = fc;
+
+    // guncangan
+    let dx = 0, dy = 0;
+    for (const [t0, a] of SHK) { const d = T - t0; if (d >= 0 && d < 1) { const k = Math.exp(-6 * d); dx += Math.sin(d * 70) * a * k; dy += Math.cos(d * 53) * a * .75 * k; } }
+    if (rw) { dx += (hh(Math.floor(T * 30), 7) - .5) * 18; dy += (hh(Math.floor(T * 30), 9) - .5) * 6; }
+    shake.style.transform = `translate(${dx.toFixed(2)}px,${dy.toFixed(2)}px)`;
+
+    let sc = 0, stop = 790; for (const [a, b, tp] of SCRIM) { const v = clamp((T - a) / .6) * clamp((b - T) / .5); if (v > sc) { sc = v; stop = tp; } }
+    scrim.style.opacity = sc.toFixed(3); scrim.style.top = (stop - 90) + 'px';
+    const gk = Math.floor(T * 12);
+    grain.style.transform = `translate(${((gk * 37) % 60) - 30}px,${((gk * 53) % 60) - 30}px)`;
+    if (DEBUG) { $('#scr').value = T; $('#tt').textContent = T.toFixed(2) + ' s'; }
+    return T;
+  }
+  window.seekTo = seek;
+
+  const SFX = [
+    { t: .3, file: 'sfx_glitch.wav', vol: .15 },                                     // rewind
+    { t: 1.2, file: 'sfx_click.wav', vol: .14 }, { t: 1.6, file: 'sfx_click.wav', vol: .14 }, { t: 2.0, file: 'sfx_click.wav', vol: .14 },
+    { t: 2.93, file: 'sfx_pop.wav', vol: .15 },                                      // tiba di 2004
+    { t: 6.4, file: 'sfx_whoosh.wav', vol: .14 },                                    // kliping jatuh
+    { t: 9.4, file: 'sfx_success.wav', vol: .14 },                                   // APBD ngalir
+    ...YRS.map(([t]) => ({ t, file: 'sfx_pop.wav', vol: .14 })),                    // montase gelar
+    { t: 13.31, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 14.8, file: 'sfx_click.wav', vol: .15 },                                    // flap
+    { t: 16.15, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 18.25, file: 'sfx_pop.wav', vol: .16 }, { t: 18.25, file: 'sfx_glitch.wav', vol: .15 },   // stempel
+    { t: 22.8, file: 'sfx_whoosh.wav', vol: .14 },                                   // sendok
+    { t: 23.6, file: 'sfx_click.wav', vol: .14 }, { t: 24.0, file: 'sfx_click.wav', vol: .14 },
+    { t: 24.45, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 25.84, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 30.44, file: 'sfx_glitch.wav', vol: .14 }, { t: 31.55, file: 'sfx_glitch.wav', vol: .14 }, { t: 32.85, file: 'sfx_glitch.wav', vol: .14 },
+    { t: 34.3, file: 'sfx_glitch.wav', vol: .14 },
+    { t: 35.35, file: 'sfx_click.wav', vol: .15 }, { t: 36.15, file: 'sfx_click.wav', vol: .15 }, { t: 36.95, file: 'sfx_click.wav', vol: .15 },   // lampu padam beruntun
+    { t: 38.1, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 41.56, file: 'sfx_success.wav', vol: .15 }, { t: 41.56, file: 'sfx_glitch.wav', vol: .14 },   // lampu biru menyala
+    { t: 42.85, file: 'sfx_glitch.wav', vol: .14 },                                  // papan diambil alih
+    { t: 43.2, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 47.9, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 50.1, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 56.36, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 59.36, file: 'sfx_whoosh.wav', vol: .14 },
+    { t: 60.5, file: 'sfx_glitch.wav', vol: .15 }, { t: 61.35, file: 'sfx_click.wav', vol: .16 },   // lampu kakak padam
+  ].sort((a, b) => a.t - b.t);
+  window.OPENER = { ready: true, DURATION, FPS, WIDTH: 1080, HEIGHT: 1920, SCENES, SFX, seek };
+
+  /* ---------- tampilan & pemutaran ---------- */
+  const stage = $('#stage');
+  function fit() { if (RENDER) return; const s = Math.min(innerWidth / 1080, (innerHeight - (DEBUG ? 50 : 0)) / 1920); stage.style.transform = `translate(-50%,-50%) scale(${s})`; }
+  addEventListener('resize', fit); fit();
+  seek(Number(Q.get('t')) || 0);
+  if (RENDER || Q.get('clean') === '1') return;
+
+  const vo = $('#vo'); let playing = false, w0 = 0, p0 = 0;
+  vo.addEventListener('error', () => {});
+  function loop(now) {
+    if (!playing) return;
+    let t = p0 + (now - w0) / 1000;
+    if (t >= DURATION) { p0 = 0; w0 = now; t = 0; try { vo.currentTime = 0; } catch (e) {} }
+    seek(t);
+    if (vo.readyState >= 2 && t < vo.duration && Math.abs(vo.currentTime - t) > .15) vo.currentTime = t;
+    requestAnimationFrame(loop);
+  }
+  function play() { playing = true; w0 = performance.now(); p0 = +($('#scr').value || 0); if (p0 >= DURATION - .05) p0 = 0; vo.currentTime = p0; vo.play().catch(() => {}); requestAnimationFrame(loop); $('#pp').textContent = '❚❚'; }
+  function pause() { playing = false; vo.pause(); $('#pp').textContent = '▶'; }
+  $('#scr').max = DURATION;
+  $('#scr').oninput = (e) => { pause(); seek(+e.target.value); };
+  $('#pp').onclick = () => playing ? pause() : play();
+  addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); } if (e.key === 'r') { $('#scr').value = 0; pause(); play(); } });
+  document.fonts.ready.then(() => {
+    if (DEBUG) return;
+    vo.play().then(() => { vo.pause(); play(); }).catch(() => { addEventListener('pointerdown', play, { once: true }); addEventListener('keydown', play, { once: true }); });
+  });
+})();
+</script>
+</body>
+</html>

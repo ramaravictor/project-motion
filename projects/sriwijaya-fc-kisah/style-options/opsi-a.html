@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Opsi A · Kliping Memudar</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,700&family=Old+Standard+TT:wght@400;700&family=Special+Elite&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#2a2622}
+#c{position:relative;width:1080px;height:1920px;overflow:hidden;background:radial-gradient(80% 60% at 50% 40%,#4a4239 0%,#2a2622 70%,#1b1815 100%)}
+.grain{position:absolute;inset:0;opacity:.22;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+.clip{position:absolute;background:#efe6d2;box-shadow:0 30px 60px -20px rgba(0,0,0,.7);padding:34px 38px;overflow:hidden}
+.clip::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.18) 1.2px,transparent 1.4px);background-size:7px 7px;mix-blend-mode:multiply;opacity:.35}
+.mast{font:700 26px 'Old Standard TT';letter-spacing:.18em;border-bottom:3px double #2b2520;padding-bottom:8px;color:#2b2520}
+.date{font:600 26px 'IBM Plex Mono';color:#5b5146;margin:10px 0 14px}
+/* kliping 2008 - masih berwarna */
+.old{left:70px;top:230px;width:620px;height:760px;transform:rotate(-5deg);filter:saturate(1)}
+.old h2{font:900 78px/.95 'Playfair Display';color:#1f1a15;letter-spacing:-.02em}
+.old .ph{margin-top:22px;height:360px;background:linear-gradient(160deg,#f5c400 0%,#f5c400 46%,#0f7a3c 46%,#0f7a3c 100%);position:relative;filter:contrast(1.1)}
+.old .ph svg{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:250px}
+/* kliping 2026 - abu, robek */
+.new{left:360px;top:820px;width:640px;height:640px;transform:rotate(4deg);filter:grayscale(1) contrast(.95);background:#d9d4ca;clip-path:polygon(0 0,100% 0,100% 82%,93% 86%,86% 81%,78% 88%,70% 83%,61% 90%,52% 84%,42% 91%,33% 85%,22% 92%,12% 86%,0 90%)}
+.new h2{font:900 64px/.98 'Playfair Display';color:#1f1a15}
+.new p{font:400 34px/1.35 'Old Standard TT';color:#3a332c;margin-top:16px}
+.stamp{position:absolute;font:700 64px 'Special Elite';color:#b3261e;border:7px solid #b3261e;padding:6px 22px;letter-spacing:.06em;transform:rotate(-12deg);mix-blend-mode:multiply;white-space:nowrap}
+.money{position:absolute;left:80px;top:1500px;font:900 120px 'Playfair Display';color:#efe6d2;letter-spacing:-.03em}
+.money small{display:block;font:600 32px 'IBM Plex Mono';color:#cdbfa6;letter-spacing:.05em;margin-top:6px}
+.burn{position:absolute;left:60px;top:1470px;width:960px;height:220px;background:radial-gradient(60% 120% at 100% 50%,rgba(255,120,30,.45),transparent 60%)}
+.dust{position:absolute;border-radius:50%;background:#e8dcc3;opacity:.35}
+.lbl{position:absolute;left:80px;top:1760px;font:600 30px 'IBM Plex Mono';color:#9a8d78;letter-spacing:.1em}
+</style></head><body><div id="c">
+<div class="clip old">
+  <div class="mast">HARIAN PALEMBANG</div>
+  <div class="date">SENIN · 2008</div>
+  <h2>Double winner pertama di Indonesia</h2>
+  <div class="ph"><svg viewBox="0 0 120 140"><path d="M30 10h60v20c0 28-14 46-30 50-16-4-30-22-30-50z" fill="#f9e7a0" stroke="#1f1a15" stroke-width="5"/><path d="M30 18H12c0 18 8 26 20 28M90 18h18c0 18-8 26-20 28" fill="none" stroke="#1f1a15" stroke-width="5"/><rect x="50" y="80" width="20" height="24" fill="#f9e7a0" stroke="#1f1a15" stroke-width="5"/><rect x="34" y="104" width="52" height="16" fill="#1f1a15"/></svg></div>
+</div>
+<div class="clip new">
+  <div class="mast">BERITA · OLAHRAGA</div>
+  <div class="date">NOVEMBER · 2026</div>
+  <h2>Tak lolos syarat Liga Nusantara</h2>
+  <p>Utang menumpuk, sanksi FIFA belum selesai, akuisisi batal.</p>
+</div>
+<div class="stamp" style="left:470px;top:1180px">DEGRADASI</div>
+<div class="burn"></div>
+<div class="money">Rp4,1 miliar<small>UTANG YANG DIWARISKAN</small></div>
+<div class="dust" style="left:820px;top:300px;width:8px;height:8px"></div>
+<div class="dust" style="left:160px;top:1120px;width:6px;height:6px"></div>
+<div class="dust" style="left:940px;top:1600px;width:10px;height:10px"></div>
+<div class="lbl">2008 → 2026</div>
+<div class="grain"></div>
+</div></body></html>

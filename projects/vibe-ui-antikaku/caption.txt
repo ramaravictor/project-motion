@@ -1,0 +1,33 @@
+JUDUL (pilih satu)
+UI Lo Ketahuan Bikinan AI? Colok 21st MCP! #shorts
+Stop UI Ungu Pasaran! Antigravity IDE + 21st MCP #shorts
+Vibe Coding Tapi UI-nya Kaku? Ini Obatnya #shorts
+
+DESKRIPSI
+UI hasil vibe coding lo gradien ungu, judul penuh emoji, tiga kotak fitur kembar? Klien langsung tahu itu AI polosan 💀
+
+Obatnya: colok 21st MCP ke Antigravity IDE. AI lo nggak ngarang CSS lagi, tapi ambil komponen beneran dari registry 21st.dev (12.000+ komponen React & Tailwind: hero, card, navbar, background).
+
+Cara colok:
+1. Ambil API key gratis di 21st.dev/mcp
+2. Antigravity IDE → MCP Servers → tempel config HTTP
+3. Prompt UI seperti biasa, sekarang hasilnya naik kelas
+
+Config lengkap ada di komentar yang gue pin. Ketik "UI" di komentar kalau mau gue bahas lebih dalam 👇
+
+#vibecoding #antigravityide #21stdev #mcp #webdesign #uidesign #frontend #reactjs #tailwindcss #ai #programmer #ngoding #shorts
+
+KOMENTAR PIN
+Config 21st MCP buat Antigravity IDE 👇
+API key gratis: 21st.dev/mcp
+
+{
+  "mcpServers": {
+    "21st": {
+      "url": "https://21st.dev/api/mcp",
+      "headers": { "x-api-key": "API_KEY_LO" }
+    }
+  }
+}
+
+Tempel di Antigravity IDE → MCP Servers, lalu pastikan tool search & generate muncul ✅

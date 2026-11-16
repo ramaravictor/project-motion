@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arsip Futsal · Prequel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Special+Elite&family=Permanent+Marker&family=Courier+Prime:wght@700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Prequel · gaya "papan arsip": dinding gabus, kertas kolase, selotip, cap stempel, benang merah antar-tahun.
+   Kamera 2D bergerak di atas satu papan besar. Semua gerak = fungsi murni dari t (seekTo). */
+:root{--ink:#1B1A17;--red:#C8202A;--paper:#F2EADB;--cork:#A2734A}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{width:100%;height:100%;background:#120d09;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden;transform-origin:0 0;background:#2a1c12}
+#cam{position:absolute;inset:0;overflow:hidden}
+#world{position:absolute;left:0;top:0;width:3000px;height:7600px;transform-origin:0 0;background-color:var(--cork);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .22  0 0 0 0 .13  0 0 0 0 .05  0 0 0 1.7 -.6'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='1.6' numOctaves='1' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .95  0 0 0 0 .8  0 0 0 0 .6  0 0 0 1.4 -.7'/></filter><rect width='100%' height='100%' filter='url(%23m)'/></svg>")}
+#lamp{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 85% 55% at 48% 38%,rgba(255,214,150,.22),rgba(255,214,150,0) 62%)}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 70% at 50% 42%,transparent 45%,rgba(10,5,2,.72))}
+#grain{position:absolute;inset:-60px;opacity:.16;mix-blend-mode:overlay;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>")}
+.st{position:absolute;width:840px;height:1000px}
+.p{position:absolute;background-color:var(--paper);color:var(--ink);box-shadow:0 22px 34px -10px rgba(0,0,0,.6),0 2px 4px rgba(0,0,0,.3);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='q'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .37  0 0 0 0 .26  0 0 0 .22 0'/></filter><rect width='100%' height='100%' filter='url(%23q)'/></svg>")}
+.tape{position:absolute;width:150px;height:46px;background:rgba(232,220,184,.78);box-shadow:0 2px 5px rgba(0,0,0,.18)}
+.pin{position:absolute;width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a7e,#c8202a 45%,#6e0d12);box-shadow:5px 9px 8px rgba(0,0,0,.5);z-index:6}
+.stamp{position:absolute;font:400 110px/1 'Anton';color:var(--red);border:10px solid var(--red);padding:14px 30px 8px;border-radius:14px;letter-spacing:.04em;white-space:nowrap;text-align:center;mix-blend-mode:multiply}
+.lbl{position:absolute;background:var(--ink);color:var(--paper);font:700 46px 'Courier Prime';padding:12px 22px 8px;letter-spacing:.14em;white-space:nowrap;box-shadow:0 10px 18px rgba(0,0,0,.45)}
+.lbl.red{background:var(--red);color:#fff}
+.hand{font-family:'Permanent Marker';color:var(--ink);line-height:1.05}
+.ty{font-family:'Special Elite';color:var(--ink)}
+.an{font-family:'Anton';color:var(--ink);line-height:.98;letter-spacing:.01em}
+.ln{height:14px;background:#CBC1AE;margin:16px 0}
+.ilu{position:absolute;bottom:16px;left:24px;font:700 20px 'Courier Prime';color:#9A9080;letter-spacing:.1em}
+.rn{position:absolute;white-space:nowrap}
+.rn i{display:inline-block;font-style:normal;padding:4px 14px 0;margin:0 4px;box-shadow:0 10px 16px rgba(0,0,0,.45);line-height:1}
+.dr{fill:none;stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round;stroke-linejoin:round}
+.note{position:absolute;background:#FFE36E;box-shadow:0 22px 30px -10px rgba(0,0,0,.6);padding:34px 26px}
+.card{position:absolute;background:#FBF8F0;box-shadow:0 22px 34px -10px rgba(0,0,0,.6);padding:58px 30px 24px;
+  background-image:linear-gradient(#E3443B,#E3443B),repeating-linear-gradient(to bottom,transparent 0 54px,#BBD0EA 54px 57px);background-size:100% 3px,100% 100%;background-position:0 44px,0 40px;background-repeat:no-repeat,repeat}
+.slip{width:190px;height:112px;display:flex;align-items:center;justify-content:center;font:400 56px 'Permanent Marker';color:var(--red)}
+#sub{position:absolute;left:60px;width:900px;top:1290px;text-align:center}
+#sub .k{display:inline-block;font:700 60px/1 'Courier Prime';text-transform:uppercase;color:#fff;background:var(--ink);padding:12px 14px 6px;margin:7px 5px;
+  box-shadow:0 8px 16px rgba(0,0,0,.55);transform:rotate(var(--r))}
+#sub .k.on{background:var(--red)}
+#dbg{position:fixed;left:0;right:0;bottom:0;display:none;gap:10px;align-items:center;padding:10px 16px;background:rgba(0,0,0,.75);font:600 13px monospace;color:#ddd;z-index:9}
+#dbg input{flex:1}
+body.debug #dbg{display:flex}
+</style>
+</head>
+<body>
+<div id="stage">
+ <div id="cam"><div id="world">
+
+  <!-- 1 · 20 tahun ngurus sendiri → PSSI turun tangan -->
+  <div class="st" data-i="0">
+    <div class="rn a" data-at="-1" data-rn="20 TAHUN" style="left:0;top:20px"></div>
+    <div class="p a" data-at="-1" data-r="-2" style="left:30px;top:250px;padding:18px 30px 14px"><span class="hand" style="font-size:62px">futsal ngurus<br>rumahnya sendiri</span>
+      <div class="tape" style="left:-40px;top:-14px;transform:rotate(-24deg)"></div></div>
+    <svg class="a" data-at="1.9" data-r="3" style="position:absolute;left:400px;top:440px" width="400" height="390" viewBox="0 0 400 390">
+      <path d="M200 10 L392 160 L8 160 Z" fill="#C8202A"/><rect x="40" y="150" width="320" height="230" fill="#EDE4D2"/>
+      <rect x="160" y="250" width="80" height="130" fill="#7B5432"/><text x="200" y="228" text-anchor="middle" font-family="Anton" font-size="66" fill="#1B1A17">FUTSAL</text>
+    </svg>
+    <div class="stamp a" data-k="slam" data-at="3.9" data-r="-9" style="left:20px;top:600px;font-size:104px">PSSI<br>TURUN TANGAN</div>
+  </div>
+
+  <!-- 2 · awal 2000-an, lapangan sewaan -->
+  <div class="st" data-i="1">
+    <div class="lbl a" data-at="5.8" data-r="-3" style="left:30px;top:20px">± 2000-AN</div>
+    <div class="p a" data-at="5.95" data-r="-3" style="left:70px;top:130px;width:540px;height:620px;padding:22px">
+      <svg width="496" height="440" viewBox="0 0 496 440"><rect width="496" height="440" fill="#2F7D4F"/>
+        <g fill="none" stroke="#F4F1E6" stroke-width="7"><rect x="34" y="34" width="428" height="372"/><line x1="34" y1="220" x2="462" y2="220"/><circle cx="248" cy="220" r="52"/>
+        <path d="M168 34 a80 80 0 0 0 160 0"/><path d="M168 406 a80 80 0 0 1 160 0"/></g>
+        <rect x="0" y="0" width="496" height="440" fill="url(#)" opacity="0"/>
+        <circle cx="300" cy="150" r="13" fill="#fff"/><circle cx="140" cy="300" r="15" fill="#E2272F"/><circle cx="360" cy="260" r="15" fill="#1E5BD8"/><circle cx="230" cy="110" r="15" fill="#E2272F"/>
+      </svg>
+      <div class="ty a" data-k="type" data-at="7.5" style="position:absolute;left:24px;top:490px;font-size:52px">lapangan sewaan</div>
+      <div class="tape" style="left:190px;top:-22px;transform:rotate(3deg)"></div>
+    </div>
+    <div class="note a" data-at="8.5" data-r="6" style="left:520px;top:650px;width:300px;height:290px"><span class="hand" style="font-size:54px">Belum ada<br>yang<br>ngatur?</span></div>
+  </div>
+
+  <!-- 3 · PSSI bikin Badan Futsal Nasional, liga jalan -->
+  <div class="st" data-i="2">
+    <div class="p a" data-k="slide" data-dx="-520" data-at="10.0" data-r="-2" style="left:30px;top:30px;width:620px;height:700px;padding:40px 44px">
+      <div class="ty" style="font-size:30px;letter-spacing:.2em;color:#6d6455">ARSIP · PSSI</div>
+      <div style="height:6px;background:var(--red);margin:16px 0 30px"></div>
+      <div class="an" style="font-size:98px">BADAN FUTSAL<br>NASIONAL</div>
+      <div class="ty a" data-k="type" data-at="10.6" style="font-size:40px;margin-top:26px;position:relative">dibentuk oleh PSSI.</div>
+      <div class="ln" style="margin-top:40px"></div><div class="ln"></div><div class="ln" style="width:60%"></div>
+      <div class="ilu">ILUSTRASI</div>
+    </div>
+    <div class="p a" data-at="12.5" data-r="6" style="left:280px;top:690px;width:520px;height:230px;padding:30px 40px;border-left:16px dotted #A2734A">
+      <div class="an" style="font-size:72px">LIGA FUTSAL</div><div class="ty" style="font-size:40px;margin-top:6px">PROFESIONAL · KICK-OFF</div>
+    </div>
+    <div class="stamp a" data-k="slam" data-at="13.56" data-r="-8" style="left:420px;top:850px;font-size:66px;border-width:7px;padding:10px 22px 6px">MULAI JALAN</div>
+  </div>
+
+  <!-- 4 · 2014 AFI, 2015 FFI -->
+  <div class="st" data-i="3">
+    <div class="p a" data-at="14.3" data-r="-2" style="left:50px;top:40px;width:380px;height:190px;padding:20px 30px">
+      <div class="an" style="font-size:120px">BFN</div><div class="ty" style="font-size:28px;position:absolute;left:190px;top:56px;width:170px">Badan Futsal Nasional</div>
+      <svg style="position:absolute;inset:0" width="380" height="190"><path class="dr a" data-k="draw" data-d=".35" data-at="15.15" pathLength="1" d="M18 112 L362 86" stroke="#C8202A" stroke-width="16"/></svg>
+    </div>
+    <svg style="position:absolute;left:0;top:0;overflow:visible" width="840" height="1000">
+      <path class="dr a" data-k="draw" data-d=".45" data-at="15.3" pathLength="1" d="M300 250 C 330 300, 380 300, 420 330 M396 306 L422 332 L388 340" stroke="#F2EADB" stroke-width="9"/>
+      <path class="dr a" data-k="draw" data-d=".45" data-at="17.15" pathLength="1" d="M520 540 C 520 580, 500 600, 480 630 M470 600 L478 634 L506 618" stroke="#F2EADB" stroke-width="9"/>
+    </svg>
+    <div class="lbl a" data-at="14.85" data-r="-3" style="left:30px;top:370px">2014</div>
+    <div class="p a" data-at="15.55" data-r="2" style="left:300px;top:340px;width:400px;height:190px;padding:20px 30px">
+      <div class="an" style="font-size:120px">AFI</div><div class="ty" style="font-size:28px;position:absolute;left:180px;top:56px;width:200px">Asosiasi Futsal Indonesia</div>
+      <svg style="position:absolute;inset:0" width="400" height="190"><path class="dr a" data-k="draw" data-d=".35" data-at="17.0" pathLength="1" d="M18 82 L382 116" stroke="#C8202A" stroke-width="16"/></svg>
+    </div>
+    <div class="lbl a" data-at="16.95" data-r="3" style="left:30px;top:700px">2015</div>
+    <div class="stamp a" data-k="slam" data-at="18.46" data-r="-6" style="left:300px;top:640px;font-size:190px;border-width:12px;padding:10px 36px 0">FFI</div>
+    <div class="ty a" data-k="type" data-at="18.7" style="position:absolute;left:250px;top:930px;font-size:36px;color:#F2EADB">Federasi Futsal Indonesia</div>
+  </div>
+
+  <!-- 5 · otonom, PSSI cuma payung -->
+  <div class="st" data-i="4">
+    <div class="stamp a" data-k="slam" data-at="19.72" data-r="-5" style="left:170px;top:20px;font-size:150px">OTONOM</div>
+    <div class="p a" data-at="19.25" data-r="1" style="left:170px;top:560px;width:500px;height:350px;padding:30px">
+      <div class="an" style="font-size:120px;text-align:center">FFI</div>
+      <div class="lbl a" data-k="pop" data-at="20.55" data-r="-4" style="left:40px;top:180px">LIGA</div>
+      <div class="lbl red a" data-k="pop" data-at="20.93" data-r="3" style="left:220px;top:190px">TIMNAS</div>
+      <div class="ty a" data-k="type" data-at="21.3" style="position:absolute;left:40px;top:280px;font-size:36px">diurus sendiri</div>
+    </div>
+    <svg class="a" data-k="slide" data-dx="0" data-dy="-520" data-at="22.38" style="position:absolute;left:110px;top:210px;overflow:visible" width="620" height="400" viewBox="0 0 620 400">
+      <path d="M20 190 Q310 -60 600 190 Q550 160 495 190 Q440 160 383 190 Q330 160 310 190 Q290 160 237 190 Q180 160 125 190 Q70 160 20 190 Z" fill="#22305A"/>
+      <path d="M310 10 L310 190" stroke="#4a5a8a" stroke-width="4"/>
+      <text x="310" y="150" text-anchor="middle" font-family="Anton" font-size="84" fill="#F2EADB">PSSI</text>
+      <path d="M310 190 L310 360 Q310 392 280 392 Q256 392 256 366" fill="none" stroke="#1B1A17" stroke-width="12" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- 6 · 2024 Michael terpilih, Timnas gacor -->
+  <div class="st" data-i="5">
+    <div class="lbl a" data-at="23.6" data-r="-3" style="left:30px;top:30px">2024</div>
+    <div class="p a" data-at="24.35" data-r="-2" style="left:30px;top:140px;width:420px;height:600px;padding:26px 30px">
+      <div style="font:700 56px 'Oswald';text-align:center;border-bottom:6px double var(--ink);padding-bottom:6px">KABAR FUTSAL</div>
+      <div class="ty" style="font-size:24px;text-align:center;margin:10px 0 18px;letter-spacing:.1em">KONGRES FFI · 2024</div>
+      <div class="an" style="font-size:66px">MICHAEL<br>SIANIPAR<br>TERPILIH</div>
+      <div class="ln" style="margin-top:22px"></div><div class="ln"></div><div class="ln"></div><div class="ln" style="width:55%"></div>
+      <div class="ilu">ILUSTRASI</div>
+    </div>
+    <div class="p a" data-at="24.64" data-r="4" style="left:470px;top:330px;width:300px;height:380px;padding:15px 15px 0">
+      <img src="../part-3/assets/face-michael.jpg" alt="" style="width:270px;height:290px;object-fit:cover;display:block">
+      <div style="font:700 17px 'Courier Prime';color:#5d5545;margin-top:14px;text-align:center">Foto: Ramadhikaas · CC BY-SA 4.0</div>
+      <div class="tape" style="left:75px;top:-24px;transform:rotate(-4deg)"></div>
+    </div>
+    <div class="p a" data-at="26.2" data-r="-3" style="left:40px;top:790px;padding:16px 28px 12px"><span class="hand" style="font-size:56px">Timnas lagi gacor</span></div>
+    <svg style="position:absolute;left:600px;top:740px;overflow:visible" width="220" height="200">
+      <path class="dr a" data-k="draw" data-d=".6" data-at="26.35" pathLength="1" d="M10 190 L60 130 L95 155 L150 70 L205 15 M165 18 L207 13 L200 55" stroke="#C8202A" stroke-width="14"/>
+    </svg>
+  </div>
+
+  <!-- 7 · voters berontak, Michael dicopot (kamera mundur dari papan 6) -->
+  <div class="st" data-i="6" id="st7">
+    <div class="lbl red a" data-at="27.85" data-r="-4" style="left:-170px;top:-170px;font-size:64px">NOV 2026</div>
+    <div class="stamp a" data-k="slam" data-at="28.85" data-r="-6" style="left:-150px;top:590px;font-size:150px">BERONTAK</div>
+    <div class="p a" data-k="slide" data-dx="640" data-at="29.6" data-r="3" style="left:620px;top:640px;width:380px;height:470px;padding:30px 34px">
+      <div class="an" style="font-size:84px">SK PSSI</div><div style="height:6px;background:var(--ink);margin:10px 0 22px"></div>
+      <div class="ty" style="font-size:36px">Ketum FFI:</div>
+      <div class="ty a" data-k="type" data-at="30.62" style="font-size:44px;color:var(--red);position:relative;margin-top:8px">DIBERHENTIKAN</div>
+      <div class="ln" style="margin-top:30px"></div><div class="ln"></div><div class="ln" style="width:50%"></div>
+      <div class="ilu">ILUSTRASI</div>
+    </div>
+    <svg style="position:absolute;left:470px;top:130px;overflow:visible" width="300" height="380">
+      <path class="dr a" data-k="draw" data-d=".22" data-at="31.25" pathLength="1" d="M30 40 L270 330" stroke="#C8202A" stroke-width="22"/>
+      <path class="dr a" data-k="draw" data-d=".22" data-at="31.42" pathLength="1" d="M270 40 L30 330" stroke="#C8202A" stroke-width="22"/>
+    </svg>
+    <div class="stamp a" data-k="slam" data-at="31.62" data-r="-12" style="left:380px;top:250px;font-size:130px;background:rgba(242,234,219,.25)">DICOPOT</div>
+  </div>
+
+  <!-- 8 · pilih mana -->
+  <div class="st" data-i="7">
+    <div class="lbl a" data-k="pop" data-at="32.4" data-r="-2" style="left:40px;top:10px;font-size:80px">PILIH MANA?</div>
+    <div class="card a" data-at="32.9" data-r="-4" style="left:10px;top:200px;width:400px;height:330px">
+      <div class="an" style="font-size:88px">TETAP<br>OTONOM</div><div class="ty" style="font-size:32px;margin-top:14px">FFI urus sendiri</div>
+      <div class="pin" style="left:182px;top:-14px"></div></div>
+    <div class="card a" data-at="34.6" data-r="3" style="left:430px;top:250px;width:400px;height:330px">
+      <div class="an" style="font-size:84px">DIPEGANG<br>PSSI</div><div class="ty" style="font-size:32px;margin-top:14px">langsung di bawah PSSI</div>
+      <div class="pin" style="left:182px;top:-14px"></div></div>
+    <svg style="position:absolute;left:0;top:0;overflow:visible" width="840" height="1000">
+      <path class="dr a" data-k="draw" data-d=".6" data-at="35.05" pathLength="1" d="M210 200 Q 420 720 630 262" stroke="#C8202A" stroke-width="7"/>
+    </svg>
+    <div class="a" data-k="pop" data-at="35.5" style="position:absolute;left:360px;top:560px;width:130px;height:130px;border-radius:50%;background:var(--red);color:#fff;font:400 100px/130px 'Anton';text-align:center;box-shadow:0 14px 24px rgba(0,0,0,.5)">?</div>
+    <div class="lbl red a" data-k="pop" data-at="35.9" data-r="-2" style="left:150px;top:790px;font-size:50px">TULIS DI KOMENTAR ↓</div>
+  </div>
+
+ </div></div>
+ <div id="lamp"></div><div id="vig"></div><div id="grain"></div>
+ <div id="sub"></div>
+</div>
+<div id="dbg"><button id="dbg-play">❚❚</button><input id="dbg-r" type="range" min="0" step="0.01"><span id="dbg-t"></span></div>
+
+<script>
+(async () => {
+'use strict';
+await Promise.all([
+  document.fonts.load("400 100px 'Anton'"), document.fonts.load("400 40px 'Special Elite'"), document.fonts.load("400 40px 'Permanent Marker'"),
+  document.fonts.load("700 40px 'Courier Prime'"), document.fonts.load("700 40px 'Oswald'"),
+]).catch(() => {});
+const Q = new URLSearchParams(location.search);
+const RENDER = Q.get('render') === '1', DEBUG = Q.get('debug') === '1';
+const W = 1080, H = 1920, FPS = 30;
+
+/* ============ SCENES (titik tengah jeda VO) ============ */
+const B = [0, 5.45, 9.8, 14.15, 19.05, 23.52, 27.57, 32.23, 37.2];
+const NAMES = ['20-tahun-sendiri', 'lapangan-sewaan', 'bfn-liga', 'afi-ffi', 'otonom-payung', 'michael-2024', 'voters-dicopot', 'pilih-mana'];
+const SCENES = NAMES.map((id, i) => ({ idx: i + 1, id, t0: B[i], t1: B[i + 1] }));
+const DURATION = B[8];
+
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const pr = (t, a, b) => cl((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const E = {
+  o2: x => 1 - (1 - x) ** 2, o3: x => 1 - (1 - x) ** 3, i2: x => x * x,
+  io2: x => x < .5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2, io3: x => x < .5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2,
+  back: x => { const c = 1.9, c3 = c + 1; return 1 + c3 * (x - 1) ** 3 + c * (x - 1) ** 2; }
+};
+const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+const pos0 = v => Math.max(.001, v);
+
+/* ============ papan: posisi stasiun ============ */
+const ST = [
+  { x: 700, y: 700, s: 1, r: -1 }, { x: 1700, y: 1450, s: 1, r: 1.5 }, { x: 800, y: 2350, s: 1, r: -1.5 }, { x: 1750, y: 3150, s: 1, r: 1.2 },
+  { x: 800, y: 4000, s: 1, r: -1.2 }, { x: 1700, y: 4850, s: 1, r: 1 }, { x: 1700, y: 5050, s: .74, r: -.8 }, { x: 700, y: 6300, s: 1, r: .8 },
+];
+const CX = 515, CY = 760;
+const world = document.getElementById('world'), camEl = document.getElementById('cam');
+document.querySelectorAll('.st').forEach(el => { const s = ST[+el.dataset.i]; el.style.left = (s.x - 420) + 'px'; el.style.top = (s.y - 560) + 'px'; });
+
+/* huruf potongan koran */
+const RF = [['Anton', '#F2EADB', '#1B1A17'], ['Special Elite', '#1B1A17', '#F2EADB'], ['Oswald', '#C8202A', '#fff'], ['Permanent Marker', '#FFE36E', '#1B1A17'], ['Courier Prime', '#E9E1CF', '#C8202A'], ['Anton', '#1B1A17', '#FFE36E']];
+document.querySelectorAll('[data-rn]').forEach((el, n) => {
+  el.innerHTML = [...el.dataset.rn].map((ch, i) => {
+    if (ch === ' ') return '<span style="display:inline-block;width:34px"></span>';
+    const f = RF[(i * 5 + n) % RF.length], r = ((hash(i + 3) - .5) * 12).toFixed(1), sz = 130 + Math.round(hash(i + 9) * 40);
+    return `<i style="font-family:'${f[0]}';font-weight:700;background:${f[1]};color:${f[2]};font-size:${sz}px;transform:rotate(${r}deg) translateY(${Math.round((hash(i) - .5) * 26)}px)">${ch}</i>`;
+  }).join('');
+});
+
+/* lembar voters (KLB) */
+const st7 = document.getElementById('st7');
+[[-180, -20], [560, -180], [840, -170], [860, 90], [-170, 190], [60, 40], [880, 330], [-150, 380], [200, 300], [40, 800], [260, 900], [-150, 900], [430, 560], [250, -60]].forEach(([x, y], i) => {
+  const el = document.createElement('div');
+  el.className = 'p slip a'; el.textContent = i % 3 === 1 ? 'VOTER' : 'KLB!';
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+  Object.assign(el.dataset, { k: 'fly', at: (28.45 + i * .05).toFixed(2), r: ((hash(i + 5) - .5) * 30).toFixed(1), dx: x < 380 ? -900 : 900, dy: Math.round((hash(i + 2) - .5) * 700) });
+  st7.insertBefore(el, st7.children[1]);
+});
+
+/* pin + benang merah antar-stasiun */
+const PINI = [0, 1, 2, 3, 4, 5, 7], PIN = PINI.map(i => ({ i, x: ST[i].x - 440, y: ST[i].y - 590 }));
+const svgNS = 'http://www.w3.org/2000/svg', strSvg = document.createElementNS(svgNS, 'svg');
+strSvg.setAttribute('width', 3000); strSvg.setAttribute('height', 7600); strSvg.style.cssText = 'position:absolute;left:0;top:0;overflow:visible;pointer-events:none';
+world.appendChild(strSvg);
+PIN.forEach((p, k) => {
+  const d = document.createElement('div'); d.className = 'pin'; d.style.left = (p.x - 18) + 'px'; d.style.top = (p.y - 18) + 'px'; world.appendChild(d);
+  if (!k) return;
+  const a = PIN[k - 1], mx = (a.x + p.x) / 2, my = Math.max(a.y, p.y) + 260, at = (B[p.i] - .1).toFixed(2);
+  [['rgba(0,0,0,.35)', 'translate(5 9)'], ['#C8202A', '']].forEach(([c, tr]) => {
+    const e = document.createElementNS(svgNS, 'path');
+    e.setAttribute('d', `M${a.x} ${a.y} Q${mx} ${my} ${p.x} ${p.y}`); e.setAttribute('pathLength', 1); e.setAttribute('class', 'dr a');
+    e.setAttribute('stroke', c); e.setAttribute('stroke-width', 6); if (tr) e.setAttribute('transform', tr);
+    Object.assign(e.dataset, { k: 'draw', d: '.8', at }); strSvg.appendChild(e);
+  });
+});
+
+/* ============ animasi elemen ============ */
+const AN = [...document.querySelectorAll('[data-at]')].map(el => {
+  const k = el.dataset.k || 'drop';
+  return { el, k, at: +el.dataset.at, r: +(el.dataset.r || 0), dx: el.dataset.dx !== undefined ? +el.dataset.dx : -400, dy: +(el.dataset.dy || 0), d: +(el.dataset.d || .5), txt: k === 'type' ? el.textContent : null, n: -1 };
+});
+const DUR = { drop: .38, slam: .16, pop: .4, slide: .5, fly: .55 };
+function anim(t) {
+  for (const a of AN) {
+    const el = a.el, on = t >= a.at;
+    if (a.k === 'draw') { el.style.strokeDashoffset = (1 - E.io2(pr(t, a.at, a.at + a.d))).toFixed(4); el.style.opacity = on ? 1 : 0; continue; }
+    if (a.k === 'type') {
+      const n = Math.floor(a.txt.length * pr(t, a.at, a.at + a.txt.length / 26));
+      if (n !== a.n) { a.n = n; el.textContent = a.txt.slice(0, n); }
+      el.style.opacity = on ? 1 : 0; continue;
+    }
+    const p = pr(t, a.at, a.at + DUR[a.k]); let o = on ? 1 : 0, tr = '';
+    if (a.k === 'drop') { const e = E.o3(p); o = cl(p * 3); tr = `translate(0px,${(-80 * (1 - e)).toFixed(1)}px) rotate(${(a.r + 8 * (1 - e)).toFixed(2)}deg) scale(${(1 + .25 * (1 - e)).toFixed(3)})`; }
+    else if (a.k === 'slam') { const e = E.i2(p); o = cl(p * 4) * .93; tr = `rotate(${a.r}deg) scale(${(2.5 - 1.5 * e).toFixed(3)})`; }
+    else if (a.k === 'pop') { o = cl(p * 4); tr = `rotate(${a.r}deg) scale(${pos0(E.back(p)).toFixed(3)})`; }
+    else if (a.k === 'slide') { const e = E.o3(p); o = cl(p * 3); tr = `translate(${(a.dx * (1 - e)).toFixed(1)}px,${(a.dy * (1 - e)).toFixed(1)}px) rotate(${(a.r + (a.dx >= 0 ? 7 : -7) * (1 - e)).toFixed(2)}deg)`; }
+    else if (a.k === 'fly') { const e = E.o3(p); o = cl(p * 5); tr = `translate(${(a.dx * (1 - e)).toFixed(1)}px,${(a.dy * (1 - e)).toFixed(1)}px) rotate(${(a.r + 200 * (1 - e) * Math.sign(a.dx)).toFixed(1)}deg)`; }
+    el.style.opacity = o.toFixed(3); el.style.transform = tr;
+  }
+}
+
+/* ============ kamera ============ */
+const IMPACT = AN.filter(a => a.k === 'slam').map(a => a.at + .16);
+function camAt(t) {
+  let i = 0; while (i < 7 && t >= B[i + 1] - .1) i++;
+  const c = ST[i], dk = pr(t, B[i], B[i + 1]);
+  const cur = { x: c.x, y: c.y, s: c.s * (1 + .05 * dk), r: c.r + .8 * dk };
+  if (i === 0) cur.s = c.s * (1.08 - .08 * E.o2(pr(t, 0, 3.8)));
+  const ts = B[i] - .1, k = i ? E.io3(pr(t, ts, ts + .75)) : 1;
+  if (k >= 1) return cur;
+  const p = ST[i - 1], prev = { x: p.x, y: p.y, s: p.s * (i === 1 ? 1 : 1.05), r: p.r + .8 };
+  const dip = 1 - .2 * Math.sin(Math.PI * k);
+  return { x: lerp(prev.x, cur.x, k), y: lerp(prev.y, cur.y, k), s: lerp(prev.s, cur.s, k) * dip, r: lerp(prev.r, cur.r, k) };
+}
+function applyCam(t) {
+  const c = camAt(t), c2 = camAt(Math.max(0, t - 1 / FPS));
+  let sx = Math.sin(t * .8) * 4, sy = Math.cos(t * .6) * 4;
+  IMPACT.forEach(s => { if (t >= s) { const d = t - s, a = 16 * Math.exp(-d * 10); sx += Math.sin(d * 70) * a; sy += Math.cos(d * 63) * a; } });
+  world.style.transform = `translate(${(CX + sx).toFixed(1)}px,${(CY + sy).toFixed(1)}px) rotate(${c.r.toFixed(3)}deg) scale(${c.s.toFixed(4)}) translate(${(-c.x).toFixed(1)}px,${(-c.y).toFixed(1)}px)`;
+  const sp = Math.hypot(c.x - c2.x, c.y - c2.y) * c.s, bl = cl((sp - 25) / 14, 0, 7);
+  camEl.style.filter = bl > .3 ? `blur(${bl.toFixed(1)}px)` : 'none';
+}
+
+/* ============ subtitle: pita label per kata ============ */
+const CH = /*CH*/[[{"w": "20", "t0": 0.0, "t1": 0.26}, {"w": "tahun", "t0": 0.26, "t1": 0.7}, {"w": "futsal", "t0": 0.7, "t1": 1.08}, {"w": "Indonesia", "t0": 1.08, "t1": 1.52}], [{"w": "ngurus", "t0": 1.52, "t1": 2.0}, {"w": "rumahnya", "t0": 2.0, "t1": 2.38}, {"w": "sendiri.", "t0": 2.38, "t1": 3.1}], [{"w": "Sekarang,", "t0": 3.1, "t1": 3.84}], [{"w": "PSSI", "t0": 3.84, "t1": 4.41}, {"w": "turun", "t0": 4.41, "t1": 4.99}, {"w": "tangan.", "t0": 4.99, "t1": 5.56}], [{"w": "Awal", "t0": 5.56, "t1": 5.84}, {"w": "2000-an,", "t0": 5.84, "t1": 6.78}], [{"w": "futsal", "t0": 6.78, "t1": 7.06}, {"w": "cuma", "t0": 7.06, "t1": 7.24}, {"w": "main", "t0": 7.24, "t1": 7.46}, {"w": "di", "t0": 7.46, "t1": 7.58}], [{"w": "lapangan", "t0": 7.58, "t1": 7.82}, {"w": "sewaan.", "t0": 7.82, "t1": 8.5}], [{"w": "Belum", "t0": 8.52, "t1": 8.9}, {"w": "ada", "t0": 8.9, "t1": 9.1}, {"w": "yang", "t0": 9.1, "t1": 9.28}, {"w": "ngatur.", "t0": 9.28, "t1": 9.94}], [{"w": "Lalu", "t0": 9.98, "t1": 10.12}, {"w": "PSSI", "t0": 10.12, "t1": 10.72}, {"w": "bikin", "t0": 10.72, "t1": 11.0}, {"w": "Badan", "t0": 11.0, "t1": 11.24}], [{"w": "Futsal", "t0": 11.24, "t1": 11.56}, {"w": "Nasional.", "t0": 11.56, "t1": 12.48}], [{"w": "Liga", "t0": 12.54, "t1": 12.68}, {"w": "profesional", "t0": 12.68, "t1": 13.16}, {"w": "mulai", "t0": 13.16, "t1": 13.56}, {"w": "jalan.", "t0": 13.56, "t1": 14.22}], [{"w": "2014,", "t0": 14.9, "t1": 15.02}], [{"w": "namanya", "t0": 14.9, "t1": 15.54}, {"w": "jadi", "t0": 15.54, "t1": 15.76}, {"w": "AFI.", "t0": 15.76, "t1": 16.82}], [{"w": "Setahun", "t0": 16.96, "t1": 17.14}, {"w": "kemudian,", "t0": 17.14, "t1": 17.56}], [{"w": "ganti", "t0": 17.56, "t1": 18.04}, {"w": "lagi", "t0": 18.04, "t1": 18.26}, {"w": "jadi", "t0": 18.26, "t1": 18.46}, {"w": "FFI.", "t0": 18.46, "t1": 19.18}], [{"w": "Statusnya", "t0": 19.18, "t1": 19.76}, {"w": "otonom.", "t0": 19.76, "t1": 20.58}], [{"w": "Liga", "t0": 20.58, "t1": 20.76}, {"w": "dan", "t0": 20.76, "t1": 20.96}, {"w": "Timnas", "t0": 20.96, "t1": 21.3}, {"w": "diurus", "t0": 21.3, "t1": 21.66}], [{"w": "sendiri,", "t0": 21.66, "t1": 22.28}], [{"w": "PSSI", "t0": 22.42, "t1": 22.82}, {"w": "cuma", "t0": 22.82, "t1": 22.96}, {"w": "payung.", "t0": 22.96, "t1": 23.62}], [{"w": "2024,", "t0": 23.62, "t1": 24.64}], [{"w": "Michael", "t0": 24.64, "t1": 24.88}, {"w": "Sianipar", "t0": 24.88, "t1": 25.5}, {"w": "terpilih.", "t0": 25.5, "t1": 26.22}], [{"w": "Timnas", "t0": 26.26, "t1": 26.58}, {"w": "lagi", "t0": 26.58, "t1": 26.92}, {"w": "gacor.", "t0": 26.92, "t1": 27.52}], [{"w": "Tapi", "t0": 27.7, "t1": 27.9}, {"w": "bulan", "t0": 27.9, "t1": 28.2}, {"w": "ini", "t0": 28.2, "t1": 28.48}, {"w": "voters", "t0": 28.48, "t1": 28.74}], [{"w": "berontak,", "t0": 28.74, "t1": 29.3}], [{"w": "dan", "t0": 29.36, "t1": 29.64}, {"w": "PSSI", "t0": 29.64, "t1": 30.34}, {"w": "pakai", "t0": 30.34, "t1": 30.62}, {"w": "haknya.", "t0": 30.62, "t1": 31.36}], [{"w": "Michael", "t0": 31.36, "t1": 31.62}, {"w": "dicopot.", "t0": 31.62, "t1": 32.13}], [{"w": "Futsal", "t0": 32.13, "t1": 32.64}, {"w": "masih", "t0": 32.64, "t1": 32.84}, {"w": "perlu", "t0": 32.84, "t1": 33.08}, {"w": "otonom,", "t0": 33.08, "t1": 33.58}], [{"w": "atau", "t0": 33.58, "t1": 34.22}, {"w": "mending", "t0": 34.22, "t1": 34.64}, {"w": "dipegang", "t0": 34.64, "t1": 35.1}, {"w": "langsung", "t0": 35.1, "t1": 35.48}], [{"w": "PSSI?", "t0": 35.48, "t1": 36.34}]]/*CH*/;
+const subEl = document.getElementById('sub');
+let subKey = '';
+function subs(t) {
+  let ci = -1; CH.forEach((c, i) => { if (t >= c[0].t0 - .05) ci = i; });
+  const c = ci >= 0 && t < CH[ci].at(-1).t1 + .45 ? CH[ci] : null;
+  let wi = -1; if (c) c.forEach((w, i) => { if (t >= w.t0 - .04) wi = i; });
+  const key = ci + ':' + wi;
+  if (key !== subKey) { subKey = key; subEl.innerHTML = c ? c.slice(0, wi + 1).map((w, i) => `<span class="k${i === wi ? ' on' : ''}" style="--r:${((hash(ci * 7 + i) - .5) * 3).toFixed(2)}deg">${w.w}</span>`).join('') : ''; }
+  const on = subEl.querySelector('.k.on');
+  if (on) { const d = t - c[wi].t0; on.style.transform = `rotate(var(--r)) scale(${(1 + .25 * Math.exp(-Math.max(0, d) * 14)).toFixed(3)})`; }
+}
+
+/* ============ seek ============ */
+const grain = document.getElementById('grain');
+let curT = 0;
+function seekTimeline(t) {
+  curT = cl(t, 0, DURATION);
+  anim(curT); applyCam(curT); subs(curT);
+  grain.style.transform = `translate(${Math.round(Math.sin(curT * 37) * 30)}px, ${Math.round(Math.cos(curT * 29) * 30)}px)`;
+  if (DEBUG) { dr.value = curT; dt.textContent = curT.toFixed(2) + ' / ' + DURATION.toFixed(2) + ' · ' + (SCENES.find(s => curT >= s.t0 && curT < s.t1) || SCENES.at(-1)).id; }
+}
+window.seekTo = sec => seekTimeline(sec);
+
+/* ============ SFX (otomatis dari animasi) ============ */
+const SFX = [];
+const addS = (t, file, vol) => { if (t >= 0 && !SFX.some(x => Math.abs(x.t - t) < .14)) SFX.push({ t: +t.toFixed(3), file, vol }); };
+AN.filter(a => a.k === 'slam').forEach(a => addS(a.at + .14, 'sfx_pop.wav', .16));
+B.slice(1, 8).forEach(b => addS(b - .1, 'sfx_whoosh.wav', .15));
+AN.filter(a => a.k === 'fly').slice(0, 1).forEach(a => addS(a.at, 'sfx_whoosh.wav', .14));
+AN.filter(a => ['drop', 'pop', 'slide'].includes(a.k) && a.at > 0).forEach(a => addS(a.at + .1, 'sfx_click.wav', .14));
+SFX.sort((a, b) => a.t - b.t);
+
+/* ============ tampilan & preview ============ */
+const stage = document.getElementById('stage');
+function fit() { const s = RENDER ? 1 : Math.min(innerWidth / W, innerHeight / H); stage.style.transform = `scale(${s})`; stage.style.left = RENDER ? '0' : ((innerWidth - W * s) / 2) + 'px'; }
+addEventListener('resize', fit); fit();
+const dr = document.getElementById('dbg-r'), dt = document.getElementById('dbg-t');
+let playing = !RENDER && Q.get('t') === null, wall = 0, from = 0;
+if (DEBUG) { document.body.classList.add('debug'); dr.max = DURATION; dr.oninput = e => { playing = false; seekTimeline(+e.target.value); }; }
+const vo = new Audio('vo.mp3'); vo.preload = 'auto';
+const bgm = new Audio('bgm.wav'); bgm.preload = 'auto';
+function loop(now) {
+  if (!playing) return;
+  let t = from + (now - wall) / 1000;
+  if (t >= DURATION) { from = 0; wall = now; t = 0; try { vo.currentTime = 0; bgm.currentTime = 0; } catch (e) {} }
+  seekTimeline(Math.min(t, DURATION)); requestAnimationFrame(loop);
+}
+function play() { playing = true; wall = performance.now(); from = curT >= DURATION ? 0 : curT; try { vo.currentTime = from; vo.play().catch(() => {}); bgm.currentTime = from; bgm.play().catch(() => {}); } catch (e) {} requestAnimationFrame(loop); }
+function pause() { playing = false; try { vo.pause(); bgm.pause(); } catch (e) {} }
+addEventListener('keydown', e => {
+  if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); }
+  if (e.key === 'r' || e.key === 'R') { seekTimeline(0); pause(); play(); }
+});
+document.getElementById('dbg-play').onclick = () => playing ? pause() : play();
+
+window.OPENER = { ready: false, DURATION, FPS, WIDTH: W, HEIGHT: H, SCENES, SFX, seek: s => window.seekTo(s) };
+seekTimeline(Number(Q.get('t')) || 0);
+window.OPENER.ready = true;
+if (playing) play();
+})();
+</script>
+</body>
+</html>

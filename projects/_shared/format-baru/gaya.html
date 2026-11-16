@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Gaya Bang Motion</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@700&family=Fraunces:ital,wght@0,600;1,600&family=Fredoka:wght@700&family=JetBrains+Mono:wght@700;800&family=Plus+Jakarta+Sans:wght@800&family=Space+Grotesk:wght@700&family=Unbounded:wght@600&family=VT323&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden}
+#bg{position:absolute;inset:0}
+#safe{position:absolute;top:180px;left:80px;width:870px;height:1290px}
+.hdr{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between}
+#pill{font:800 24px 'JetBrains Mono',monospace;letter-spacing:.04em;padding:9px 16px;border-radius:10px;white-space:nowrap}
+.handle{display:flex;align-items:center;gap:10px;font:700 22px 'JetBrains Mono',monospace;white-space:nowrap;padding:7px 14px 7px 8px;border-radius:99px;border:1.5px solid}
+.handle img{width:28px;height:28px;display:block}
+.handle b{font:800 22px 'Plus Jakarta Sans',sans-serif}
+#copy{position:absolute;left:0;width:870px}
+#copy .box{display:inline-block}
+#copy .w{display:inline-block;margin-right:.22em}
+#rama{position:absolute;left:0;top:0;width:580px;height:580px;transform-origin:0 0}
+#rama-body{position:absolute;inset:0;transform-origin:50% 100%;filter:drop-shadow(0 24px 26px rgba(0,0,0,.45));
+  -webkit-mask-image:linear-gradient(to bottom,#000 84%,transparent 100%);mask-image:linear-gradient(to bottom,#000 84%,transparent 100%)}
+#rama canvas{display:block}
+</style>
+<style id="hlcss"></style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="bg" width="1080" height="1920"></canvas>
+  <div id="safe">
+    <div class="hdr"><div id="pill"></div>
+      <div class="handle" id="handle"><img src="../brand/logo-instagram.svg" alt=""><b>ChillDev</b>&nbsp;@ramarvctr_</div></div>
+    <div id="copy"><div class="box" id="box"></div></div>
+  </div>
+  <div id="rama"><div id="rama-body"></div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../rama/voxel/env.js"></script>
+<script src="../rama/voxel/rama-voxel.js"></script>
+<script>
+// Satu kerangka v2, delapan gaya Bang Motion. ?v=1..8 · ?render=1 untuk ekspor.
+// Semua latar adalah fungsi murni dari t (tanpa acak/jam sistem).
+const W = 1080, H = 1920;
+const c = document.getElementById('bg').getContext('2d');
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const fr = x => x - Math.floor(x);
+const cl = x => Math.max(0, Math.min(1, x));
+const eo = x => 1 - Math.pow(1 - cl(x), 3);
+const eb = x => { x = cl(x); const s = 1.7; return 1 + (s + 1) * Math.pow(x - 1, 3) + s * Math.pow(x - 1, 2); };
+function noiseTile(seed, size = 220) {
+  const t = document.createElement('canvas'); t.width = t.height = size;
+  const x = t.getContext('2d'), d = x.createImageData(size, size);
+  for (let i = 0; i < size * size; i++) { const v = hash(i * 1.37 + seed * 7919) * 255; d.data[i * 4] = d.data[i * 4 + 1] = d.data[i * 4 + 2] = v; d.data[i * 4 + 3] = 255; }
+  x.putImageData(d, 0, 0); return t;
+}
+let GRAIN = null;
+function grain(t, a, mode = 'overlay') {
+  if (!GRAIN) GRAIN = [1, 2, 3, 4].map(k => c.createPattern(noiseTile(k), 'repeat'));
+  c.save(); c.globalAlpha = a; c.globalCompositeOperation = mode; c.fillStyle = GRAIN[Math.floor(t * 30) % 4]; c.fillRect(0, 0, W, H); c.restore();
+}
+const lin = (y0, y1, stops) => { const g = c.createLinearGradient(0, y0, 0, y1); stops.forEach((s, i) => g.addColorStop(i / (stops.length - 1), s)); return g; };
+function glow(x, y, r, col, a = 1) { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); c.globalAlpha = a; c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2); c.globalAlpha = 1; }
+
+// ---------- 1 · Sinematik gelap: nebula + partikel menembus kamera ----------
+function drawSinematik(t) {
+  c.fillStyle = lin(0, H, ['#05060B', '#0A0918', '#05060B']); c.fillRect(0, 0, W, H);
+  c.globalCompositeOperation = 'lighter';
+  ['#3B2A8C', '#0E4A6E', '#5A1E5E'].forEach((col, k) => glow(540 + Math.sin(t * .3 + k * 2) * 260, 700 + Math.cos(t * .25 + k) * 200 + k * 220, 560, col, .7));
+  for (let i = 0; i < 240; i++) {
+    const a = hash(i) * Math.PI * 2, r0 = .08 + hash(i + 5) * .92, p = fr(hash(i + 9) + t * .22);
+    const r = r0 * Math.pow(p, 2.2) * 1500, rp = r0 * Math.pow(Math.max(0, p - .035), 2.2) * 1500;
+    const al = p < .12 ? p / .12 : 1;
+    c.strokeStyle = `rgba(190,200,255,${(al * .85).toFixed(3)})`; c.lineWidth = .6 + p * 3.4;
+    c.beginPath(); c.moveTo(540 + Math.cos(a) * rp, 820 + Math.sin(a) * rp); c.lineTo(540 + Math.cos(a) * r, 820 + Math.sin(a) * r); c.stroke();
+  }
+  c.globalCompositeOperation = 'source-over';
+  const v = c.createRadialGradient(540, 860, 300, 540, 860, 1300); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.75)');
+  c.fillStyle = v; c.fillRect(0, 0, W, H); grain(t, .1);
+}
+
+// ---------- 2 · Poster color-block: bidang warna menyapu di ketukan ----------
+const CB = ['#FFC83D', '#FF3D7F', '#1F3BFF'];
+function drawColorBlock(t) {
+  const n = Math.floor(t / 1.1), k = eo((t - n * 1.1) / .35);
+  c.fillStyle = CB[(n + 2) % 3]; c.fillRect(0, 0, W, H);
+  c.fillStyle = CB[n % 3]; c.beginPath(); const x = -300 + k * 1700;
+  c.moveTo(-300, 0); c.lineTo(x, 0); c.lineTo(x - 300, H); c.lineTo(-300, H); c.fill();
+  c.save(); c.translate(540, 1200); c.rotate(-.35 + Math.sin(t * .6) * .05);
+  c.fillStyle = '#121212'; c.fillRect(-1200, -90, 2400, 180); c.restore();
+  c.save(); c.font = '900 760px "Archivo Black"'; c.fillStyle = 'rgba(18,18,18,.16)';
+  c.fillText('GOL', -260 + Math.sin(t * .8) * 40, 1650); c.restore();
+}
+
+// ---------- 3 · Editorial terang: garis menggambar, kamera tenang ----------
+function drawEditorial(t) {
+  c.fillStyle = '#F4EFE6'; c.fillRect(0, 0, W, H); glow(800, 500, 900, 'rgba(255,255,255,.9)', .8);
+  c.save(); c.translate(Math.sin(t * .5) * 6, Math.cos(t * .4) * 5);
+  for (let i = 0; i < 6; i++) { const L = eo((t - .2 - i * .15) / 1.2) * 870;
+    c.strokeStyle = 'rgba(26,26,26,.22)'; c.lineWidth = 2; c.beginPath(); c.moveTo(80, 700 + i * 120); c.lineTo(80 + L, 700 + i * 120); c.stroke(); }
+  const a = eo((t - .4) / 2) * Math.PI * 2;
+  c.strokeStyle = '#C2410C'; c.lineWidth = 3; c.beginPath(); c.arc(720, 1080, 250, -Math.PI / 2, -Math.PI / 2 + a); c.stroke();
+  c.strokeStyle = 'rgba(26,26,26,.35)'; c.lineWidth = 1.5; c.beginPath(); c.arc(720, 1080, 190, 0, Math.PI * 2 * eo((t - .8) / 1.6)); c.stroke();
+  for (let i = 0; i < 3; i++) { const ang = t * .6 + i * 2.09; c.fillStyle = i ? '#1A1A1A' : '#C2410C';
+    c.beginPath(); c.arc(720 + Math.cos(ang) * 250, 1080 + Math.sin(ang) * 250, 9, 0, Math.PI * 2); c.fill(); }
+  c.restore();
+}
+
+// ---------- 4 · Kertas & cetak: potongan kertas terbang lalu mendarat ----------
+let PAPER = null;
+function paperTex() {
+  if (PAPER) return PAPER;
+  const p = document.createElement('canvas'); p.width = 540; p.height = 960; const x = p.getContext('2d');
+  x.fillStyle = '#EADFC6'; x.fillRect(0, 0, 540, 960);
+  const d = x.getImageData(0, 0, 540, 960);
+  for (let i = 0; i < 540 * 960; i++) { const n = (hash(i * .731) - .5) * 24; d.data[i * 4] += n; d.data[i * 4 + 1] += n; d.data[i * 4 + 2] += n * .9; }
+  x.putImageData(d, 0, 0);
+  x.strokeStyle = 'rgba(120,90,50,.12)'; x.lineWidth = 1;
+  for (let k = 0; k < 140; k++) { const sx = hash(k) * 540, sy = hash(k + 1) * 960; x.beginPath(); x.moveTo(sx, sy); x.quadraticCurveTo(sx + 10, sy + 6, sx + 18 * hash(k + 2), sy + 14 * hash(k + 3)); x.stroke(); }
+  return (PAPER = p);
+}
+function torn(x, y, w, h, rot, col, seed) {
+  c.save(); c.translate(x, y); c.rotate(rot); const pts = [], N = 10, j = s => (hash(seed + s) - .5) * 14;
+  for (let i = 0; i < N; i++) pts.push([-w / 2 + w * i / N, -h / 2 + j(i)]);
+  for (let i = 0; i < N; i++) pts.push([w / 2 + j(20 + i), -h / 2 + h * i / N]);
+  for (let i = 0; i < N; i++) pts.push([w / 2 - w * i / N, h / 2 + j(40 + i)]);
+  for (let i = 0; i < N; i++) pts.push([-w / 2 + j(60 + i), h / 2 - h * i / N]);
+  c.beginPath(); c.moveTo(...pts[0]); pts.forEach(p => c.lineTo(...p)); c.closePath();
+  c.shadowColor = 'rgba(60,40,20,.35)'; c.shadowBlur = 18; c.shadowOffsetY = 10; c.fillStyle = col; c.fill();
+  c.shadowColor = 'transparent'; c.lineWidth = 8; c.strokeStyle = '#FBF7EE'; c.stroke();
+  c.fillStyle = 'rgba(242,193,78,.7)'; c.fillRect(-60, -h / 2 - 18, 120, 34);
+  c.restore();
+}
+const PIECES = [{ x: 300, y: 980, w: 380, h: 250, col: '#E4572E', r: -.12, t0: .3 }, { x: 760, y: 820, w: 290, h: 290, col: '#2E86AB', r: .1, t0: .6 },
+  { x: 640, y: 1200, w: 330, h: 200, col: '#76B041', r: .06, t0: .9 }, { x: 250, y: 720, w: 220, h: 160, col: '#F2C14E', r: .14, t0: 1.2 }];
+function drawKertas(t) {
+  c.drawImage(paperTex(), 0, 0, W, H);
+  PIECES.forEach((p, i) => { const k = eb((t - p.t0) / .6);
+    torn(p.x, p.y - (1 - k) * 1500, p.w, p.h, p.r + (1 - eo((t - p.t0) / .6)) * .7 + Math.sin(t * 1.3 + i) * .012, p.col, i * 100); });
+  if (t > 2) { const k = eo((t - 2) / .25), s = 3 - 2 * k;
+    c.save(); c.translate(330, 1300); c.rotate(-.22); c.scale(s, s); c.globalAlpha = .85 * k;
+    c.strokeStyle = '#B23A2A'; c.lineWidth = 8; c.beginPath(); c.arc(0, 0, 90, 0, Math.PI * 2); c.stroke();
+    c.font = '700 66px Caveat'; c.fillStyle = '#B23A2A'; c.textAlign = 'center'; c.fillText('beres!', 0, 20); c.restore(); }
+}
+
+// ---------- 5 · Retro / analog: matahari bergaris, scanline, pita VHS ----------
+let SCAN = null;
+function drawRetro(t) {
+  const f = Math.floor(t * 30), jx = (hash(f) - .5) * 3;
+  const g = lin(0, H, ['#13233A', '#3A2348', '#7A3B3B', '#2A1A24']);
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+  c.save(); c.translate(jx, 0); c.beginPath(); c.arc(540, 820, 330, 0, Math.PI * 2); c.clip();
+  c.fillStyle = lin(490, 1150, ['#F7C873', '#E2574C']); c.fillRect(200, 480, 680, 700);
+  c.fillStyle = g; for (let k = 0; k < 7; k++) { const y = 840 + k * 50 + fr(t * .5) * 50; c.fillRect(200, y, 680, 5 + k * 3); }
+  c.restore();
+  c.strokeStyle = 'rgba(242,166,90,.45)'; c.lineWidth = 2;
+  for (let k = 0; k < 12; k++) { const y = 1150 + Math.pow(fr(k / 12 + t * .35), 2) * 780; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+  for (let k = -8; k <= 8; k++) { c.beginPath(); c.moveTo(540, 1150); c.lineTo(540 + k * 220, H); c.stroke(); }
+  if (!SCAN) { const s = document.createElement('canvas'); s.width = 4; s.height = 4; const x = s.getContext('2d'); x.fillStyle = 'rgba(0,0,0,.22)'; x.fillRect(0, 2, 4, 2); SCAN = c.createPattern(s, 'repeat'); }
+  c.fillStyle = SCAN; c.fillRect(0, 0, W, H);
+  const by = fr(t * .3) * (H + 200) - 100; c.fillStyle = 'rgba(255,255,255,.07)'; c.fillRect(0, by, W, 70);
+  for (let j = 0; j < 6; j++) { c.fillStyle = `rgba(255,255,255,${(.05 + hash(f + j) * .12).toFixed(3)})`; c.fillRect(hash(f * 3 + j) * 600, by + j * 12, 300 + hash(j + f) * 400, 3); }
+  grain(t, .2);
+}
+
+// ---------- 6 · Brutalis mono: grid keras, blok lompat ke sel, kursor ----------
+function drawBrutalis(t) {
+  c.fillStyle = '#F1F1EE'; c.fillRect(0, 0, W, H);
+  c.strokeStyle = '#111'; c.lineWidth = 3;
+  for (let x = 0; x <= W; x += 90) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }
+  for (let y = 0; y <= H; y += 90) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+  const b = Math.floor(t / .5), k = eo((t - b * .5) / .12);
+  const cell = (n, j) => ({ x: Math.floor(hash(n * 13 + j) * 11) * 90, y: (8 + Math.floor(hash(n * 17 + j + 50) * 12)) * 90, w: (1 + Math.floor(hash(n * 7 + j) * 3)) * 90 });
+  for (let j = 0; j < 6; j++) { const a = cell(b - 1, j), z = cell(b, j);
+    c.fillStyle = j ? '#111' : '#FF2A00'; c.fillRect(a.x + (z.x - a.x) * k, a.y + (z.y - a.y) * k, a.w + (z.w - a.w) * k, 90); }
+  const L = ['> pre-commit: gitleaks', '> scanning 1 file…', '✕ SECRET: OPENAI_API_KEY'];
+  c.font = '800 32px "JetBrains Mono"';
+  L.forEach((s, i) => { if (t < 1.2 + i * .5) return; c.fillStyle = '#fff'; c.fillRect(100, 1000 + i * 70, 640, 56); c.fillStyle = i === 2 ? '#FF2A00' : '#111'; c.fillText(s, 116, 1040 + i * 70); });
+}
+
+// ---------- 7 · Grainy gradient: bentuk bercahaya berputar, lubang membesar ----------
+function drawGrainy(t) {
+  c.fillStyle = '#07031A'; c.fillRect(0, 0, W, H);
+  c.globalCompositeOperation = 'lighter';
+  [[540, 900, 560, '#FF4FD8', '#6A3BFF', .18], [360, 1260, 440, '#00E0FF', '#3B2BFF', -.12], [770, 1130, 400, '#FFB547', '#FF3D6E', .1]].forEach(([x, y, r, a, b, sp], i) => {
+    c.save(); c.translate(x + Math.sin(t * .4 + i) * 60, y + Math.cos(t * .35 + i * 2) * 50); c.rotate(t * sp + i); c.scale(1, .62);
+    const g = c.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, a); g.addColorStop(.55, b); g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.fill(); c.restore(); });
+  c.globalCompositeOperation = 'source-over';
+  const hr = 110 + t * 45, hg = c.createRadialGradient(540, 980, hr * .4, 540, 980, hr);
+  hg.addColorStop(0, 'rgba(7,3,26,.95)'); hg.addColorStop(1, 'rgba(7,3,26,0)'); c.fillStyle = hg; c.fillRect(0, 0, W, H);
+  c.strokeStyle = 'rgba(255,255,255,.35)'; c.lineWidth = 2; c.beginPath(); c.arc(540, 980, hr * 1.25, 0, Math.PI * 2); c.stroke();
+  grain(t, .28); grain(t + .5, .12, 'soft-light');
+}
+
+// ---------- 8 · Kartun panggung: langit, awan, bukit, paket data ke server ----------
+const INK = '#1E2340';
+function cloud(x, y, s) { const P = [[0, 0, 60], [55, -25, 70], [115, 0, 55], [55, 15, 60]];
+  c.lineWidth = 12; c.strokeStyle = INK; P.forEach(([a, b, r]) => { c.beginPath(); c.arc(x + a * s, y + b * s, r * s, 0, Math.PI * 2); c.stroke(); });
+  c.fillStyle = '#fff'; P.forEach(([a, b, r]) => { c.beginPath(); c.arc(x + a * s, y + b * s, r * s, 0, Math.PI * 2); c.fill(); }); }
+function drawKartun(t) {
+  c.fillStyle = lin(0, 1300, ['#6EC6FF', '#CFF0FF']); c.fillRect(0, 0, W, H);
+  c.save(); c.translate(880, 720); c.rotate(t * .3); c.fillStyle = '#FFE27A';
+  for (let i = 0; i < 12; i++) { c.rotate(Math.PI / 6); c.beginPath(); c.moveTo(-14, 100); c.lineTo(14, 100); c.lineTo(0, 150); c.fill(); }
+  c.restore(); c.fillStyle = '#FFC83D'; c.strokeStyle = INK; c.lineWidth = 7; c.beginPath(); c.arc(880, 720, 80, 0, Math.PI * 2); c.fill(); c.stroke();
+  for (let i = 0; i < 3; i++) cloud(fr(hash(i) + t * .025 * (i + 1)) * 1500 - 250, 560 + i * 120, .8 + i * .15);
+  const sw = Math.sin(t * .2) * 10;
+  c.fillStyle = '#8ED67E'; c.beginPath(); c.moveTo(0, 1200); c.quadraticCurveTo(300 + sw, 1050, 600, 1180); c.quadraticCurveTo(850 + sw, 1080, W, 1150); c.lineTo(W, H); c.lineTo(0, H); c.fill(); c.lineWidth = 7; c.stroke();
+  c.fillStyle = '#5BC26A'; c.beginPath(); c.moveTo(0, 1320); c.quadraticCurveTo(540, 1260, W, 1320); c.lineTo(W, H); c.lineTo(0, H); c.fill(); c.stroke();
+  // laptop
+  c.fillStyle = '#E8ECF7'; c.lineWidth = 7; c.fillRect(160, 1120, 220, 150); c.strokeRect(160, 1120, 220, 150);
+  c.fillStyle = INK; c.fillRect(178, 1138, 184, 114);
+  for (let i = 0; i < 4; i++) { c.fillStyle = i === Math.floor(t * 3) % 4 ? '#FFC83D' : '#7FD1FF'; c.fillRect(192, 1150 + i * 24, 60 + hash(i) * 90, 12); }
+  c.fillStyle = '#C9D0E6'; c.fillRect(130, 1270, 280, 26); c.strokeRect(130, 1270, 280, 26);
+  // server
+  c.fillStyle = '#2D3A8C'; c.fillRect(640, 880, 240, 410); c.strokeRect(640, 880, 240, 410);
+  for (let r = 0; r < 4; r++) { c.fillStyle = '#3E4FB0'; c.fillRect(662, 905 + r * 95, 196, 72); c.strokeRect(662, 905 + r * 95, 196, 72);
+    for (let i = 0; i < 3; i++) { c.fillStyle = hash(Math.floor(t * 5) + r * 7 + i) > .4 ? '#7CFF8A' : '#20306E'; c.beginPath(); c.arc(690 + i * 32, 941 + r * 95, 9, 0, Math.PI * 2); c.fill(); } }
+  // paket data
+  const B = p => { const u = 1 - p; return [u * u * 360 + 2 * u * p * 500 + p * p * 640, u * u * 1130 + 2 * u * p * 820 + p * p * 1000]; };
+  c.setLineDash([14, 16]); c.lineDashOffset = -t * 60; c.strokeStyle = 'rgba(30,35,64,.5)'; c.lineWidth = 5;
+  c.beginPath(); for (let p = 0; p <= 1.001; p += .05) { const [x, y] = B(p); p ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke(); c.setLineDash([]);
+  for (let i = 0; i < 4; i++) { const [x, y] = B(fr(t * .5 + i / 4)); c.fillStyle = '#FF6B3D'; c.lineWidth = 6; c.strokeStyle = INK; c.beginPath(); c.arc(x, y, 17, 0, Math.PI * 2); c.fill(); c.stroke(); }
+}
+
+// ---------- definisi gaya ----------
+const STY = {
+  1: { name: 'Sinematik gelap', topic: 'BROWSER-USE', pill: ['#7B6CFF', '#fff'], handle: ['rgba(255,255,255,.08)', '#fff', 'rgba(255,255,255,.2)'],
+       text: 'Agent lo kerja *sendiri*', css: 'top:150px;font:700 104px/1.02 "Space Grotesk";letter-spacing:-.04em;color:#fff', hl: 'color:#A99BFF',
+       enter: (tl, w) => tl.from(w, { scale: 2.3, opacity: 0, filter: 'blur(18px)', duration: .7, stagger: .09, ease: 'power3.out' }, .3),
+       rama: { cx: 830, size: 400, pose: 'present', look: -1 }, draw: drawSinematik },
+  2: { name: 'Poster color-block', topic: '● LIGA LOKAL', pill: ['#121212', '#fff'], handle: ['rgba(255,255,255,.55)', '#121212', 'rgba(0,0,0,.25)'],
+       text: 'Gol di menit *terakhir*', css: 'top:140px;font:400 108px/1.02 "Archivo Black";letter-spacing:-.03em;color:#121212', box: 'background:#fff;padding:14px 26px 20px;transform:rotate(-2deg)', hl: 'color:#FF3D7F',
+       enter: (tl, w, box) => tl.from(box, { x: -1100, duration: .45, ease: 'power4.out' }, .2).from(w, { y: 110, opacity: 0, duration: .3, stagger: .05, ease: 'back.out(2)' }, .45),
+       rama: { cx: 250, size: 420, pose: 'shocked', look: 1 }, draw: drawColorBlock },
+  3: { name: 'Editorial terang', topic: 'BACKEND', pill: ['#1A1A1A', '#F4EFE6'], handle: ['rgba(255,255,255,.7)', '#1A1A1A', 'rgba(26,26,26,.2)'],
+       text: 'Satu query, bukan *seratus*', css: 'top:160px;font:600 100px/1.05 Fraunces;letter-spacing:-.03em;color:#1A1A1A', hl: 'font-style:italic;color:#C2410C',
+       enter: (tl, w) => tl.from(w, { y: 36, opacity: 0, duration: .8, stagger: .08, ease: 'power2.out' }, .4),
+       rama: { cx: 250, size: 360, pose: 'point', look: 1 }, draw: drawEditorial },
+  4: { name: 'Kertas & cetak', topic: 'BELAJAR API', pill: ['#E4572E', '#fff'], handle: ['rgba(255,255,255,.6)', '#2B2118', 'rgba(43,33,24,.25)'],
+       text: 'Cara kerja *API*, versi gampang', css: 'top:130px;font:700 118px/1 Caveat;color:#2B2118', hl: 'color:#E4572E;text-decoration:underline 6px;text-underline-offset:10px',
+       enter: (tl, w) => tl.from(w, { y: -90, rotation: i => (i % 2 ? 8 : -8), opacity: 0, duration: .5, stagger: .1, ease: 'back.out(2.2)' }, .3),
+       rama: { cx: 830, size: 380, pose: 'thumbs', look: -1 }, draw: drawKertas },
+  5: { name: 'Retro / analog', topic: 'SRIWIJAYA FC · ARSIP', pill: ['#E2574C', '#F7E9C9'], handle: ['rgba(0,0,0,.3)', '#F7E9C9', 'rgba(247,233,201,.3)'],
+       text: 'Lampu Jakabaring *menyala*', css: 'top:150px;font:400 150px/.9 VT323;color:#F7E9C9;letter-spacing:.01em', hl: 'color:#F7C873',
+       enter: (tl, w) => tl.from(w, { opacity: 0, duration: .25, stagger: .14, ease: 'steps(3)' }, .3),
+       after: t => { const d = 2 + hash(Math.floor(t * 30)) * 3; document.getElementById('copy').style.textShadow = `${d.toFixed(1)}px 0 #FF3B3B, ${(-d).toFixed(1)}px 0 #3BE8FF`; },
+       rama: { cx: 540, size: 340, pose: 'present', look: 0 }, draw: drawRetro },
+  6: { name: 'Brutalis mono', topic: 'GITLEAKS', pill: ['#111', '#fff'], handle: ['#fff', '#111', '#111'],
+       text: 'API key lo *bocor*', css: 'top:150px;font:800 100px/1.08 "JetBrains Mono";letter-spacing:-.04em;color:#111', box: 'background:#F1F1EE;padding:10px 16px;outline:4px solid #111', hl: 'background:#111;color:#fff;padding:0 .12em',
+       enter: (tl, w) => w.forEach((el, i) => tl.set(el, { opacity: 0 }, 0).set(el, { opacity: 1 }, .3 + i * .14)),
+       after: t => { const cur = document.getElementById('cur'); if (cur) cur.style.opacity = t > .9 && Math.floor(t * 2) % 2 === 0 ? 1 : 0; },
+       cursor: true, rama: { cx: 830, size: 400, pose: 'shocked', look: -1 }, draw: drawBrutalis },
+  7: { name: 'Grainy gradient', topic: 'CONTEXT7 MCP', pill: ['#6A3BFF', '#fff'], handle: ['rgba(255,255,255,.08)', '#fff', 'rgba(255,255,255,.2)'],
+       text: 'Docs *terbaru*, langsung ke prompt', css: 'top:150px;font:600 84px/1.08 Unbounded;letter-spacing:-.03em;color:#fff', hl: 'color:#FF8FE8',
+       enter: (tl, w) => tl.from(w, { y: 60, opacity: 0, filter: 'blur(12px)', duration: .9, stagger: .1, ease: 'expo.out' }, .3),
+       rama: { cx: 250, size: 400, pose: 'point', look: 1 }, draw: drawGrainy },
+  8: { name: 'Kartun panggung', topic: 'CARA KERJA WEB', pill: ['#FF6B3D', '#fff'], handle: ['rgba(255,255,255,.75)', INK, 'rgba(30,35,64,.3)'],
+       text: 'Request lo jalan ke *server*', css: 'top:140px;font:700 100px/1.02 Fredoka;color:#1E2340', hl: 'color:#FF6B3D',
+       enter: (tl, w) => tl.from(w, { scale: 0, transformOrigin: '50% 100%', duration: .6, stagger: .08, ease: 'elastic.out(1,.5)' }, .3),
+       rama: { cx: 250, size: 380, pose: 'present', look: 1 }, draw: drawKartun },
+};
+
+const Q = new URLSearchParams(location.search);
+const S = STY[Q.get('v')] || STY[1];
+const $ = q => document.getElementById(q);
+$('pill').textContent = S.topic; $('pill').style.background = S.pill[0]; $('pill').style.color = S.pill[1];
+Object.assign($('handle').style, { background: S.handle[0], color: S.handle[1], borderColor: S.handle[2] });
+$('copy').style.cssText = S.css; if (S.box) $('box').style.cssText = S.box;
+$('hlcss').textContent = `.hl{${S.hl}}`;
+$('box').innerHTML = S.text.split(' ').map(w => w.includes('*') ? `<span class="w hl">${w.replace(/\*/g, '')}</span>` : `<span class="w">${w}</span>`).join('')
+  + (S.cursor ? '<span id="cur" style="color:#FF2A00">█</span>' : '');
+
+const tl = gsap.timeline({ paused: true });
+tl.from('.hdr', { y: -40, opacity: 0, duration: .5, ease: 'power3.out' }, .05);
+S.enter(tl, [...document.querySelectorAll('#box .w')], $('box'));
+tl.to({}, { duration: .01 }, 4);
+
+const ENV = window.ENV || [], R = S.rama;
+const rv = RamaVoxel.create(580); $('rama-body').appendChild(rv.canvas);
+function seekTo(t) {
+  tl.seek(Math.min(t, tl.duration()), false);
+  c.save(); S.draw(t); c.restore();
+  S.after && S.after(t);
+  const fi = Math.min(ENV.length - 1, Math.max(0, Math.floor(t * 30))), vol = ENV[fi] || 0;
+  const off = (1 - eo((t - .3) / .6)) * (R.size + 160);
+  $('rama').style.transform = `translate(${R.cx - R.size / 2}px,${(1815 - R.size + off).toFixed(2)}px) scale(${(R.size / 580).toFixed(4)})`;
+  const bob = vol > .15 ? -Math.abs(Math.sin(t * 18)) * (2 + vol * 3.5) : 0;
+  $('rama-body').style.transform = `translate(${(Math.sin(t * 1.6) * 2.5).toFixed(2)}px,${(Math.sin(t * 2.8) * 2.5 + bob).toFixed(2)}px)`;
+  rv.render({ t, vol, viseme: RamaVoxel.viseme(fi, vol, R.pose), blink: RamaVoxel.blink(t), pose: R.pose, look: R.look });
+}
+window.seekTo = seekTo;
+document.fonts.ready.then(() => { seekTo(Number(Q.get('t')) || 0); window.READY = true; });
+</script>
+<script>
+if (!new URLSearchParams(location.search).has('render')) {
+  const t0 = performance.now();
+  (function loop() { if (window.READY) window.seekTo(((performance.now() - t0) / 1000) % 4); requestAnimationFrame(loop); })();
+}
+</script>
+</body>
+</html>

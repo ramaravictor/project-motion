@@ -1,0 +1,59 @@
+<style>
+.arena{position:absolute;inset:0;border-radius:28px;overflow:hidden;background:radial-gradient(ellipse 80% 70% at 50% 110%,#1E5BD8 0%,#0D1F4A 55%,#070F26 100%);box-shadow:0 24px 50px -14px rgba(13,31,74,.45)}
+#gl{position:absolute;inset:0;width:100%;height:100%}
+.beam{position:absolute;top:-40px;width:180px;height:420px;background:linear-gradient(to bottom,rgba(190,220,255,.28),transparent);filter:blur(10px);transform-origin:top center}
+.bug{position:absolute;left:28px;top:26px;display:flex;align-items:stretch;border-radius:12px;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.35);font-family:'Barlow Condensed',sans-serif}
+.bug .tm{background:#fff;color:#0D1F4A;font-weight:800;font-size:34px;padding:6px 16px;letter-spacing:.04em;display:flex;align-items:center;gap:10px}
+.bug .tm i{width:26px;height:18px;display:inline-block;background:linear-gradient(#E2272F 50%,#fff 50%);border:1px solid #ccd}
+.bug .tm i.th{background:linear-gradient(#E2272F 0 17%,#fff 17% 33%,#24307A 33% 67%,#fff 67% 83%,#E2272F 83%)}
+.bug .sc{background:#E2272F;color:#fff;font-weight:800;font-size:40px;padding:4px 18px;font-variant-numeric:tabular-nums}
+.bug .tg{background:#0D1F4A;color:#9CC2FF;font:700 18px 'JetBrains Mono';padding:0 14px;display:flex;align-items:center;letter-spacing:.1em}
+.big{position:absolute;right:34px;bottom:22px;font:800 190px/0.85 'Barlow Condensed';color:#fff;letter-spacing:-.02em;text-shadow:0 10px 30px rgba(0,0,0,.4)}
+.big b{color:#FF5A4A}
+.chip{position:absolute;left:30px;bottom:34px;font:700 22px 'JetBrains Mono';color:#fff;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:99px;letter-spacing:.08em}
+</style>
+<div class="arena">
+  <div class="beam" style="left:120px;transform:rotate(18deg)"></div>
+  <div class="beam" style="right:140px;transform:rotate(-16deg)"></div>
+  <canvas id="gl" width="870" height="520"></canvas>
+  <div class="bug"><span class="tm"><i></i>IDN</span><span class="sc">6–1</span><span class="tm"><i class="th"></i>THA</span><span class="tg">FINAL · FT</span></div>
+  <div class="chip">SEA GAMES 2025 · EMAS</div>
+  <div class="big">6<b>–</b>1</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+  const cv = document.getElementById('gl');
+  const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: true });
+  r.setSize(870, 520, false);
+  const sc = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(38, 870 / 520, 0.1, 100);
+  cam.position.set(-6.5, 7.5, 10); cam.lookAt(1.2, 0, 0);
+  sc.add(new THREE.HemisphereLight(0xcfe0ff, 0x0d1f4a, 0.9));
+  const d = new THREE.DirectionalLight(0xffffff, 0.9); d.position.set(-4, 10, 6); sc.add(d);
+  // lapangan
+  const court = new THREE.Mesh(new THREE.BoxGeometry(14, 0.25, 8), new THREE.MeshStandardMaterial({ color: 0x2F6FE0, roughness: 0.55 }));
+  court.position.y = -0.13; sc.add(court);
+  const lm = new THREE.LineBasicMaterial({ color: 0xffffff });
+  const L = (pts) => sc.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map(p => new THREE.Vector3(p[0], 0.01, p[1]))), lm));
+  L([[-6.6, -3.6], [6.6, -3.6], [6.6, 3.6], [-6.6, 3.6], [-6.6, -3.6]]); L([[0, -3.6], [0, 3.6]]);
+  const circ = []; for (let i = 0; i <= 64; i++) { const a = i / 64 * Math.PI * 2; circ.push([Math.cos(a) * 1.2, Math.sin(a) * 1.2]); } L(circ);
+  const arc = []; for (let i = 0; i <= 32; i++) { const a = -Math.PI / 2 + i / 32 * Math.PI; arc.push([6.6 - Math.cos(a) * 2.2, Math.sin(a) * 2.2]); } L(arc);
+  // gawang
+  const gm = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+  [[-1, 0], [1, 0]].forEach(([z]) => { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.2), gm); p.position.set(6.7, 0.6, z); sc.add(p); });
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2), gm); bar.rotation.x = Math.PI / 2; bar.position.set(6.7, 1.2, 0); sc.add(bar);
+  // jejak bola (6 tembakan)
+  const tm = new THREE.MeshBasicMaterial({ color: 0xFF5A4A });
+  [[-3, -2.5], [-2, 2.8], [0.5, -1.6], [1.8, 2], [-0.8, 0.4], [3.2, -0.6]].forEach(([x, z], i) => {
+    const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(x, 0.3, z), new THREE.Vector3((x + 6.6) / 2, 1.6 + i * 0.12, z * 0.5), new THREE.Vector3(6.6, 0.55, (i - 2.5) * 0.3));
+    sc.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.035, 6), tm));
+  });
+  // bola glossy
+  const ball = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 1), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25, metalness: 0.05, flatShading: true }));
+  ball.position.set(5.6, 0.9, -0.2); sc.add(ball);
+  const sh = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 }));
+  sh.rotation.x = -Math.PI / 2; sh.position.set(5.6, 0.02, -0.2); sc.add(sh);
+  r.render(sc, cam);
+})();
+</script>

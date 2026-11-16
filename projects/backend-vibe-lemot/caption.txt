@@ -1,0 +1,63 @@
+JUDUL (pilih satu)
+Web Hasil Vibe Coding Lemot Pas 100 User? #shorts
+504 Gateway Timeout? Biangnya N+1 Query! #shorts
+Localhost Ngebut, Production Macet: N+1 Query #shorts
+
+DESKRIPSI
+Pas dites sendirian di localhost, web hasil vibe coding lo ngebut banget. Satu user, satu request, loading sekejap. Begitu dibuka 100 user barengan, langsung 504 Gateway Timeout 💀 Request numpuk di depan database kayak tol pas mudik.
+
+Biangnya namanya N+1 query. AI naruh await db.query di dalam for loop. 100 post = 101 kali ngetuk database, cuma buat 1 halaman.
+
+Obatnya:
+1. Ganti jadi satu query JOIN (atau WHERE id = ANY). Post sama nama penulisnya diambil sekali jalan.
+2. Tambah index di kolom yang sering dicari.
+3. Pakai connection pool biar koneksi dipakai ulang.
+
+Loading langsung turun drastis. (Angka ms di video cuma contoh.)
+
+Checklist prompt audit backend buat Antigravity IDE ada di komentar pin. Ketik "BACKEND" 👇
+
+#vibecoding #antigravityide #backend #database #postgresql #sql #nodejs #webperformance #programmer #ngoding #shorts
+
+KOMENTAR PIN
+Checklist prompt audit backend buat agen Antigravity IDE 👇
+
+Copy-paste ke agen:
+
+"Audit backend di repo ini untuk masalah performa:
+1. Cari N+1 query: await db/ORM query di dalam loop (for, map, forEach). Ganti dengan JOIN, WHERE id = ANY($1), atau include/eager loading.
+2. Cek kolom di WHERE, JOIN, ORDER BY yang belum punya index. Kasih usulan CREATE INDEX beserta alasannya.
+3. Pastikan koneksi database pakai pool (misal new Pool({ max: 10 }) di pg), bukan bikin koneksi baru per request.
+4. Cari query tanpa LIMIT/pagination.
+5. Tampilkan sebelum vs sesudah per temuan, jangan ubah logika bisnis."
+
+Contoh fix N+1:
+SELECT p.*, u.name FROM posts p
+JOIN users u ON u.id = p.author_id
+LIMIT 100;
+
+CREATE INDEX idx_posts_author ON posts(author_id);
+
+BALASAN KOMENTAR
+
+[Yang ketik "BACKEND"]
+Gas! Checklist prompt-nya udah di komentar pin 📌 Paste ke agen Antigravity, suruh audit repo lo. Biasanya N+1 langsung ketemu 🔍
+
+[Variasi]
+Siap, cek pin ya 📌 Pastiin agen nunjukin sebelum vs sesudah, jangan langsung di-merge 😎
+Mantap! Checklist ada di komentar pin, tinggal copy-paste 🚀
+
+["Gue pakai Prisma / ORM"]
+Sama aja. Cari findMany yang dipanggil di dalam loop, ganti pakai include (eager loading) atau satu query dengan where: { id: { in: ids } }.
+
+["Index di semua kolom aja?"]
+Jangan. Index bikin INSERT/UPDATE lebih berat dan makan storage. Cukup kolom yang sering dipakai di WHERE, JOIN, atau ORDER BY.
+
+["Pool max berapa?"]
+Tergantung batas koneksi database dan jumlah instance server lo. 10 itu titik awal yang umum, terus ukur pakai load test.
+
+["Cara tahu ada N+1?"]
+Nyalain log query di dev, buka satu halaman. Kalau query sejenis muncul puluhan/ratusan kali berurutan, itu N+1.
+
+["Serverless?"]
+Di serverless, koneksi gampang meledak. Pakai pooler kayak PgBouncer atau pooler bawaan provider database lo.

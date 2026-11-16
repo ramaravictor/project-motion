@@ -1,0 +1,1527 @@
+<!doctype html>
+<html lang="id">
+<!-- Made with skill-motion v1.19.0 — Explainer Jurnalisme Visual (9:16 Vertikal, 90s) -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Investigasi: Skandal Penyadapan Telepon Presiden & Tiga Jenderal Polisi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Figtree:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<style>
+:root {
+  --bg: #09080b;
+  --paper: #0e0c12;
+  --ink: #f5f2ea;
+  --yel: #ffd400;
+  --red: #e8402f;
+  --mute: #9e978c;
+  --border: rgba(245, 242, 234, 0.12);
+  --border-strong: rgba(245, 242, 234, 0.24);
+  --font-display: 'Barlow Condensed', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-sans: 'Figtree', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background: #000; overflow: hidden;
+  font-family: var(--font-display);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+#filters { position: fixed; width: 0; height: 0; opacity: 0; pointer-events: none; }
+
+/* 9:16 Stage (1080 x 1920) */
+#stage {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 1080px; height: 1920px;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  background: var(--bg);
+  overflow: hidden;
+  box-shadow: 0 0 140px rgba(0,0,0,0.95);
+}
+
+/* Background Texture & Film Grain */
+.bg-layer {
+  position: absolute;
+  inset: -100px;
+  background: radial-gradient(circle at 50% 30%, #15121b 0%, var(--bg) 80%);
+  z-index: 1;
+}
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.bg-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 3;
+}
+
+.bg-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.85) 100%);
+  z-index: 4;
+}
+
+/* Controls Top Right */
+.top-nav {
+  position: absolute;
+  top: 56px; left: 60px; right: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  pointer-events: none;
+}
+.tag-investigasi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border-radius: 6px;
+  background: rgba(14, 12, 18, 0.8);
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--yel);
+  text-transform: uppercase;
+}
+.tag-investigasi .dot-live {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red);
+  animation: pulse-red 1s infinite;
+}
+@keyframes pulse-red { 50% { opacity: 0.2; } }
+
+#sound-btn {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 22px;
+  background: rgba(14, 12, 18, 0.85);
+  border: 1px solid var(--border-strong);
+  border-radius: 9999px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: background 0.2s, transform 0.15s;
+}
+#sound-btn:hover { background: rgba(255, 212, 0, 0.2); transform: scale(1.04); }
+
+/* Clean Mode (Export to Video): Hide sound button, herd toolbar, and all UI controls */
+body.clean-mode #sound-btn,
+body.clean-mode #herd-ai-root,
+body.clean-mode [id*="herd"],
+body.clean-mode [class*="herd"],
+body.clean-mode [id*="db-"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Scene World Container */
+#world {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  perspective: 1200px;
+}
+
+section {
+  position: absolute;
+  inset: 0;
+  padding: 140px 70px 100px 70px;
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Typographic Classes (Jurnalisme Visual) ── */
+.headline-box {
+  width: 100%;
+  text-align: left;
+}
+.meta-date {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.22em;
+  color: var(--mute);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hl-title {
+  font-family: var(--font-display);
+  font-size: 78px;
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+.hl {
+  position: relative;
+  display: inline-block;
+  color: #111;
+  padding: 0 0.12em;
+  margin-left: -0.04em;
+}
+.hl i {
+  position: absolute;
+  left: 0; right: 0;
+  top: 0.08em; bottom: 0.04em;
+  background: var(--yel);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  z-index: -1;
+  border-radius: 2px;
+}
+.hl.r { color: #fff; }
+.hl.r i { background: var(--red); }
+
+.w {
+  display: inline-block;
+  white-space: nowrap;
+  margin: 0 0.08em;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Redacted Bar */
+.redact {
+  background: #fff;
+  color: #000;
+  padding: 0 8px;
+  font-family: var(--font-mono);
+  display: inline-block;
+}
+
+/* Big Stamp */
+.stamp {
+  position: absolute;
+  border: 5px solid var(--red);
+  color: var(--red);
+  padding: 12px 28px;
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 8px;
+  transform: rotate(-12deg) scale(0.6);
+  opacity: 0;
+  z-index: 40;
+  box-shadow: 0 0 30px rgba(232, 64, 47, 0.35);
+  background: rgba(14, 12, 18, 0.85);
+  backdrop-filter: blur(6px);
+}
+
+/* Dossier Card / Case File */
+.case-card {
+  width: 100%;
+  background: rgba(22, 18, 28, 0.88);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+.case-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--yel);
+}
+.case-card.alert::before {
+  background: var(--red);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCENE SPECIFIC GRAPHICS
+───────────────────────────────────────────────────────────── */
+/* Scene 1: Intercepted Phone & Animated Person Target */
+.phone-intercept-mock {
+  position: relative;
+  width: 440px; height: 680px;
+  background: #110e17;
+  border: 3px solid #2d2638;
+  border-radius: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.8);
+}
+.person-target-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(22, 18, 28, 0.92);
+  border: 1px solid var(--border-strong);
+  border-radius: 18px;
+  padding: 14px 18px;
+  margin: 16px 0;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.target-portrait-frame {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #14101c;
+  border: 2px solid var(--red);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.target-portrait-frame .portrait-avatar {
+  width: 100%;
+  height: 100%;
+  animation: portrait-breathe 4s ease-in-out infinite alternate;
+}
+@keyframes portrait-breathe {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
+}
+.scan-laser {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: #ffd400;
+  box-shadow: 0 0 8px #ffd400, 0 0 16px #e8402f;
+  animation: laser-sweep 2s ease-in-out infinite alternate;
+}
+@keyframes laser-sweep {
+  0% { top: 0%; opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { top: 98%; opacity: 0.4; }
+}
+.rec-badge {
+  position: absolute;
+  bottom: 2px; left: 2px; right: 2px;
+  background: rgba(232, 64, 47, 0.9);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  text-align: center;
+  padding: 1px 0;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  animation: blink 1.2s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.person-telemetry {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.waveform-bars {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 80px;
+  margin: 30px 0;
+}
+.wf-bar {
+  width: 6px;
+  background: var(--red);
+  border-radius: 3px;
+  height: 20px;
+  animation: wf-anim 0.8s ease-in-out infinite alternate;
+}
+@keyframes wf-anim {
+  0% { height: 10px; opacity: 0.3; }
+  100% { height: 75px; opacity: 1; }
+}
+
+/* Scene 2: LIMS Server Rack */
+.lims-diagram {
+  width: 100%;
+  height: 620px;
+  background: #0f0c15;
+  border: 2px dashed rgba(255, 212, 0, 0.3);
+  border-radius: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  justify-content: space-between;
+}
+.server-rack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.server-blade {
+  background: #1b1625;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+.server-blade .status-light {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--yel);
+  box-shadow: 0 0 10px var(--yel);
+}
+
+/* Scene 3: Three Generals Cards & Animated Dossier Avatars */
+.generals-grid {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.general-row {
+  background: rgba(22, 18, 28, 0.9);
+  border-left: 6px solid var(--red);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.officer-avatar-box {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #120d1a;
+  border: 1px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+.officer-svg {
+  width: 100%;
+  height: 100%;
+  animation: officer-subtle 3s ease-in-out infinite alternate;
+}
+@keyframes officer-subtle {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-2px); }
+}
+.censor-bar {
+  position: absolute;
+  top: 22px; left: 2px; right: 2px;
+  height: 13px;
+  background: #000;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 6px rgba(232, 64, 47, 0.5);
+  animation: censor-glitch 4s infinite;
+}
+@keyframes censor-glitch {
+  0%, 90%, 100% { transform: translate(0, 0); opacity: 1; }
+  92% { transform: translate(-2px, 1px); opacity: 0.7; }
+  94% { transform: translate(2px, -1px); opacity: 0.9; }
+  96% { transform: translate(0, 0); opacity: 1; }
+}
+.badge-suspect {
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+}
+.general-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--yel);
+  margin-top: 3px;
+  display: block;
+  letter-spacing: 0.04em;
+}
+.general-info {
+  flex: 1;
+}
+.general-info h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.general-info p {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--mute);
+  margin-top: 2px;
+}
+.general-stars {
+  font-size: 18px;
+  color: var(--yel);
+  letter-spacing: 3px;
+}
+
+/* Scene 4: Target Entities & Animated Person Badges */
+.target-cluster {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.target-box {
+  background: #15111e;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.target-person-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.target-avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1c1626;
+  border: 1.5px solid var(--yel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.target-avatar-circle svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--yel);
+}
+.target-box .t-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--yel);
+  letter-spacing: 0.1em;
+  display: block;
+}
+.target-box .t-name {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  display: block;
+}
+
+/* Scene 5: Public Impact Radar & Animated Citizens */
+.radar-screen {
+  position: relative;
+  width: 520px; height: 520px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 212, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.radar-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 212, 0, 0.18);
+}
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 70%, rgba(255, 212, 0, 0.25) 100%);
+  animation: sweep 3s linear infinite;
+}
+@keyframes sweep { to { transform: rotate(360deg); } }
+
+.radar-citizens-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.citizen-pod {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  animation: citizen-float 5s ease-in-out infinite alternate;
+}
+.citizen-pod:nth-child(1) { top: 32px; left: 32px; animation-delay: 0s; }
+.citizen-pod:nth-child(2) { top: 190px; right: 28px; animation-delay: 1.6s; }
+.citizen-pod:nth-child(3) { bottom: 32px; left: 90px; animation-delay: 3.2s; }
+
+@keyframes citizen-float {
+  0% { transform: translateY(0) scale(0.97); }
+  100% { transform: translateY(-7px) scale(1.03); }
+}
+.citizen-thumb-wrap {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--yel);
+  box-shadow: 0 0 16px rgba(255, 212, 0, 0.35);
+}
+.citizen-thumb-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%) contrast(140%) brightness(95%);
+}
+.citizen-reticle {
+  position: absolute;
+  inset: 0;
+  border: 2px dashed rgba(232, 64, 47, 0.85);
+  border-radius: 50%;
+  animation: spin 12s linear infinite;
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+.citizen-tag {
+  background: rgba(14, 12, 18, 0.95);
+  border: 1px solid rgba(255, 212, 0, 0.6);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--yel);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Scene 6: Scales of Justice & Outro */
+.justice-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 20px;
+}
+</style>
+</head>
+<body>
+
+<svg id="filters"><defs></defs></svg>
+
+<div id="stage">
+  <div class="bg-layer"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-grain"></div>
+  <div class="bg-vignette"></div>
+
+  <!-- Top Navigation & Status -->
+  <header class="top-nav">
+    <div class="tag-investigasi">
+      <span class="dot-live"></span>
+      <span>LAPORAN INVESTIGASI · 2026</span>
+    </div>
+    <button id="sound-btn">
+      <span id="sound-icon">🔊</span>
+      <span id="sound-label">Audio On</span>
+    </button>
+  </header>
+
+  <!-- 3D World Container -->
+  <div id="world">
+
+    <!-- BABAK 1: THE HOOK (00.00 – 13.50s) -->
+    <section id="scene-1" style="display:flex;">
+      <div class="headline-box">
+        <p class="meta-date">BERKAS PERKARA // NO. 01/SDR/2026</p>
+        <h1 class="hl-title line" id="s1-hl">
+          Bagaimana mungkin telepon <span class="hl r"><i></i>Presiden RI</span> disadap perwira sendiri?
+        </h1>
+      </div>
+
+      <div class="phone-intercept-mock" id="s1-phone">
+        <div style="font-family:var(--font-mono); font-size:13px; color:var(--red); letter-spacing:0.18em;">
+          ● LINE COMPROMISED // INTRUSION
+        </div>
+
+        <!-- Animated Person Target: Presiden RI -->
+        <div class="person-target-card" id="s1-person">
+          <div class="target-portrait-frame">
+            <svg class="portrait-avatar" viewBox="0 0 120 120">
+              <defs>
+                <linearGradient id="grad-pres" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#2a2335"/>
+                  <stop offset="100%" stop-color="#14101c"/>
+                </linearGradient>
+              </defs>
+              <circle cx="60" cy="60" r="56" fill="url(#grad-pres)" stroke="#e8402f" stroke-width="2" stroke-dasharray="6 4"/>
+              <!-- Body Suit -->
+              <path d="M24 112 C24 86 42 76 60 76 C78 76 96 86 96 112 Z" fill="#2d2438"/>
+              <!-- Shirt collar & Tie -->
+              <path d="M48 76 L60 96 L72 76 Z" fill="#ffd400"/>
+              <path d="M60 88 L60 112" stroke="#14101c" stroke-width="3"/>
+              <!-- Head Silhouette -->
+              <ellipse cx="60" cy="48" rx="20" ry="24" fill="#4d3f5e"/>
+              <!-- Hair -->
+              <path d="M38 42 C40 24 54 22 62 22 C72 22 82 28 82 40 C74 36 68 34 60 34 C50 34 44 38 38 42 Z" fill="#241d2e"/>
+              <!-- Facial Recognition Target Reticle -->
+              <path d="M42 34 L36 34 L36 42 M78 34 L84 34 L84 42 M36 58 L36 66 L42 66 M84 58 L84 66 L78 66" stroke="#ffd400" stroke-width="2" fill="none"/>
+              <circle cx="60" cy="48" r="4" fill="none" stroke="#e8402f" stroke-width="1.5"/>
+            </svg>
+            <div class="scan-laser"></div>
+            <div class="rec-badge">● LIVE INTERCEPT</div>
+          </div>
+          <div class="person-telemetry">
+            <div style="font-size:18px; font-weight:800; color:var(--ink);">PRABOWO SUBIANTO</div>
+            <div style="font-family:var(--font-mono); font-size:12px; color:var(--mute);">TARGET: NO. RI-1 (PRESIDEN RI)</div>
+            <div style="font-family:var(--font-mono); font-size:11px; color:#00ba40; margin-top:4px;">● SUARA TERKONFIRMASI 99.8%</div>
+          </div>
+        </div>
+
+        <div class="waveform-bars">
+          <div class="wf-bar" style="animation-delay:0.1s"></div>
+          <div class="wf-bar" style="animation-delay:0.3s"></div>
+          <div class="wf-bar" style="animation-delay:0.5s"></div>
+          <div class="wf-bar" style="animation-delay:0.2s"></div>
+          <div class="wf-bar" style="animation-delay:0.6s"></div>
+          <div class="wf-bar" style="animation-delay:0.4s"></div>
+          <div class="wf-bar" style="animation-delay:0.7s"></div>
+          <div class="wf-bar" style="animation-delay:0.2s"></div>
+        </div>
+        <div style="font-size:26px; font-weight:800; letter-spacing:0.04em; text-align:center;">
+          TARGET: NO. RI-1
+        </div>
+        <div style="font-family:var(--font-mono); font-size:13px; color:var(--mute); margin-top:4px;">
+          LINE KOMUNIKASI TERKOMPROMI
+        </div>
+      </div>
+
+      <div class="stamp" id="s1-stamp" style="top:48%; right:140px;">
+        TOP SECRET // COMPROMISED
+      </div>
+
+      <div class="case-card">
+        <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:14px; color:var(--mute);">
+          <span>KLASIFIKASI: ILEGAL INTERCEPTION</span>
+          <span style="color:var(--yel);">PASAL 30 & 31 UU ITE</span>
+        </div>
+        <p style="font-size:24px; font-family:var(--font-sans); line-height:1.45; color:var(--ink);">
+          Bukan operasi intelijen asing, melainkan penyalahgunaan wewenang di tubuh penegak hukum domestik.
+        </p>
+      </div>
+    </section>
+
+    <!-- BABAK 2: SISTEM LIMS (13.50 – 32.00s) -->
+    <section id="scene-2">
+      <div class="headline-box">
+        <p class="meta-date">MODUS OPERANDI // INSTRUMEN NEGARA</p>
+        <h1 class="hl-title line" id="s2-hl">
+          Server <span class="hl"><i></i>LIMS Polri</span> disusupi tanpa izin pengadilan.
+        </h1>
+      </div>
+
+      <div class="lims-diagram" id="s2-diagram">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-family:var(--font-mono); font-size:14px; color:var(--yel); font-weight:700;">
+            [LIMS] LAWFUL INTERCEPTION MANAGEMENT SYSTEM
+          </span>
+          <span style="font-family:var(--font-mono); font-size:13px; color:var(--red);">
+            ● NON-PROCEDURAL INJECTION
+          </span>
+        </div>
+
+        <div class="server-rack">
+          <div class="server-blade">
+            <span>CORE NODE 01 · VOICE INTERCEPT</span>
+            <span class="status-light"></span>
+          </div>
+          <div class="server-blade" style="border-color:var(--red);">
+            <span style="color:var(--red);">INJECT TARGET: +62 811-****-**** (RI-1)</span>
+            <span class="status-light" style="background:var(--red); box-shadow:0 0 10px var(--red);"></span>
+          </div>
+          <div class="server-blade">
+            <span>PACKET INSPECTION &amp; CALL DUMP</span>
+            <span class="status-light"></span>
+          </div>
+        </div>
+
+        <div style="background:rgba(232, 64, 47, 0.15); border:1px solid var(--red); border-radius:12px; padding:16px;">
+          <p style="font-family:var(--font-mono); font-size:14px; color:var(--ink); line-height:1.5;">
+            PERKAP NO. 5 TAHUN 2010 DIABAIKAN: Nomor telepon didaftarkan langsung ke server tanpa surat perintah penyelidikan sah.
+          </p>
+        </div>
+      </div>
+
+      <div class="case-card alert">
+        <div style="font-family:var(--font-mono); font-size:14px; color:var(--red); font-weight:700;">
+          PELANGGARAN PROSEDUR TETAP
+        </div>
+        <p style="font-size:22px; font-family:var(--font-sans); line-height:1.4; color:var(--ink);">
+          Alat yang dirancang untuk memburu gembong narkoba & teroris disulap menjadi radar mata-mata kekuasaan.
+        </p>
+      </div>
+    </section>
+
+    <!-- BABAK 3: TIGA JENDERAL & BARANG BUKTI (32.00 – 49.00s) -->
+    <section id="scene-3">
+      <div class="headline-box">
+        <p class="meta-date">PENYIDIKAN BARESKRIM // 3 JENDERAL TERSANGKA</p>
+        <h1 class="hl-title line" id="s3-hl">
+          Tiga perwira tinggi <span class="hl r"><i></i>resmi tersangka</span>, jejak log sempat dihapus.
+        </h1>
+      </div>
+
+      <div class="generals-grid" id="s3-cards">
+        <div class="general-row">
+          <div class="officer-avatar-box">
+            <svg class="officer-svg" viewBox="0 0 80 80">
+              <rect width="80" height="80" rx="10" fill="#181322"/>
+              <!-- Uniform with Rank Badges -->
+              <path d="M12 76 C12 52 26 46 40 46 C54 46 68 52 68 76 Z" fill="#2d2438"/>
+              <ellipse cx="40" cy="28" rx="14" ry="16" fill="#4a3e5c"/>
+              <path d="M24 24 C26 14 36 12 40 12 C44 12 54 14 56 24 Z" fill="#1b1526"/>
+              <!-- Collar Gold Stars -->
+              <circle cx="28" cy="54" r="2.5" fill="#ffd400"/>
+              <circle cx="52" cy="54" r="2.5" fill="#ffd400"/>
+            </svg>
+            <div class="censor-bar"><span>TERDAFTAR</span></div>
+          </div>
+          <div class="general-info">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3>JENDERAL (POL) LSP</h3>
+              <span class="badge-suspect">TERSANGKA</span>
+            </div>
+            <p>Mantan Kapolri / Pejabat Tinggi Negara</p>
+            <span class="general-sub">STATUS: PENYALAHGUNAAN WEWENANG</span>
+          </div>
+          <div class="general-stars">★★★★</div>
+        </div>
+
+        <div class="general-row">
+          <div class="officer-avatar-box">
+            <svg class="officer-svg" viewBox="0 0 80 80">
+              <rect width="80" height="80" rx="10" fill="#181322"/>
+              <path d="M12 76 C12 52 26 46 40 46 C54 46 68 52 68 76 Z" fill="#2d2438"/>
+              <ellipse cx="40" cy="28" rx="14" ry="16" fill="#4a3e5c"/>
+              <path d="M24 24 C26 14 36 12 40 12 C44 12 54 14 56 24 Z" fill="#1b1526"/>
+              <circle cx="28" cy="54" r="2.5" fill="#ffd400"/>
+              <circle cx="52" cy="54" r="2.5" fill="#ffd400"/>
+            </svg>
+            <div class="censor-bar"><span>INJEKSI LIMS</span></div>
+          </div>
+          <div class="general-info">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3>IRJEN POL ASN</h3>
+              <span class="badge-suspect">TERSANGKA</span>
+            </div>
+            <p>Kepala Divisi Hukum (Kadivkum) Polri</p>
+            <span class="general-sub">STATUS: OPERATOR AKSES TEKNIS</span>
+          </div>
+          <div class="general-stars">★★</div>
+        </div>
+
+        <div class="general-row">
+          <div class="officer-avatar-box">
+            <svg class="officer-svg" viewBox="0 0 80 80">
+              <rect width="80" height="80" rx="10" fill="#181322"/>
+              <path d="M12 76 C12 52 26 46 40 46 C54 46 68 52 68 76 Z" fill="#2d2438"/>
+              <ellipse cx="40" cy="28" rx="14" ry="16" fill="#4a3e5c"/>
+              <path d="M24 24 C26 14 36 12 40 12 C44 12 54 14 56 24 Z" fill="#1b1526"/>
+              <circle cx="28" cy="54" r="2.5" fill="#ffd400"/>
+              <circle cx="52" cy="54" r="2.5" fill="#ffd400"/>
+            </svg>
+            <div class="censor-bar"><span>WIPE LOG</span></div>
+          </div>
+          <div class="general-info">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3>IRJEN POL EH</h3>
+              <span class="badge-suspect">TERSANGKA</span>
+            </div>
+            <p>Widyaiswara Kepolisian Utama Sespim</p>
+            <span class="general-sub">STATUS: PENGHAPUSAN BARANG BUKTI</span>
+          </div>
+          <div class="general-stars">★★</div>
+        </div>
+      </div>
+
+      <div class="stamp" id="s3-stamp" style="top:52%; left:50%; transform:translate(-50%, -50%) rotate(-8deg) scale(0.8);">
+        STATUS: TERSANGKA BARESKRIM
+      </div>
+
+      <div class="case-card alert" id="s3-wipe-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-family:var(--font-mono); font-size:14px; color:var(--red); font-weight:700;">
+            OKTOBER 2026 // PENGHAPUSAN BARANG BUKTI
+          </span>
+          <span style="font-family:var(--font-mono); font-size:12px; background:var(--red); color:#fff; padding:2px 8px; border-radius:4px;">WIPED</span>
+        </div>
+        <p style="font-size:22px; font-family:var(--font-sans); line-height:1.4;">
+          Perintah penghapusan rekaman suara dan data log server LIMS dikeluarkan saat aktivitas ganjil mulai tercium.
+        </p>
+      </div>
+    </section>
+
+    <!-- BABAK 4: GURITA TARGET (49.00 – 64.50s) -->
+    <section id="scene-4">
+      <div class="headline-box">
+        <p class="meta-date">JARING PENGAWASAN // BUKAN HANYA PRESIDEN</p>
+        <h1 class="hl-title line" id="s4-hl">
+          Gurita penyadapan menyasar <span class="hl"><i></i>politisi, media &amp; pengusaha</span>.
+        </h1>
+      </div>
+
+      <div class="target-cluster" id="s4-cluster">
+        <div class="target-box">
+          <div class="target-person-header">
+            <div class="target-avatar-circle">
+              <!-- Politician SVG Silhouette -->
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <div>
+              <span class="t-tag">ENTITAS 01</span>
+              <span class="t-name">KETUA PARTAI</span>
+            </div>
+          </div>
+          <p style="font-family:var(--font-mono); font-size:13px; color:var(--mute);">Manuver &amp; peta koalisi kekuasaan</p>
+        </div>
+
+        <div class="target-box">
+          <div class="target-person-header">
+            <div class="target-avatar-circle">
+              <!-- Journalist with microphone SVG -->
+              <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5-3c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+            </div>
+            <div>
+              <span class="t-tag">ENTITAS 02</span>
+              <span class="t-name">PEMRED MEDIA</span>
+            </div>
+          </div>
+          <p style="font-family:var(--font-mono); font-size:13px; color:var(--mute);">Narasumber &amp; liputan investigasi</p>
+        </div>
+
+        <div class="target-box">
+          <div class="target-person-header">
+            <div class="target-avatar-circle">
+              <!-- Activist / Megaphone SVG -->
+              <svg viewBox="0 0 24 24"><path d="M18 11v2h4v-2h-4zm-2 6.61c.96.71 2.21 1.65 3.2 2.39.4-.53.8-1.07 1.2-1.6-.99-.74-2.24-1.68-3.2-2.4-.4.54-.8 1.08-1.2 1.61zM20.4 4c-.4-.53-.8-1.07-1.2-1.6-.99.74-2.24 1.68-3.2 2.4.4.53.8 1.07 1.2 1.6.96-.72 2.21-1.65 3.2-2.4zM4 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1v4h2v-4h1l5 3V6L8 9H4z"/></svg>
+            </div>
+            <div>
+              <span class="t-tag">ENTITAS 03</span>
+              <span class="t-name">LEMBAGA (LSM)</span>
+            </div>
+          </div>
+          <p style="font-family:var(--font-mono); font-size:13px; color:var(--mute);">Kritik kebijakan publik &amp; HAM</p>
+        </div>
+
+        <div class="target-box">
+          <div class="target-person-header">
+            <div class="target-avatar-circle">
+              <!-- Corporate Businessman SVG -->
+              <svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+            </div>
+            <div>
+              <span class="t-tag">ENTITAS 04</span>
+              <span class="t-name">PENGUSAHA</span>
+            </div>
+          </div>
+          <p style="font-family:var(--font-mono); font-size:13px; color:var(--mute);">Aliran modal &amp; data korporasi</p>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div style="font-family:var(--font-mono); font-size:14px; color:var(--yel);">
+          DAMPAK OPERASI SURVEILLANCE
+        </div>
+        <p style="font-size:22px; font-family:var(--font-sans); line-height:1.4;">
+          Informasi privat menjadi komoditas tawar-menawar kekuasaan di luar kontrol hukum demokrasi.
+        </p>
+      </div>
+    </section>
+
+    <!-- BABAK 5: DAMPAK TERHADAP RAKYAT (64.50 – 80.50s) -->
+    <section id="scene-5">
+      <div class="headline-box">
+        <p class="meta-date">REFLEKSI SIPIL // PRIVASI WARGA NEGARA</p>
+        <h1 class="hl-title line" id="s5-hl">
+          Jika Presiden saja bisa disadap, <span class="hl r"><i></i>bagaimana dengan rakyat?</span>
+        </h1>
+      </div>
+
+      <div class="radar-screen" id="s5-radar">
+        <div class="radar-circle" style="width:160px; height:160px;"></div>
+        <div class="radar-circle" style="width:320px; height:320px;"></div>
+        <div class="radar-circle" style="width:480px; height:480px;"></div>
+        <div class="radar-sweep"></div>
+
+        <!-- Animated Citizens trapped in Surveillance Radar -->
+        <div class="radar-citizens-container">
+          <div class="citizen-pod">
+            <div class="citizen-thumb-wrap">
+              <img src="assets/images/person1.jpg" alt="Citizen 1">
+              <div class="citizen-reticle"></div>
+            </div>
+            <div class="citizen-tag">WARGA #8492 · MEDSOS</div>
+          </div>
+
+          <div class="citizen-pod">
+            <div class="citizen-thumb-wrap">
+              <img src="assets/images/person2.jpg" alt="Citizen 2">
+              <div class="citizen-reticle"></div>
+            </div>
+            <div class="citizen-tag">WARGA #3104 · JURNALIS</div>
+          </div>
+
+          <div class="citizen-pod">
+            <div class="citizen-thumb-wrap">
+              <img src="assets/images/person3.jpg" alt="Citizen 3">
+              <div class="citizen-reticle"></div>
+            </div>
+            <div class="citizen-tag">WARGA #6721 · ADVOKAT</div>
+          </div>
+        </div>
+
+        <div style="position:relative; z-index:10; text-align:center;">
+          <div style="font-size:42px;">👁️</div>
+          <div style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--yel); letter-spacing:0.16em; margin-top:6px;">
+            SURVEILLANCE STATE
+          </div>
+        </div>
+      </div>
+
+      <div class="case-card alert">
+        <div style="font-family:var(--font-mono); font-size:14px; color:var(--red); font-weight:700;">
+          CHILLING EFFECT TERHADAP DEMOKRASI
+        </div>
+        <p style="font-size:22px; font-family:var(--font-sans); line-height:1.4;">
+          Runtuhnya rasa aman warga negara. Kebebasan berekspresi, kerahasiaan jurnalis, dan privasi publik terancam mati perlahan.
+        </p>
+      </div>
+    </section>
+
+    <!-- BABAK 6: KESIMPULAN & TRANSPARANSI (80.50 – 90.00s) -->
+    <section id="scene-6">
+      <div class="headline-box">
+        <p class="meta-date">EPILOG KASUS // UJIAN SUPREMASI HUKUM</p>
+        <h1 class="hl-title line" id="s6-hl">
+          Hukum harus tegak, <span class="hl"><i></i>tak peduli bintang di pundak</span>.
+        </h1>
+      </div>
+
+      <div class="justice-lockup" id="s6-lockup">
+        <div style="font-size:96px; line-height:1; color:var(--yel);">⚖️</div>
+        <h2 style="font-size:52px; font-weight:800; letter-spacing:0.02em; line-height:1.1;">
+          SUPREMASI HUKUM ATAU NEGARA PENGAWAS?
+        </h2>
+        <p style="font-family:var(--font-sans); font-size:22px; color:var(--mute); max-width:760px; line-height:1.45;">
+          Masyarakat sipil berhak menuntut akuntabilitas total. Jangan biarkan instrumen penegak hukum menjadi alat intip kekuasaan.
+        </p>
+      </div>
+
+      <div style="width:100%; padding:24px; border:1px solid var(--border-strong); border-radius:16px; background:rgba(22,18,28,0.7); text-align:center;">
+        <span style="font-family:var(--font-mono); font-size:15px; color:var(--yel); letter-spacing:0.18em; font-weight:700;">
+          KAWAL KASUS PENYADAPAN LIMS HINGGA PENGADILAN
+        </span>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   SKILL-MOTION JURNALISME VISUAL RIG
+───────────────────────────────────────────────────────────── */
+const $ = (s, p = document) => p.querySelector(s);
+const $$ = (s, p = document) => Array.from(p.querySelectorAll(s));
+
+// Responsive stage fit (1080 x 1920)
+const stage = $('#stage');
+const fit = () => {
+  const s = Math.min(innerWidth / 1080, innerHeight / 1920);
+  stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+};
+addEventListener('resize', fit);
+fit();
+
+// Audio Engine: Synchronized VO 1-6 & SFX
+const actx = new (window.AudioContext || window.webkitAudioContext)();
+let soundEnabled = true;
+
+const voClips = {};
+for (let i = 1; i <= 6; i++) {
+  voClips[i] = new Audio(`assets/audio/vo${i}.mp3`);
+  voClips[i].volume = 1.0;
+}
+
+const playVO = (num, offset = 0) => {
+  if (!soundEnabled) return;
+  try {
+    Object.values(voClips).forEach((v, idx) => {
+      if (idx + 1 !== num) {
+        v.pause();
+        v.currentTime = 0;
+      }
+    });
+    const clip = voClips[num];
+    if (clip) {
+      if (clip.readyState >= 1 && offset > 0) {
+        clip.currentTime = Math.min(offset, clip.duration || offset);
+      } else if (offset === 0) {
+        clip.currentTime = 0;
+      }
+      clip.play().catch(() => {});
+    }
+  } catch (e) {}
+};
+
+// Web Audio Ambient Drone & SFX
+let droneOsc, droneGain;
+const startDrone = () => {
+  if (!soundEnabled || droneOsc) return;
+  droneOsc = actx.createOscillator();
+  droneGain = actx.createGain();
+  droneOsc.type = 'sawtooth';
+  droneOsc.frequency.setValueAtTime(55, actx.currentTime); // Low A drone
+  
+  const filter = actx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(140, actx.currentTime);
+  
+  droneGain.gain.setValueAtTime(0.06, actx.currentTime);
+  droneOsc.connect(filter).connect(droneGain).connect(actx.destination);
+  droneOsc.start();
+};
+
+const sfx = {
+  stamp: () => {
+    if (!soundEnabled) return;
+    const osc = actx.createOscillator();
+    const g = actx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(120, actx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(30, actx.currentTime + 0.18);
+    g.gain.setValueAtTime(0.6, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.18);
+    osc.connect(g).connect(actx.destination);
+    osc.start(); osc.stop(actx.currentTime + 0.18);
+  },
+  beep: (freq = 880) => {
+    if (!soundEnabled) return;
+    const osc = actx.createOscillator();
+    const g = actx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, actx.currentTime);
+    g.gain.setValueAtTime(0.2, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.08);
+    osc.connect(g).connect(actx.destination);
+    osc.start(); osc.stop(actx.currentTime + 0.08);
+  },
+  glitch: () => {
+    if (!soundEnabled) return;
+    const bSize = actx.sampleRate * 0.12;
+    const b = actx.createBuffer(1, bSize, actx.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < bSize; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / bSize);
+    const src = actx.createBufferSource();
+    src.buffer = b;
+    const g = actx.createGain();
+    g.gain.value = 0.22;
+    src.connect(g).connect(actx.destination);
+    src.start();
+  }
+};
+
+// Sound toggle button
+$('#sound-btn').onclick = () => {
+  soundEnabled = !soundEnabled;
+  if (soundEnabled) {
+    actx.resume();
+    startDrone();
+    $('#sound-icon').textContent = '🔊';
+    $('#sound-label').textContent = 'Audio On';
+    const curTime = tl.time();
+    if (curTime < 9.20) playVO(1, Math.max(0, curTime - 0.15));
+    else if (curTime < 24.00) playVO(2, Math.max(0, curTime - 9.30));
+    else if (curTime < 37.60) playVO(3, Math.max(0, curTime - 24.10));
+    else if (curTime < 49.20) playVO(4, Math.max(0, curTime - 37.70));
+    else if (curTime < 62.00) playVO(5, Math.max(0, curTime - 49.30));
+    else playVO(6, Math.max(0, curTime - 62.10));
+  } else {
+    if (droneGain) droneGain.gain.setValueAtTime(0, actx.currentTime);
+    Object.values(voClips).forEach(v => v.pause());
+    $('#sound-icon').textContent = '🔇';
+    $('#sound-label').textContent = 'Muted';
+  }
+};
+
+/* ── Pecah kalimat per kata (.w) dengan sorotan highlighter (.hl) ── */
+$$('.line').forEach(el => {
+  const out = [];
+  el.childNodes.forEach(n => {
+    if (n.nodeType === 3) {
+      n.textContent.split(/\s+/).filter(Boolean).forEach(w => {
+        const s = document.createElement('span');
+        s.className = 'w';
+        s.textContent = w;
+        out.push(s);
+      });
+    } else {
+      const s = document.createElement('span');
+      s.className = 'w';
+      s.appendChild(n.cloneNode(true));
+      out.push(s);
+    }
+  });
+  el.textContent = '';
+  out.forEach(s => el.appendChild(s));
+});
+
+/* ── Scene Isolation & Visibility ── */
+const ALL_SCENES = ['#scene-1', '#scene-2', '#scene-3', '#scene-4', '#scene-5', '#scene-6'];
+const setActiveScene = (activeId) => {
+  ALL_SCENES.forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    if (id === activeId) {
+      el.style.display = 'flex';
+    } else {
+      el.style.display = 'none';
+      el.style.opacity = '0';
+    }
+  });
+};
+
+/* ── Directional Motion Blur Helper ── */
+const svgFilters = $('#filters defs');
+const VERT = [0, 1];
+let filterSeq = 0;
+
+const blurTween = (timeline, target, at, fromVal, toVal, duration, dir = VERT) => {
+  const id = `f-mb-${++filterSeq}`;
+  const f = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+  f.id = id;
+  const b = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
+  b.setAttribute('stdDeviation', `${dir[0] * fromVal} ${dir[1] * fromVal}`);
+  f.appendChild(b);
+  svgFilters.appendChild(f);
+
+  const els = typeof target === 'string'
+    ? $$(target)
+    : (Array.isArray(target) ? target : (target ? [target] : []));
+  els.forEach(el => el.style.filter = `url(#${id})`);
+
+  const obj = { val: fromVal };
+  timeline.to(obj, {
+    val: toVal,
+    duration,
+    ease: 'power2.out',
+    onUpdate: () => {
+      b.setAttribute('stdDeviation', `${dir[0] * obj.val} ${dir[1] * obj.val}`);
+    },
+    onComplete: () => {
+      if (toVal === 0) els.forEach(el => el.style.filter = 'none');
+    }
+  }, at);
+};
+
+/* ── Helper Animasi Kalimat Kata per Kata ── */
+const say = (sel, at, { dur = 0.5, st = 0.05 } = {}) => {
+  const el = $(sel);
+  if (!el) return;
+  const ws = $$('.w', el);
+  tl.set(el, { opacity: 1 }, at);
+  tl.fromTo(ws, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: dur, ease: 'power4.out', stagger: st }, at);
+  blurTween(tl, el, at, 18, 0, dur + st * ws.length);
+  
+  // Highlighter sweep
+  $$('.hl i', el).forEach((h, i) => {
+    tl.fromTo(h, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: 'power3.out' }, at + st * ws.length + 0.15 + i * 0.2);
+  });
+};
+
+/* ─────────────────────────────────────────────────────────────
+   MASTER TIMELINE (75.00 DETIK)
+───────────────────────────────────────────────────────────── */
+const isClean = new URLSearchParams(location.search).has('clean');
+if (isClean) {
+  document.body.classList.add('clean-mode');
+  const sBtn = document.getElementById('sound-btn');
+  if (sBtn) sBtn.style.display = 'none';
+}
+const tl = gsap.timeline({
+  paused: isClean,
+  repeat: isClean ? 0 : -1,
+  onRepeat: () => {
+    Object.values(voClips).forEach(v => { v.pause(); v.currentTime = 0; });
+  }
+});
+window.tl = tl;
+window.DURATION = 75.0;
+
+// Continuous scene synchronizer on every frame & scrub
+tl.eventCallback('onUpdate', () => {
+  const t = tl.time();
+  if (t < 9.20) setActiveScene('#scene-1');
+  else if (t < 24.00) setActiveScene('#scene-2');
+  else if (t < 37.60) setActiveScene('#scene-3');
+  else if (t < 49.20) setActiveScene('#scene-4');
+  else if (t < 62.00) setActiveScene('#scene-5');
+  else setActiveScene('#scene-6');
+
+  const slider = document.getElementById('db-slider');
+  const timeText = document.getElementById('db-time');
+  if (slider && !slider.matches(':active')) {
+    slider.value = t.toFixed(2);
+  }
+  if (timeText) {
+    timeText.textContent = t.toFixed(1) + 's / 75.0s';
+  }
+});
+
+/* ── BABAK 1: THE HOOK (00.00 – 09.20s) ── */
+tl.call(() => playVO(1), null, 0.15);
+tl.call(startDrone, null, 0.15);
+tl.set('#scene-1', { opacity: 1 }, 0);
+say('#s1-hl', 0.25);
+tl.fromTo('#s1-phone', { opacity: 0, scale: 0.88, y: 50 }, { opacity: 1, scale: 1, y: 0, duration: 0.8, ease: 'back.out(1.4)' }, 0.8);
+tl.fromTo('#scene-1 .case-card', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 1.4);
+
+// Stamp Top Secret
+tl.call(sfx.stamp, null, 3.2);
+tl.to('#s1-stamp', { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2)' }, 3.2);
+
+// Scene 1 Out (speech ends at 8.77s)
+tl.to('#scene-1', { opacity: 0, y: -50, scale: 0.95, duration: 0.4, ease: 'power3.in' }, 8.80);
+blurTween(tl, '#scene-1', 8.80, 0, 20, 0.4);
+
+/* ── BABAK 2: SISTEM LIMS (09.20 – 24.00s) ── */
+tl.call(() => playVO(2), null, 9.30);
+tl.set('#scene-2', { opacity: 1 }, 9.20);
+say('#s2-hl', 9.40);
+tl.fromTo('#s2-diagram', { opacity: 0, y: 50, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'power3.out' }, 10.0);
+tl.fromTo('#scene-2 .case-card', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7 }, 10.8);
+
+// Data injection flicker
+tl.call(sfx.glitch, null, 15.0);
+tl.fromTo('#s2-diagram .server-blade:nth-child(2)', { backgroundColor: '#1b1625' }, { backgroundColor: 'rgba(232, 64, 47, 0.4)', duration: 0.2, yoyo: true, repeat: 3 }, 15.0);
+
+// Scene 2 Out (speech ends at 23.46s)
+tl.to('#scene-2', { opacity: 0, y: -50, scale: 0.95, duration: 0.4, ease: 'power3.in' }, 23.60);
+blurTween(tl, '#scene-2', 23.60, 0, 20, 0.4);
+
+/* ── BABAK 3: TIGA JENDERAL (24.00 – 37.60s) ── */
+tl.call(() => playVO(3), null, 24.10);
+tl.set('#scene-3', { opacity: 1 }, 24.00);
+say('#s3-hl', 24.25);
+tl.fromTo('#s3-cards .general-row', { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.15, ease: 'power3.out' }, 24.8);
+tl.fromTo('#s3-wipe-card', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 }, 25.8);
+
+// Big Stamp Tersangka
+tl.call(sfx.stamp, null, 28.5);
+tl.to('#s3-stamp', { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2.2)' }, 28.5);
+
+// Evidence Wiped Alert
+tl.call(sfx.glitch, null, 32.5);
+tl.fromTo('#s3-wipe-card', { borderColor: 'rgba(245,242,234,0.2)' }, { borderColor: '#e8402f', duration: 0.25, yoyo: true, repeat: 3 }, 32.5);
+
+// Scene 3 Out (speech ends at 37.04s)
+tl.to('#scene-3', { opacity: 0, y: -50, scale: 0.95, duration: 0.4, ease: 'power3.in' }, 37.20);
+blurTween(tl, '#scene-3', 37.20, 0, 20, 0.4);
+
+/* ── BABAK 4: GURITA TARGET (37.60 – 49.20s) ── */
+tl.call(() => playVO(4), null, 37.70);
+tl.set('#scene-4', { opacity: 1 }, 37.60);
+say('#s4-hl', 37.85);
+tl.fromTo('#s4-cluster .target-box', { opacity: 0, scale: 0.88, y: 25 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, stagger: 0.12, ease: 'back.out(1.4)' }, 38.4);
+tl.fromTo('#scene-4 .case-card', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 }, 39.4);
+
+// Scene 4 Out (speech ends at 48.67s)
+tl.to('#scene-4', { opacity: 0, y: -50, scale: 0.95, duration: 0.4, ease: 'power3.in' }, 48.80);
+blurTween(tl, '#scene-4', 48.80, 0, 20, 0.4);
+
+/* ── BABAK 5: DAMPAK KE RAKYAT (49.20 – 62.00s) ── */
+tl.call(() => playVO(5), null, 49.30);
+tl.set('#scene-5', { opacity: 1 }, 49.20);
+say('#s5-hl', 49.45);
+tl.fromTo('#s5-radar', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.8, ease: 'power3.out' }, 50.0);
+tl.fromTo('#s5-radar .citizen-pod', { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, stagger: 0.15, ease: 'back.out(1.4)' }, 50.5);
+tl.fromTo('#scene-5 .case-card', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 }, 51.2);
+
+// Radar alarm blips
+tl.call(() => sfx.beep(980), null, 54.0);
+tl.call(() => sfx.beep(980), null, 56.5);
+
+// Scene 5 Out (speech ends at 61.44s)
+tl.to('#scene-5', { opacity: 0, y: -50, scale: 0.95, duration: 0.4, ease: 'power3.in' }, 61.60);
+blurTween(tl, '#scene-5', 61.60, 0, 20, 0.4);
+
+/* ── BABAK 6: KESIMPULAN & TRANSPARANSI (62.00 – 75.00s) ── */
+tl.call(() => playVO(6), null, 62.10);
+tl.set('#scene-6', { opacity: 1 }, 62.00);
+say('#s6-hl', 62.25);
+tl.fromTo('#s6-lockup', { opacity: 0, y: 35, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'back.out(1.4)' }, 62.8);
+tl.fromTo('#scene-6 > div:last-child', { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.6 }, 64.0);
+
+tl.call(sfx.stamp, null, 67.0);
+
+// Reset Loop after VO6 finishes (speech ends at 72.97s, hold until 74.5s)
+tl.to('#scene-6', { opacity: 0, duration: 0.5 }, 74.50);
+tl.set({}, {}, 75.0);
+
+/* ─────────────────────────────────────────────────────────────
+   DEBUG SCRUBBER (?debug=1)
+───────────────────────────────────────────────────────────── */
+const isDebug = new URLSearchParams(location.search).has('debug');
+let btn, rstBtn, slider;
+if (isDebug) {
+  const panel = document.createElement('div');
+  panel.style.cssText = `
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(14, 12, 18, 0.95); border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 9999px; padding: 10px 24px; display: flex; align-items: center;
+    gap: 16px; z-index: 9999; backdrop-filter: blur(16px); color: #fff;
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+  `;
+  panel.innerHTML = `
+    <button id="db-play" style="background:#ffd400; border:none; color:#000; border-radius:9999px; padding:6px 14px; font-weight:800; cursor:pointer; font-size:13px;">Pause</button>
+    <button id="db-restart" style="background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.25); color:#fff; border-radius:9999px; padding:6px 14px; font-weight:600; cursor:pointer; font-size:13px;">Restart</button>
+    <input type="range" id="db-slider" min="0" max="75" step="0.05" value="0" style="width:340px; accent-color:#ffd400; cursor:ew-resize;">
+    <span id="db-time" style="font-size:13px; min-width:95px; color:#ffd400; font-weight:700;">00.0s / 75.0s</span>
+  `;
+  document.body.appendChild(panel);
+
+  btn = $('#db-play', panel);
+  rstBtn = $('#db-restart', panel);
+  slider = $('#db-slider', panel);
+
+  btn.onclick = () => {
+    if (tl.paused()) {
+      tl.play();
+      btn.textContent = 'Pause';
+      const t = tl.time();
+      if (t < 9.20) playVO(1, Math.max(0, t - 0.15));
+      else if (t < 24.00) playVO(2, Math.max(0, t - 9.30));
+      else if (t < 37.60) playVO(3, Math.max(0, t - 24.10));
+      else if (t < 49.20) playVO(4, Math.max(0, t - 37.70));
+      else if (t < 62.00) playVO(5, Math.max(0, t - 49.30));
+      else playVO(6, Math.max(0, t - 62.10));
+    } else {
+      tl.pause();
+      btn.textContent = 'Play';
+      Object.values(voClips).forEach(v => v.pause());
+    }
+  };
+  rstBtn.onclick = () => {
+    Object.values(voClips).forEach(v => { v.pause(); v.currentTime = 0; });
+    tl.restart();
+    btn.textContent = 'Pause';
+    playVO(1, 0);
+  };
+  slider.oninput = (e) => {
+    tl.pause();
+    if (btn) btn.textContent = 'Play';
+    Object.values(voClips).forEach(v => { v.pause(); v.currentTime = 0; });
+    tl.time(parseFloat(e.target.value));
+  };
+}
+
+// Global click to unlock AudioContext if suspended
+window.addEventListener('click', () => {
+  if (actx && actx.state === 'suspended') actx.resume();
+}, { once: true });
+
+// Keyboard shortcuts
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (btn) {
+      btn.click();
+    } else {
+      if (tl.paused()) {
+        tl.play();
+        const t = tl.time();
+        if (t < 9.20) playVO(1, Math.max(0, t - 0.15));
+        else if (t < 24.00) playVO(2, Math.max(0, t - 9.30));
+        else if (t < 37.60) playVO(3, Math.max(0, t - 24.10));
+        else if (t < 49.20) playVO(4, Math.max(0, t - 37.70));
+        else if (t < 62.00) playVO(5, Math.max(0, t - 49.30));
+        else playVO(6, Math.max(0, t - 62.10));
+      } else {
+        tl.pause();
+        Object.values(voClips).forEach(v => v.pause());
+      }
+    }
+  }
+  if (e.key === 'r' || e.key === 'R') {
+    if (rstBtn) rstBtn.click();
+    else {
+      Object.values(voClips).forEach(v => { v.pause(); v.currentTime = 0; });
+      tl.restart();
+      playVO(1, 0);
+    }
+  }
+  if (e.key === 'm' || e.key === 'M') {
+    $('#sound-btn').click();
+  }
+});
+</script>
+</body>
+</html>

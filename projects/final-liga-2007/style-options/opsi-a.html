@@ -1,0 +1,63 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Opsi A Split-flap</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Big+Shoulders+Display:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_base.css">
+<style>
+.board{position:absolute;inset:0;border-radius:28px;overflow:hidden;padding:30px 34px;
+  background:radial-gradient(70% 60% at 50% 0%,rgba(245,196,0,.10),transparent 70%),linear-gradient(180deg,#1c1e23,#0d0e11);
+  box-shadow:0 26px 54px -16px rgba(20,22,25,.5),inset 0 0 0 2px rgba(255,255,255,.04)}
+.row-top{display:flex;justify-content:space-between;align-items:center}
+.lbl{font:800 22px 'JetBrains Mono';letter-spacing:.14em;color:#F5C400}
+.clock{display:flex;gap:6px}
+.mini{width:52px;height:72px;border-radius:8px;background:linear-gradient(#2a2c32 50%,#202227 50%);font:900 58px 'Big Shoulders Display';color:#fff;display:flex;align-items:center;justify-content:center;position:relative}
+.mini::after,.flap::after{content:'';position:absolute;left:0;right:0;top:50%;height:3px;margin-top:-1px;background:#08090b}
+.mini.sep{width:22px;background:none;color:#F5C400}.mini.sep::after{display:none}
+.score{display:flex;align-items:center;justify-content:center;gap:26px;margin-top:34px}
+.team{display:flex;flex-direction:column;align-items:center;gap:12px}
+.chip{font:800 26px 'JetBrains Mono';letter-spacing:.1em;padding:8px 18px;border-radius:10px}
+.sfc{background:#F5C400;color:#141619}.psms{background:#1E7B3C;color:#fff}
+.flap{width:132px;height:184px;border-radius:14px;background:linear-gradient(#2a2c32 50%,#202227 50%);font:900 168px 'Big Shoulders Display';line-height:1;color:#F5C400;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 10px 0 #060708}
+.flap.g{color:#7FD99A}
+.flap .fall{position:absolute;left:0;right:0;top:0;height:50%;overflow:hidden;border-radius:14px 14px 0 0;background:#2f3138;transform-origin:bottom;transform:perspective(500px) rotateX(-58deg);filter:blur(.6px);box-shadow:0 -14px 22px rgba(0,0,0,.5)}
+.flap .fall span{position:absolute;left:0;right:0;top:8px;text-align:center;color:#F5C400;opacity:.8}
+.dash{font:900 90px 'Big Shoulders Display';color:#4a4d55}
+.scorer{position:absolute;left:34px;right:34px;bottom:28px;display:flex;align-items:center;gap:14px}
+.min{font:900 54px 'Big Shoulders Display';color:#141619;background:#F5C400;padding:2px 16px;border-radius:10px}
+.cells{display:flex;gap:4px}
+.cells i{font-style:normal;width:34px;height:52px;border-radius:6px;background:linear-gradient(#2a2c32 50%,#202227 50%);font:800 34px 'JetBrains Mono';color:#fff;display:flex;align-items:center;justify-content:center}
+.cells i.b{background:none}
+</style></head><body><div id="viewport"><div class="bg-grid"></div>
+  <div id="safe">
+    <header class="brand-header">
+      <div class="brand-logo-badge">
+        <div class="brand-monogram"><img src="../../_shared/brand/logo-youtube.svg"></div>
+        <div class="brand-text-col"><span class="brand-title">ChillDev</span><span class="brand-sub">@chilldevibe</span></div>
+      </div>
+      <div class="header-right-group">
+        <div class="scene-tag-pill">FINAL LIGA 2008</div>
+        <div class="brand-handle"><img src="../../_shared/brand/logo-instagram.svg"><span>@ramarvctr_</span></div>
+      </div>
+    </header>
+    <section id="top-card-container"><div class="board">
+      <div class="row-top"><span class="lbl">BABAK TAMBAHAN</span>
+        <div class="clock"><div class="mini">1</div><div class="mini">0</div><div class="mini">7</div><div class="mini sep">'</div></div></div>
+      <div class="score">
+        <div class="team"><div class="flap">2<div class="fall"><span>1</span></div></div><div class="chip sfc">SFC</div></div>
+        <div class="dash">–</div>
+        <div class="team"><div class="flap g">1</div><div class="chip psms">PSMS</div></div>
+      </div>
+      <div class="scorer"><div class="min">107'</div>
+        <div class="cells"><i>K</i><i class="b"></i><i>G</i><i>U</i><i>M</i><i>B</i><i>S</i></div></div>
+    </div></section>
+    <section id="headline-dock">
+      <h1 class="headline-main">Menit 107, Kayamba bikin <span class="highlight-orange">2–1</span></h1>
+      <div class="genz-caption-pill">Babak tambahan, papan skor muter lagi. Sriwijaya balik unggul, PSMS mulai panik.</div>
+    </section>
+  </div>
+  <section id="character-stage">
+    <div class="char-ground-shadow"></div>
+    <div id="character-rig">
+      <img class="pose" src="../../_shared/rama/rama_pose_point_up.png">
+      <img src="../../_shared/rama/mouth_v3_med.png">
+    </div>
+  </section>
+</div></body></html>

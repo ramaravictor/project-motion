@@ -1,0 +1,54 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Opsi A Tur UI Hidup</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4EFE8;--ink:#141619;--orange:#FF5500;--border:#DFD8CE}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif}
+#vp{position:absolute;inset:0;background:var(--bg);overflow:hidden}
+.bg-grid{position:absolute;inset:0;background-size:48px 48px;background-image:linear-gradient(to right,rgba(20,22,25,.035) 1px,transparent 1px),linear-gradient(to bottom,rgba(20,22,25,.035) 1px,transparent 1px)}
+#safe{position:absolute;top:180px;left:80px;width:870px;height:1290px;z-index:20}
+.hdr{position:absolute;top:0;left:0;right:0;height:50px;display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:14px}.logo .yt{width:56px;height:42px;filter:drop-shadow(0 6px 14px rgba(255,0,0,.22))}
+.logo .col{display:flex;flex-direction:column;line-height:1.08}.logo b{font-size:25px;font-weight:800;color:var(--ink);letter-spacing:-.03em}
+.logo span{font:700 15px 'JetBrains Mono';color:var(--orange)}
+.rg{display:flex;gap:10px;align-items:center}
+.tag{font:800 14px 'JetBrains Mono';color:#fff;background:var(--orange);padding:8px 14px;border-radius:99px;white-space:nowrap}
+.ig{font:700 17px 'JetBrains Mono';color:var(--ink);background:rgba(255,255,255,.9);border:1.5px solid var(--border);padding:7px 14px 7px 10px;border-radius:99px;display:flex;gap:8px;align-items:center}
+.ig img{width:24px;height:24px}
+#stage{position:absolute;top:90px;left:0;width:870px;height:520px}
+#dock{position:absolute;top:626px;left:0;width:870px;height:220px;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:0 6px}
+.h1{font-size:48px;font-weight:800;line-height:1.1;letter-spacing:-.035em;color:var(--ink)}.hl{color:var(--orange)}
+.cap{background:rgba(255,255,255,.86);border:1.5px solid var(--border);padding:12px 20px;border-radius:16px;font-size:20px;font-weight:600;line-height:1.35;color:#374151;align-self:flex-start}
+#chs{position:absolute;left:80px;width:870px;bottom:130px;height:740px;display:flex;justify-content:center;align-items:flex-end;z-index:10}
+#rig{position:relative;width:740px;height:740px;-webkit-mask-image:linear-gradient(to bottom,#000 78%,transparent 100%)}
+#rig img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#rig .pose{filter:drop-shadow(0 20px 45px rgba(0,0,0,.14))}
+.gs{position:absolute;bottom:20px;width:500px;height:44px;background:radial-gradient(ellipse at center,rgba(0,0,0,.18),transparent 70%)}
+.bw{position:absolute;inset:0;border-radius:26px;background:#fff;border:2px solid var(--border);overflow:hidden;box-shadow:0 26px 52px -16px rgba(20,22,25,.18)}
+.bar{height:58px;background:#F3F1EC;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 20px}
+.url{flex:1;height:36px;border-radius:18px;background:#fff;border:1.5px solid var(--border);font:600 16px 'JetBrains Mono';color:#4B5563;display:flex;align-items:center;padding:0 16px}
+.pg{position:absolute;left:24px;right:270px;top:82px;bottom:24px;font-family:'Manrope'}
+.srch{height:52px;border-radius:12px;border:2px solid #E5E7EB;font:600 18px 'Manrope';color:#9CA3AF;display:flex;align-items:center;padding:0 16px}
+.prods{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.pr{height:150px;border-radius:14px;background:linear-gradient(160deg,#FDE7D9,#FFF7F1);border:1.5px solid #F3E2D6;position:relative}
+.pr::after{content:attr(data-p);position:absolute;left:12px;bottom:10px;font:800 17px 'Manrope';color:#141619}
+.buy{margin-top:18px;height:56px;width:240px;border-radius:14px;background:#141619;color:#fff;font:800 19px 'Manrope';display:flex;align-items:center;justify-content:center}
+.bx{position:absolute;border:3px solid;border-radius:12px}.bx b{position:absolute;left:-3px;top:-30px;font:800 15px 'JetBrains Mono';color:#fff;padding:3px 9px;border-radius:7px 7px 7px 0}
+.log{position:absolute;right:20px;top:82px;width:236px;bottom:24px;background:#141619;border-radius:16px;padding:16px;font:600 15px/1.7 'JetBrains Mono';color:#9CA3AF}
+.log .on{color:#A7F3D0}.log .me{color:#FFB38A}
+.cur{position:absolute;left:256px;top:420px;width:46px;height:46px}
+</style></head><body><div id="vp"><div class="bg-grid"></div>
+<div id="safe">
+<header class="hdr"><div class="logo"><img class="yt" src="../../_shared/brand/logo-youtube.svg"><div class="col"><b>ChillDev</b><span>@chilldevibe</span></div></div>
+<div class="rg"><div class="tag">BROWSER-USE</div><div class="ig"><img src="../../_shared/brand/logo-instagram.svg"><span>@ramarvctr_</span></div></div></header>
+<section id="stage"><div class="bw"><div class="bar"><svg width="54" height="14"><circle cx="7" cy="7" r="6" fill="#FF5F57"/><circle cx="27" cy="7" r="6" fill="#FEBC2E"/><circle cx="47" cy="7" r="6" fill="#28C840"/></svg><div class="url">tokokompetitor.id/laptop</div></div>
+<div class="pg"><div class="srch">Cari laptop…</div><div class="prods"><div class="pr" data-p="Rp 8,9 jt"></div><div class="pr" data-p="Rp 11,2 jt"></div><div class="pr" data-p="Rp 7,4 jt"></div></div><div class="buy">Checkout</div></div>
+<div class="bx" style="left:20px;top:78px;width:556px;height:60px;border-color:#2563EB"><b style="background:#2563EB">[1] search</b></div>
+<div class="bx" style="left:20px;top:330px;width:250px;height:64px;border-color:#FF5500"><b style="background:#FF5500">[3] checkout</b></div>
+<div class="bx" style="left:396px;top:156px;width:182px;height:158px;border-color:#059669"><b style="background:#059669">[2] produk</b></div>
+<svg class="cur" viewBox="0 0 24 24"><path d="M3 2 L20 12 L12 13.5 L8 21 Z" fill="#141619" stroke="#fff" stroke-width="1.5"/></svg>
+<div class="log"><div class="me">task ▸ cek harga</div><div>▸ open url</div><div>▸ type [1]</div><div>▸ read [2] ×3</div><div class="on">▸ click [3] ✓</div></div></div></section>
+<section id="dock"><h1 class="h1">AI yang <span class="hl">ngeklik sendiri</span> di browser</h1><div class="cap">Lo kasih perintah bahasa manusia, browser-use yang buka tab, isi form, sampe checkout.</div></section>
+</div>
+<section id="chs"><div class="gs"></div><div id="rig"><img class="pose" src="../../_shared/rama/rama_pose_point_up.png"><img src="../../_shared/rama/mouth_v3_med.png"></div></section>
+</div></body></html>

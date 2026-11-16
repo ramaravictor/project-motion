@@ -1,0 +1,45 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Opsi C Waterfall N+1</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@500;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4EFE8;--ink:#141619;--orange:#FF5500;--border:#DFD8CE}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif}
+#vp{position:absolute;inset:0;background:var(--bg);overflow:hidden}
+.bg-grid{position:absolute;inset:0;background-size:48px 48px;background-image:linear-gradient(to right,rgba(20,22,25,.035) 1px,transparent 1px),linear-gradient(to bottom,rgba(20,22,25,.035) 1px,transparent 1px)}
+#safe{position:absolute;top:180px;left:80px;width:870px;height:1290px;z-index:20}
+.hdr{position:absolute;top:0;left:0;right:0;height:50px;display:flex;justify-content:space-between;align-items:center}
+.logo{display:flex;align-items:center;gap:14px}.logo .yt{width:56px;height:42px;filter:drop-shadow(0 6px 14px rgba(255,0,0,.22))}
+.logo .col{display:flex;flex-direction:column;line-height:1.08}.logo b{font-size:25px;font-weight:800;color:var(--ink);letter-spacing:-.03em}
+.logo span{font:700 15px 'JetBrains Mono';color:var(--orange)}
+.rg{display:flex;gap:10px;align-items:center}
+.tag{font:800 14px 'JetBrains Mono';color:#fff;background:var(--orange);padding:8px 14px;border-radius:99px;white-space:nowrap}
+.ig{font:700 17px 'JetBrains Mono';color:var(--ink);background:rgba(255,255,255,.9);border:1.5px solid var(--border);padding:7px 14px 7px 10px;border-radius:99px;display:flex;gap:8px;align-items:center}
+.ig img{width:24px;height:24px}
+#stage{position:absolute;top:90px;left:0;width:870px;height:520px}
+#dock{position:absolute;top:626px;left:0;width:870px;height:220px;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:0 6px}
+.h1{font-size:48px;font-weight:800;line-height:1.1;letter-spacing:-.035em;color:var(--ink)}.hl{color:var(--orange)}
+.cap{background:rgba(255,255,255,.86);border:1.5px solid var(--border);padding:12px 20px;border-radius:16px;font-size:20px;font-weight:600;line-height:1.35;color:#374151;align-self:flex-start}
+#chs{position:absolute;left:80px;width:870px;bottom:130px;height:740px;display:flex;justify-content:center;align-items:flex-end;z-index:10}
+#rig{position:relative;width:740px;height:740px;-webkit-mask-image:linear-gradient(to bottom,#000 78%,transparent 100%)}
+#rig img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#rig .pose{filter:drop-shadow(0 20px 45px rgba(0,0,0,.14))}
+.gs{position:absolute;bottom:20px;width:500px;height:44px;background:radial-gradient(ellipse at center,rgba(0,0,0,.18),transparent 70%)}
+.wf{position:absolute;inset:0;border-radius:24px;overflow:hidden;background:radial-gradient(60% 50% at 80% 0%,rgba(255,85,0,.22),transparent 70%),linear-gradient(180deg,#121417,#0B0C0E)}
+.code{position:absolute;left:30px;top:30px;width:380px;padding:18px 20px;border-radius:16px;background:#1A1D22;border:1.5px solid #2A2E35;font:500 18px/1.75 'DM Mono';color:#C9D1D9}
+.code .k{color:#FF7B72}.code .f{color:#D2A8FF}.code .hot{background:rgba(255,85,0,.22);outline:2px solid #FF5500;border-radius:6px;padding:1px 4px}
+.wfall{position:absolute;left:440px;top:34px;right:30px;bottom:110px}
+.wfall i{position:absolute;height:7px;border-radius:4px;background:#FF5500}
+.ax{position:absolute;left:440px;right:30px;top:420px;border-top:1.5px solid #2A2E35;font:500 14px 'DM Mono';color:#6B7280;display:flex;justify-content:space-between;padding-top:6px}
+.num{position:absolute;left:30px;bottom:28px;font:700 74px/1 'Space Grotesk';color:#fff;letter-spacing:-.04em}.num small{font:500 22px 'Space Grotesk';color:#9CA3AF;letter-spacing:0;margin-left:10px}
+</style></head><body><div id="vp"><div class="bg-grid"></div>
+<div id="safe">
+<header class="hdr"><div class="logo"><img class="yt" src="../../_shared/brand/logo-youtube.svg"><div class="col"><b>ChillDev</b><span>@chilldevibe</span></div></div>
+<div class="rg"><div class="tag">N+1 QUERY</div><div class="ig"><img src="../../_shared/brand/logo-instagram.svg"><span>@ramarvctr_</span></div></div></header>
+<section id="stage"><div class="wf"><div class="code"><span class="k">for</span> (<span class="k">const</span> p <span class="k">of</span> posts) {<br>&nbsp;&nbsp;<span class="hot">p.author = <span class="k">await</span> db.<span class="f">query</span>(…)</span><br>}</div>
+<div class="wfall"><i style="top:0px;left:0.0px;width:14px;opacity:0.45"></i><i style="top:7.2px;left:9.6px;width:21px;opacity:0.56"></i><i style="top:14.4px;left:19.2px;width:16px;opacity:0.67"></i><i style="top:21.6px;left:28.8px;width:23px;opacity:0.78"></i><i style="top:28.8px;left:38.4px;width:18px;opacity:0.89"></i><i style="top:36px;left:48.0px;width:25px;opacity:0.45"></i><i style="top:43.2px;left:57.6px;width:20px;opacity:0.56"></i><i style="top:50.4px;left:67.2px;width:15px;opacity:0.67"></i><i style="top:57.6px;left:76.8px;width:22px;opacity:0.78"></i><i style="top:64.8px;left:86.4px;width:17px;opacity:0.89"></i><i style="top:72px;left:96.0px;width:24px;opacity:0.45"></i><i style="top:79.2px;left:105.6px;width:19px;opacity:0.56"></i><i style="top:86.4px;left:115.2px;width:14px;opacity:0.67"></i><i style="top:93.60000000000001px;left:124.8px;width:21px;opacity:0.78"></i><i style="top:100.8px;left:134.4px;width:16px;opacity:0.89"></i><i style="top:108px;left:144.0px;width:23px;opacity:0.45"></i><i style="top:115.2px;left:153.6px;width:18px;opacity:0.56"></i><i style="top:122.4px;left:163.2px;width:25px;opacity:0.67"></i><i style="top:129.6px;left:172.8px;width:20px;opacity:0.78"></i><i style="top:136.8px;left:182.4px;width:15px;opacity:0.89"></i><i style="top:144px;left:192.0px;width:22px;opacity:0.45"></i><i style="top:151.20000000000002px;left:201.6px;width:17px;opacity:0.56"></i><i style="top:158.4px;left:211.2px;width:24px;opacity:0.67"></i><i style="top:165.6px;left:220.8px;width:19px;opacity:0.78"></i><i style="top:172.8px;left:230.4px;width:14px;opacity:0.89"></i><i style="top:180px;left:240.0px;width:21px;opacity:0.45"></i><i style="top:187.20000000000002px;left:249.6px;width:16px;opacity:0.56"></i><i style="top:194.4px;left:259.2px;width:23px;opacity:0.67"></i><i style="top:201.6px;left:268.8px;width:18px;opacity:0.78"></i><i style="top:208.8px;left:278.4px;width:25px;opacity:0.89"></i><i style="top:216px;left:288.0px;width:20px;opacity:0.45"></i><i style="top:223.20000000000002px;left:297.6px;width:15px;opacity:0.56"></i><i style="top:230.4px;left:307.2px;width:22px;opacity:0.67"></i><i style="top:237.6px;left:316.8px;width:17px;opacity:0.78"></i><i style="top:244.8px;left:326.4px;width:24px;opacity:0.89"></i><i style="top:252px;left:336.0px;width:19px;opacity:0.45"></i><i style="top:259.2px;left:345.6px;width:14px;opacity:0.56"></i><i style="top:266.40000000000003px;left:355.2px;width:21px;opacity:0.67"></i><i style="top:273.6px;left:364.8px;width:16px;opacity:0.78"></i><i style="top:280.8px;left:374.4px;width:23px;opacity:0.89"></i></div>
+<div class="ax"><span>0 ms</span><span>2.400</span><span>4.800 ms</span></div>
+<div class="num">×500<small>query buat 1 halaman</small></div></div></section>
+<section id="dock"><h1 class="h1"><span class="hl">await</span> di dalam for loop = 500 query</h1><div class="cap">Kode AI keliatan rapi, tapi tiap item ngetuk database sendiri-sendiri. Itu namanya N+1.</div></section>
+</div>
+<section id="chs"><div class="gs"></div><div id="rig"><img class="pose" src="../../_shared/rama/rama_pose_point_up.png"><img src="../../_shared/rama/mouth_v3_med.png"></div></section>
+</div></body></html>

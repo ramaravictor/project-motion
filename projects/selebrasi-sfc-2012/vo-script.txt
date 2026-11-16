@@ -1,0 +1,16 @@
+# Voice ElevenLabs: Putra - Smooth, Clear and Engaging (sama dengan video ChillDev sebelumnya)
+# Nada: santai, penasaran, kayak lagi ngegosip ke temen. Naik dikit di nomor satu.
+# Perkiraan ±48 detik · 6 paragraf = hook + 5 segmen · beri jeda ±0,6 detik antar paragraf
+# Simpan hasilnya sebagai projects/selebrasi-sfc-2012/vo.mp3
+
+Dulu Sriwijaya bukan cuma jago bikin gol. Selebrasinya? Kadang lebih niat dari golnya.
+
+Nomor lima. Gol masuk, dia nggak lari ke tribun. Malah ngacir ke bangku cadangan. Dan yang terjadi abis itu, dikeroyok satu tim.
+
+Nomor empat. Tepuk tangan dulu, santai banget, kayak udah tau bakal gol. Abis itu langsung pamer ke tribun. Pede parah.
+
+Nomor tiga. Meluncur di rumput, oke, masih biasa. Tapi tunggu, kenapa yang lain ikutan tiarap? Satu tim rebahan berjamaah.
+
+Nomor dua. Berdua kompak bikin gaya, kayak udah latihan di ruang ganti. Ujungnya? Numpuk rame-rame di rumput.
+
+Dan nomor satu. Bukan joget, bukan pelukan. Dia salto, di depan kamera siaran. Kamu berani nggak? Tulis di komentar.

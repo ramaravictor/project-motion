@@ -1,0 +1,3085 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1920, initial-scale=1.0">
+    <title>Antigravity — Neo-Brutalist Swiss Blueprint Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --paper: #F3EFE6;
+            --paper-card: #FFFFFF;
+            --paper-warm: #EAE3D5;
+            --ink: #111317;
+            --ink-muted: #4A4E58;
+            --vermilion: #FF3B1D;
+            --acid-mint: #00E599;
+            --cobalt: #1D4ED8;
+            --cyan: #38BDF8;
+            --sunny: #FFD026;
+            --blueprint-bg: #0A1022;
+            --blueprint-grid: rgba(56, 189, 248, 0.16);
+            --border-w: 4px;
+            --shadow-hard: 10px 10px 0px #111317;
+            --shadow-sm: 6px 6px 0px #111317;
+
+            --font-display: 'Syne', sans-serif;
+            --font-sans: 'Space Grotesk', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #07080A;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: var(--font-sans);
+        }
+
+        #viewport {
+            width: 1080px;
+            height: 1920px;
+            background: var(--paper);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 120px rgba(0,0,0,0.85);
+            transform-origin: center center;
+            color: var(--ink);
+        }
+
+        #viewport.blueprint-mode {
+            background: var(--blueprint-bg);
+            color: #F8FAFC;
+        }
+
+        /* Tactile Swiss Grid Background */
+        .swiss-grid-bg {
+            position: absolute;
+            inset: 0;
+            background-size: 60px 60px;
+            background-image:
+                linear-gradient(to right, rgba(17, 19, 23, 0.065) 1.5px, transparent 1.5px),
+                linear-gradient(to bottom, rgba(17, 19, 23, 0.065) 1.5px, transparent 1.5px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #viewport.blueprint-mode .swiss-grid-bg {
+            background-image:
+                linear-gradient(to right, var(--blueprint-grid) 1.5px, transparent 1.5px),
+                linear-gradient(to bottom, var(--blueprint-grid) 1.5px, transparent 1.5px);
+        }
+
+        /* Registration Crosshairs */
+        .reg-mark {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            z-index: 4;
+            pointer-events: none;
+        }
+        .reg-mark::before, .reg-mark::after {
+            content: '';
+            position: absolute;
+            background: currentColor;
+            opacity: 0.45;
+        }
+        .reg-mark::before { top: 11px; left: 0; width: 24px; height: 2px; }
+        .reg-mark::after { left: 11px; top: 0; width: 2px; height: 24px; }
+        .reg-tl { top: 165px; left: 36px; }
+        .reg-tr { top: 165px; right: 108px; }
+        .reg-bl { bottom: 385px; left: 36px; }
+        .reg-br { bottom: 385px; right: 108px; }
+
+        /* Giant Kinetic Background Watermark */
+        #bg-ticker {
+            position: absolute;
+            top: 760px;
+            left: -200px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 230px;
+            line-height: 0.85;
+            letter-spacing: -0.04em;
+            color: transparent;
+            -webkit-text-stroke: 2.5px rgba(17, 19, 23, 0.055);
+            white-space: nowrap;
+            z-index: 2;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+        #viewport.blueprint-mode #bg-ticker {
+            -webkit-text-stroke: 2.5px rgba(56, 189, 248, 0.10);
+        }
+
+        /* Three.js Canvas Layer */
+        #three-canvas {
+            position: absolute;
+            inset: 0;
+            width: 1080px;
+            height: 1920px;
+            z-index: 6;
+            pointer-events: none;
+        }
+
+        /* Safe Area Editorial Container */
+        #safe-stage {
+            position: absolute;
+            top: 190px;
+            bottom: 400px;
+            left: 72px;
+            right: 144px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        /* Editorial Top Spec Bar */
+        .spec-header {
+            display: flex;
+            align-items: stretch;
+            border: var(--border-w) solid var(--ink);
+            background: var(--paper-card);
+            box-shadow: var(--shadow-sm);
+            height: 68px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        #viewport.blueprint-mode .spec-header {
+            background: #0F172A;
+            border-color: var(--cyan);
+            box-shadow: 6px 6px 0px rgba(56, 189, 248, 0.35);
+            color: #F8FAFC;
+        }
+
+        .spec-index {
+            background: var(--vermilion);
+            color: #FFFFFF;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 21px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: var(--border-w) solid var(--ink);
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        #viewport.blueprint-mode .spec-index {
+            background: var(--cyan);
+            color: #0A1022;
+            border-right-color: var(--cyan);
+        }
+
+        .spec-title {
+            flex: 1;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 18px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .spec-clock {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 20px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            background: var(--sunny);
+            color: var(--ink);
+            border-left: var(--border-w) solid var(--ink);
+        }
+
+        #viewport.blueprint-mode .spec-clock {
+            background: var(--acid-mint);
+            color: #0A1022;
+            border-left-color: var(--cyan);
+        }
+
+        /* Editorial Headline Strip — Compact 2-Line Guarantee */
+        .headline-block {
+            margin-top: 14px;
+            min-height: 126px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .headline-line {
+            font-family: var(--font-sans);
+            font-weight: 700;
+            font-size: 42px;
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+
+        #viewport.blueprint-mode .headline-line {
+            color: #FFFFFF;
+        }
+
+        .pill-accent {
+            display: inline-block;
+            padding: 2px 14px 4px;
+            background: var(--vermilion);
+            color: #FFFFFF;
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0px var(--ink);
+            transform: rotate(-1deg);
+        }
+
+        .pill-mint {
+            display: inline-block;
+            padding: 2px 14px 4px;
+            background: var(--acid-mint);
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0px var(--ink);
+            transform: rotate(1deg);
+        }
+
+        #viewport.blueprint-mode .pill-mint {
+            border-color: var(--cyan);
+            box-shadow: 4px 4px 0px rgba(56, 189, 248, 0.45);
+        }
+
+        .pill-sunny {
+            display: inline-block;
+            padding: 2px 14px 4px;
+            background: var(--sunny);
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0px var(--ink);
+        }
+
+        /* Main Stage Arena */
+        #arena {
+            position: relative;
+            width: 100%;
+            height: 920px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        .scene-layer {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Brutalist Cards */
+        .brut-card {
+            background: var(--paper-card);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brut-bar {
+            height: 46px;
+            background: var(--ink);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .brut-dots {
+            display: flex;
+            gap: 8px;
+        }
+        .brut-dot {
+            width: 13px;
+            height: 13px;
+            border: 2px solid #FFFFFF;
+        }
+        .brut-dot.r { background: var(--vermilion); }
+        .brut-dot.y { background: var(--sunny); }
+        .brut-dot.g { background: var(--acid-mint); }
+
+        /* =================================================================
+           SCENE 1: APLIKASI EDITING BERAT (0.0s - 6.28s)
+           ================================================================= */
+        .heavy-nle-card {
+            width: 100%;
+            height: 610px;
+            display: flex;
+            flex-direction: column;
+            background: #1A1D24;
+            color: #E2E8F0;
+        }
+
+        .heavy-bar {
+            background: #7F1D1D;
+            border-bottom: 4px solid var(--ink);
+        }
+
+        .heavy-workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 240px 1fr 220px;
+            grid-template-rows: 270px 1fr;
+            gap: 8px;
+            padding: 12px;
+            background: #111318;
+            position: relative;
+        }
+
+        .heavy-panel {
+            background: #1E222B;
+            border: 2px solid #384152;
+            padding: 10px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow: hidden;
+        }
+
+        .heavy-panel-title {
+            color: #94A3B8;
+            font-weight: 700;
+            font-size: 11px;
+            border-bottom: 1px solid #384152;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .param-row {
+            display: flex;
+            justify-content: space-between;
+            color: #CBD5E1;
+            font-size: 11px;
+            background: #14171F;
+            padding: 4px 6px;
+            border: 1px solid #2D3545;
+        }
+
+        .param-row span:last-child { color: var(--sunny); }
+
+        .heavy-viewport-box {
+            background: #090B0E;
+            border: 2px solid var(--vermilion);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            gap: 10px;
+        }
+
+        .beachball {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            border: 4px solid #FFFFFF;
+            background: conic-gradient(
+                #FF3B1D 0deg 60deg,
+                #FFD026 60deg 120deg,
+                #00E599 120deg 180deg,
+                #38BDF8 180deg 240deg,
+                #A855F7 240deg 300deg,
+                #EC4899 300deg 360deg
+            );
+            box-shadow: 0 0 24px rgba(255, 59, 29, 0.7);
+        }
+
+        .freeze-badge {
+            background: var(--vermilion);
+            color: #FFF;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 14px;
+            padding: 4px 10px;
+            border: 2px solid #FFF;
+        }
+
+        .heavy-timeline-complex {
+            grid-column: 1 / -1;
+            background: #161920;
+            border: 2px solid #384152;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+        }
+
+        .dense-track {
+            height: 24px;
+            background: #0E1015;
+            border: 1px solid #2D3545;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            gap: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dense-track-lbl {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: #94A3B8;
+            width: 72px;
+            flex-shrink: 0;
+        }
+
+        .kf-diamond {
+            width: 8px;
+            height: 8px;
+            background: var(--sunny);
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            margin-right: 6px;
+        }
+        .kf-diamond.red { background: var(--vermilion); }
+
+        .crash-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 580px;
+            background: var(--paper-card);
+            color: var(--ink);
+            border: 5px solid var(--ink);
+            box-shadow: 14px 14px 0px var(--vermilion);
+            z-index: 20;
+        }
+
+        .crash-header {
+            background: var(--vermilion);
+            color: #FFF;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 18px;
+            padding: 10px 16px;
+            border-bottom: 4px solid var(--ink);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .crash-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .crash-title {
+            font-family: var(--font-sans);
+            font-weight: 700;
+            font-size: 26px;
+            color: var(--ink);
+        }
+
+        .crash-desc {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            color: var(--ink-muted);
+            line-height: 1.4;
+        }
+
+        .crash-bar-wrap {
+            height: 22px;
+            background: #E2E8F0;
+            border: 3px solid var(--ink);
+        }
+        .crash-bar-fill {
+            width: 99%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                -45deg,
+                var(--vermilion),
+                var(--vermilion) 12px,
+                var(--sunny) 12px,
+                var(--sunny) 24px
+            );
+        }
+
+        .reject-stamp {
+            position: absolute;
+            top: 42%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-8deg) scale(0);
+            background: var(--sunny);
+            color: var(--ink);
+            border: 6px solid var(--ink);
+            box-shadow: 12px 12px 0px var(--ink);
+            padding: 14px 32px;
+            font-family: var(--font-sans);
+            font-weight: 700;
+            font-size: 36px;
+            white-space: nowrap;
+            z-index: 30;
+        }
+
+        .overload-telemetry {
+            height: 275px;
+            background: var(--paper-card);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ov-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--ink);
+            padding-bottom: 10px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 17px;
+        }
+
+        .ov-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .ov-box {
+            border: 3px solid var(--ink);
+            background: #FEE2E2;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .ov-lbl {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink-muted);
+        }
+
+        .ov-val {
+            font-family: var(--font-sans);
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--vermilion);
+            line-height: 1;
+        }
+
+        .ov-sub {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        /* =================================================================
+           SCENE 2A: PROMPT DI ANTIGRAVITY IDE (6.28s - 10.44s)
+           Full 16:10 uncropped Antigravity IDE + Live Prompt Callout
+           ================================================================= */
+        .ag-ide-showcase {
+            width: 100%;
+            height: 544px; /* Exact 16:10 for 864px width (864 * 645 / 1024 = 544px) */
+            background: #141414;
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ag-ide-full-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Highlight Box over the Bottom-Left Prompt Input inside Antigravity IDE image */
+        .ag-prompt-highlight {
+            position: absolute;
+            left: 8px;
+            bottom: 22px;
+            width: 362px;
+            height: 92px;
+            border: 4px solid var(--acid-mint);
+            background: rgba(0, 229, 153, 0.12);
+            box-shadow: 0 0 0 4px var(--ink), 8px 8px 0px var(--vermilion);
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        .ag-prompt-tag {
+            position: absolute;
+            top: -34px;
+            left: -4px;
+            background: var(--acid-mint);
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 13px;
+            padding: 3px 10px;
+            white-space: nowrap;
+        }
+
+        /* Active Chat Bubble Overlay inside Left Panel of Antigravity IDE */
+        .ag-chat-overlay {
+            position: absolute;
+            left: 22px;
+            top: 62px;
+            width: 334px;
+            background: #1E222A;
+            border: 3px solid var(--sunny);
+            box-shadow: 6px 6px 0px #000;
+            padding: 14px 16px;
+            color: #F8FAFC;
+            z-index: 6;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ag-chat-badge {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--sunny);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .ag-chat-msg {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.4;
+            color: #E2E8F0;
+        }
+
+        /* Zoomed Prompt Bar Card Below IDE */
+        .ag-prompt-zoom-card {
+            width: 100%;
+            height: 345px;
+            background: var(--paper-card);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            padding: 22px 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cmd-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--ink);
+            padding-bottom: 12px;
+        }
+
+        .cmd-tag {
+            background: var(--ink);
+            color: var(--acid-mint);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 16px;
+            padding: 6px 14px;
+        }
+
+        .cmd-send-btn {
+            background: var(--vermilion);
+            color: #FFFFFF;
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0px var(--ink);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 16px;
+            padding: 6px 16px;
+        }
+        .cmd-send-btn.sent {
+            background: var(--acid-mint);
+            color: var(--ink);
+        }
+
+        .cmd-input-box {
+            background: #181B20;
+            border: 4px solid var(--ink);
+            padding: 18px 22px;
+            font-family: var(--font-mono);
+            font-size: 23px;
+            font-weight: 600;
+            color: #F8FAFC;
+            min-height: 112px;
+            display: flex;
+            align-items: center;
+            line-height: 1.38;
+        }
+
+        .cursor-block {
+            display: inline-block;
+            width: 13px;
+            height: 26px;
+            background: var(--acid-mint);
+            margin-left: 6px;
+        }
+
+        .cmd-footer-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ink-muted);
+        }
+
+        .model-pill {
+            background: var(--sunny);
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            padding: 4px 12px;
+            font-weight: 700;
+        }
+
+        /* =================================================================
+           SCENE 2B: FRAME KHUSUS PEMBUATAN HTML (10.44s - 13.80s)
+           ================================================================= */
+        .code-editor-card {
+            width: 100%;
+            height: 430px;
+            display: flex;
+            flex-direction: column;
+            background: #12151C;
+            color: #F8FAFC;
+        }
+
+        .editor-body {
+            flex: 1;
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 20px;
+            line-height: 1.58;
+            display: flex;
+            gap: 20px;
+        }
+
+        .line-nums {
+            color: #475569;
+            text-align: right;
+            user-select: none;
+            font-weight: 600;
+        }
+
+        .code-content {
+            flex: 1;
+            color: #E2E8F0;
+            font-weight: 600;
+        }
+        .tok-tag { color: #FF3B1D; font-weight: 700; }
+        .tok-attr { color: #FFD026; }
+        .tok-str { color: #00E599; }
+        .tok-kw { color: #38BDF8; font-weight: 700; }
+
+        .html-preview-card {
+            width: 100%;
+            height: 460px;
+            background: var(--paper-card);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .wireframe-grid {
+            flex: 1;
+            margin-top: 14px;
+            border: 3px dashed var(--ink);
+            background: var(--paper-warm);
+            padding: 18px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 74px 1fr 78px;
+            gap: 14px;
+        }
+
+        .wf-block {
+            background: var(--paper-card);
+            border: 3px solid var(--ink);
+            box-shadow: 5px 5px 0px var(--ink);
+            padding: 12px 16px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .wf-block.span-2 { grid-column: 1 / -1; }
+        .wf-block.hero-slot { background: var(--sunny); }
+        .wf-block.canvas-slot { background: var(--acid-mint); }
+        .wf-block.footer-slot { background: #E0F2FE; }
+
+        /* =================================================================
+           SCENE 2C: FRAME KHUSUS ANIMASI GSAP (13.80s - 17.00s)
+           ================================================================= */
+        .gsap-motion-card {
+            width: 100%;
+            height: 460px;
+            background: var(--paper-card);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .gsap-stage-split {
+            flex: 1;
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 18px;
+        }
+
+        .bezier-box {
+            background: #12151C;
+            border: 3px solid var(--ink);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #FFF;
+            font-family: var(--font-mono);
+            font-size: 14px;
+        }
+
+        .kinetic-lanes {
+            background: var(--paper-warm);
+            border: 3px solid var(--ink);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .k-lane {
+            height: 68px;
+            background: var(--paper-card);
+            border: 3px solid var(--ink);
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .k-puck {
+            padding: 8px 18px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 16px;
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0px var(--ink);
+            white-space: nowrap;
+        }
+        .k-puck.p1 { background: var(--vermilion); color: #FFF; }
+        .k-puck.p2 { background: var(--acid-mint); color: var(--ink); }
+        .k-puck.p3 { background: var(--sunny); color: var(--ink); }
+
+        /* =================================================================
+           SCENE 2D: FRAME KHUSUS ELEMEN 3D THREE.JS (17.00s - 20.20s)
+           ================================================================= */
+        .three-builder-hud {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .three-code-top {
+            width: 100%;
+            height: 250px;
+            background: #12151C;
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            color: #F8FAFC;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .three-viewport-window {
+            width: 100%;
+            height: 640px;
+            background: rgba(15, 23, 42, 0.25);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .mesh-tags-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .mesh-pill {
+            background: var(--paper-card);
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0px var(--ink);
+            padding: 6px 14px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .mesh-pill.on {
+            background: var(--acid-mint);
+        }
+
+        /* =================================================================
+           SCENE 3: STORYBOARD + LOGIKA 3D + GERAK KAMERA (20.20s - 28.83s)
+           ================================================================= */
+        .stage-3d-hud {
+            width: 100%;
+            height: 100%;
+            border: 4px solid var(--cyan);
+            background: rgba(10, 16, 34, 0.22);
+            box-shadow: 10px 10px 0px rgba(56, 189, 248, 0.28);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .storyboard-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            z-index: 5;
+        }
+
+        .sb-card {
+            background: rgba(15, 23, 42, 0.94);
+            border: 3px solid var(--cyan);
+            padding: 12px 14px;
+            font-family: var(--font-mono);
+            color: #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .sb-card.active {
+            background: var(--acid-mint);
+            color: #0A1022;
+            border-color: #FFFFFF;
+            box-shadow: 6px 6px 0px var(--cyan);
+        }
+
+        .sb-num { font-size: 13px; font-weight: 700; opacity: 0.85; }
+        .sb-title { font-family: var(--font-sans); font-size: 18px; font-weight: 700; text-transform: uppercase; }
+        .sb-sub { font-size: 12px; font-weight: 600; }
+
+        .cam-timing-panel {
+            background: rgba(9, 13, 26, 0.95);
+            border: 3px solid var(--acid-mint);
+            box-shadow: 8px 8px 0px rgba(0, 229, 153, 0.28);
+            padding: 16px 20px;
+            display: grid;
+            grid-template-columns: 1fr 250px;
+            gap: 18px;
+            z-index: 5;
+        }
+
+        .cam-curve-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .cam-curve-header {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--acid-mint);
+            border-bottom: 2px solid rgba(0, 229, 153, 0.35);
+            padding-bottom: 6px;
+        }
+
+        .cam-telem-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: #E2E8F0;
+        }
+
+        .cam-telem-item {
+            background: #111827;
+            border: 2px solid var(--cyan);
+            padding: 8px 10px;
+        }
+        .cam-telem-item span { display: block; font-size: 11px; color: #94A3B8; }
+        .cam-telem-item strong { color: var(--sunny); font-size: 17px; }
+
+        .pip-viewfinder {
+            background: #050811;
+            border: 3px solid var(--sunny);
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+        }
+
+        .pip-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--sunny);
+        }
+
+        .pip-reticle {
+            height: 62px;
+            border: 1px dashed rgba(255, 208, 38, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--acid-mint);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .pip-bot {
+            font-size: 11px;
+            color: #E2E8F0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* =================================================================
+           SCENE 4: ELEVENLABS STUDIO DECK (28.83s - 34.88s)
+           ================================================================= */
+        .studio-photo-card {
+            width: 100%;
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ide-viewport {
+            position: relative;
+            flex: 1;
+            background: #0D1017;
+            overflow: hidden;
+        }
+
+        .ide-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: left top;
+        }
+
+        .sticker-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--acid-mint);
+            color: var(--ink);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-sm);
+            padding: 6px 14px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 16px;
+            transform: rotate(-2deg);
+            z-index: 5;
+        }
+
+        .studio-deck {
+            width: 100%;
+            background: var(--ink);
+            color: #FFFFFF;
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            padding: 22px 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .deck-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .deck-voice-id {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .voice-avatar {
+            width: 56px;
+            height: 56px;
+            background: var(--vermilion);
+            border: 3px solid #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 24px;
+            color: #FFF;
+        }
+
+        .voice-meta h4 {
+            font-family: var(--font-sans);
+            font-size: 23px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+
+        .voice-meta p {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--sunny);
+        }
+
+        .rec-indicator {
+            background: var(--acid-mint);
+            color: var(--ink);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 15px;
+            padding: 6px 14px;
+            border: 2px solid #FFF;
+        }
+
+        .vu-meter-strip {
+            height: 105px;
+            background: #1B1F27;
+            border: 3px solid #FFFFFF;
+            padding: 14px 18px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .vu-bar {
+            flex: 1;
+            background: var(--acid-mint);
+            height: 20%;
+            min-height: 8px;
+            border-top: 3px solid #FFFFFF;
+        }
+        .vu-bar.hot { background: var(--vermilion); }
+        .vu-bar.warm { background: var(--sunny); }
+
+        .deck-script {
+            background: #1B1F27;
+            border-left: 6px solid var(--sunny);
+            padding: 12px 18px;
+            font-family: var(--font-mono);
+            font-size: 18px;
+            color: #F3EFE6;
+            line-height: 1.4;
+        }
+
+        /* =================================================================
+           SCENE 5: WORD-PAUSE LOCK TO TIMELINE + TERMINAL RENDER (34.88s - 51.77s)
+           ================================================================= */
+        .broadcast-frame {
+            width: 100%;
+            height: 390px;
+            background: rgba(17, 19, 23, 0.20);
+            border: 10px solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 16px;
+        }
+
+        .bcast-overlay-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 4;
+        }
+
+        .bcast-tag {
+            background: var(--vermilion);
+            color: #FFF;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 15px;
+            padding: 6px 14px;
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0px var(--ink);
+        }
+
+        .bcast-tc {
+            background: var(--paper-card);
+            color: var(--ink);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 17px;
+            padding: 6px 14px;
+            border: 3px solid var(--ink);
+            box-shadow: 4px 4px 0px var(--ink);
+        }
+
+        .bcast-caption-Preview {
+            align-self: center;
+            background: var(--sunny);
+            color: var(--ink);
+            border: 4px solid var(--ink);
+            box-shadow: 6px 6px 0px var(--ink);
+            padding: 8px 22px;
+            font-family: var(--font-sans);
+            font-weight: 700;
+            font-size: 22px;
+            text-transform: uppercase;
+            z-index: 4;
+        }
+
+        .nle-rack {
+            width: 100%;
+            height: 500px;
+            background: var(--paper-card);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .nle-ruler {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink-muted);
+            border-bottom: 3px solid var(--ink);
+            padding-bottom: 6px;
+        }
+
+        .nle-tracks {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        .nle-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            height: 52px;
+        }
+
+        .nle-lbl {
+            width: 110px;
+            height: 100%;
+            background: var(--ink);
+            color: #FFF;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nle-lane {
+            flex: 1;
+            height: 100%;
+            background: var(--paper-warm);
+            border: 3px solid var(--ink);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nle-clip {
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            border: 3px solid var(--ink);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .clip-vo { left: 2%; width: 94%; background: var(--vermilion); color: #FFFFFF; }
+        .clip-fx { left: 8%; width: 86%; background: var(--sunny); color: var(--ink); }
+        .clip-v1 { left: 14%; width: 78%; background: var(--acid-mint); color: var(--ink); }
+
+        #nle-playhead {
+            position: absolute;
+            top: -10px;
+            bottom: -8px;
+            left: 122px;
+            width: 5px;
+            background: var(--vermilion);
+            z-index: 15;
+        }
+        #nle-playhead::before {
+            content: '▼';
+            position: absolute;
+            top: -18px;
+            left: -9px;
+            color: var(--vermilion);
+            font-size: 22px;
+        }
+
+        .term-render-box {
+            background: #111317;
+            color: #F8FAFC;
+            border: 3px solid var(--ink);
+            padding: 14px 18px;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .term-head {
+            display: flex;
+            justify-content: space-between;
+            color: var(--acid-mint);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .term-progress-bar {
+            height: 22px;
+            background: #262930;
+            border: 2px solid #FFFFFF;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .term-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--acid-mint);
+        }
+
+        .term-badges {
+            display: flex;
+            gap: 10px;
+        }
+
+        .term-badge {
+            flex: 1;
+            background: #1E222A;
+            border: 2px solid #4A4E58;
+            color: #94A3B8;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .term-badge.lit {
+            background: var(--sunny);
+            color: var(--ink);
+            border-color: #FFFFFF;
+        }
+
+        .render-stamp {
+            position: absolute;
+            right: 24px;
+            top: 18px;
+            background: var(--acid-mint);
+            color: var(--ink);
+            border: 4px solid var(--ink);
+            box-shadow: 6px 6px 0px var(--ink);
+            padding: 8px 18px;
+            font-family: var(--font-sans);
+            font-weight: 700;
+            font-size: 22px;
+            transform: rotate(-3deg) scale(0);
+            z-index: 25;
+        }
+
+        /* =================================================================
+           SCENE 6: ALL-IN-ONE SHOWCASE + UPGRADE CTA (51.77s - 60.92s)
+           ================================================================= */
+        .bento-showcase {
+            display: grid;
+            grid-template-columns: 370px 1fr;
+            gap: 22px;
+            height: 100%;
+        }
+
+        .phone-bento {
+            background: rgba(17, 19, 23, 0.20);
+            border: 10px solid var(--ink);
+            border-radius: 36px;
+            box-shadow: var(--shadow-hard);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .phone-pill-top {
+            align-self: center;
+            background: var(--ink);
+            color: var(--acid-mint);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 99px;
+            border: 2px solid #FFF;
+        }
+
+        .phone-caption-card {
+            background: var(--paper-card);
+            border: 4px solid var(--ink);
+            box-shadow: 6px 6px 0px var(--ink);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .phone-caption-card strong {
+            font-family: var(--font-sans);
+            font-size: 22px;
+            font-weight: 700;
+            display: block;
+            color: var(--ink);
+        }
+
+        .phone-caption-card span {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--vermilion);
+        }
+
+        .metrics-stack {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .metric-card {
+            flex: 1;
+            background: var(--paper-card);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .metric-card.mint { background: var(--acid-mint); }
+        .metric-card.sunny { background: var(--sunny); }
+        .metric-card.vermilion { background: var(--vermilion); color: #FFFFFF; }
+
+        .metric-tag {
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+
+        .metric-val {
+            font-family: var(--font-sans);
+            font-size: 52px;
+            font-weight: 700;
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+        }
+
+        .metric-sub {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        /* Stage Footer: Live Transcript Pill + Robot Mascot */
+        .stage-footer {
+            height: 125px;
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-shrink: 0;
+        }
+
+        .vo-caption-pill {
+            flex: 1;
+            min-width: 0;
+            height: 108px;
+            background: var(--paper-card);
+            border: var(--border-w) solid var(--ink);
+            box-shadow: var(--shadow-sm);
+            padding: 12px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        #viewport.blueprint-mode .vo-caption-pill {
+            background: #0F172A;
+            border-color: var(--cyan);
+            box-shadow: 6px 6px 0px rgba(56, 189, 248, 0.35);
+            color: #F8FAFC;
+        }
+
+        .vo-pill-header {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--vermilion);
+            letter-spacing: 0.05em;
+        }
+
+        #viewport.blueprint-mode .vo-pill-header {
+            color: var(--acid-mint);
+        }
+
+        .vo-pill-text {
+            font-family: var(--font-sans);
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 1.24;
+            letter-spacing: -0.01em;
+            white-space: normal;
+            overflow: hidden;
+        }
+
+        #mascot-robot {
+            width: 118px;
+            height: 118px;
+            flex-shrink: 0;
+            filter: drop-shadow(6px 6px 0px #111317);
+        }
+
+        /* Editorial Cut Flash */
+        #cut-wipe {
+            position: absolute;
+            inset: 0;
+            background: var(--vermilion);
+            z-index: 40;
+            transform: scaleY(0);
+            transform-origin: bottom center;
+            pointer-events: none;
+        }
+
+        /* Interactive Control Bar */
+        #playback-bar {
+            position: absolute;
+            bottom: 36px;
+            left: 72px;
+            right: 144px;
+            height: 64px;
+            background: var(--ink);
+            color: #FFFFFF;
+            border: 4px solid var(--ink);
+            box-shadow: 6px 6px 0px var(--vermilion);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 16px;
+            z-index: 100;
+        }
+
+        .pb-btn {
+            background: var(--sunny);
+            color: var(--ink);
+            border: 3px solid var(--ink);
+            padding: 8px 18px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .pb-scrubber {
+            flex: 1;
+            height: 14px;
+            background: #2E3440;
+            border: 2px solid #FFF;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .pb-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--acid-mint);
+        }
+
+        .pb-time {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            min-width: 135px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div id="viewport">
+    <div class="swiss-grid-bg"></div>
+    <div class="reg-mark reg-tl"></div>
+    <div class="reg-mark reg-tr"></div>
+    <div class="reg-mark reg-bl"></div>
+    <div class="reg-mark reg-br"></div>
+
+    <!-- Giant Kinetic Background Watermark -->
+    <div id="bg-ticker">ANTIGRAVITY IDE // HTML5 + GSAP + THREE.JS // ELEVENLABS //</div>
+
+    <!-- 3D WebGL Layer -->
+    <canvas id="three-canvas"></canvas>
+
+    <!-- Editorial Safe Area Stage -->
+    <div id="safe-stage">
+        <!-- Top Spec Bar -->
+        <div class="spec-header">
+            <div class="spec-index" id="spec-num">SCENE 01</div>
+            <div class="spec-title" id="spec-label">LEGACY NLE // OVERLOAD WARNING</div>
+            <div class="spec-clock" id="spec-tc">00:00.0</div>
+        </div>
+
+        <!-- Kinetic Headline Block (Strictly 2 Crisp Lines) -->
+        <div class="headline-block">
+            <div class="headline-line" id="hl-line-1">STOP PUSING <span class="pill-accent">SOFTWARE BERAT</span></div>
+            <div class="headline-line" id="hl-line-2">NGEDIT MANUAL <span class="pill-sunny">BERJAM-JAM!</span></div>
+        </div>
+
+        <!-- Dynamic Scene Arena -->
+        <div id="arena">
+
+            <!-- ==========================================================
+                 SCENE 1: APLIKASI EDITING BERAT (0.0s - 6.28s)
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-1">
+                <div class="brut-card heavy-nle-card" id="s1-heavy-ui">
+                    <div class="brut-bar heavy-bar">
+                        <div class="brut-dots">
+                            <span class="brut-dot r"></span>
+                            <span class="brut-dot y"></span>
+                            <span class="brut-dot g"></span>
+                        </div>
+                        <span>HEAVY_EFFECTS_PRO_2026.EXE (NOT RESPONDING)</span>
+                        <span>[FREEZE]</span>
+                    </div>
+                    <div class="heavy-workspace">
+                        <div class="heavy-panel">
+                            <div class="heavy-panel-title"><span>FX CONTROLS (142)</span><span>[!]</span></div>
+                            <div class="param-row"><span>Raytrace_3D_Samples</span><span>512</span></div>
+                            <div class="param-row"><span>Motion_Blur_Subframes</span><span>64x</span></div>
+                            <div class="param-row"><span>Particle_Physics_Bake</span><span>ERR</span></div>
+                            <div class="param-row"><span>Camera_DOF_Iris_Blades</span><span>12</span></div>
+                            <div class="param-row"><span>Global_Illumination</span><span>SLOW</span></div>
+                            <div class="param-row"><span>Shadow_Map_Resolution</span><span>8192</span></div>
+                        </div>
+
+                        <div class="heavy-viewport-box">
+                            <div class="beachball" id="s1-spinner"></div>
+                            <div class="freeze-badge">RENDER PREVIEW STALLED (0.4 FPS)</div>
+                            <div style="font-family: var(--font-mono); font-size: 12px; color: #94A3B8;">
+                                CACHING FRAME 14 / 3,650...
+                            </div>
+                        </div>
+
+                        <div class="heavy-panel">
+                            <div class="heavy-panel-title"><span>RAM CACHE</span><span>FULL</span></div>
+                            <div class="param-row"><span>Disk_Scratch</span><span>0 MB FREE</span></div>
+                            <div class="param-row"><span>GPU_VRAM</span><span>99.8%</span></div>
+                            <div class="param-row"><span>Keyframe_Count</span><span>4,820 KF</span></div>
+                            <div class="param-row"><span>Plugin_Crash</span><span>0x8004F</span></div>
+                            <div class="param-row"><span>Thermal_State</span><span>98°C HOT</span></div>
+                            <div class="param-row"><span>Est_Time</span><span>4h 18m</span></div>
+                        </div>
+
+                        <div class="heavy-timeline-complex">
+                            <div class="heavy-panel-title"><span>TIMELINE // 24 NESTED PRE-COMPS</span><span>00:02:14:09</span></div>
+                            <div class="dense-track">
+                                <span class="dense-track-lbl">3D_CAM_RIG</span>
+                                <span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span>
+                            </div>
+                            <div class="dense-track">
+                                <span class="dense-track-lbl">PARTICLES</span>
+                                <span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span>
+                            </div>
+                            <div class="dense-track">
+                                <span class="dense-track-lbl">SHADER_PASS</span>
+                                <span class="kf-diamond"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond red"></span><span class="kf-diamond"></span><span class="kf-diamond"></span>
+                            </div>
+                        </div>
+
+                        <div class="crash-modal" id="s1-crash-modal">
+                            <div class="crash-header">
+                                <span>⚠ SYSTEM OVERLOAD // OUT OF MEMORY</span>
+                                <span>[X]</span>
+                            </div>
+                            <div class="crash-body">
+                                <div class="crash-title">SOFTWARE EDITING BERAT CRASH!</div>
+                                <div class="crash-desc">
+                                    RAM 64GB Penuh! Render 1 menit video 3D butuh waktu 4 jam 18 menit.
+                                </div>
+                                <div class="crash-bar-wrap">
+                                    <div class="crash-bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reject-stamp" id="s1-reject-stamp">TINGGALKAN CARA LAMA! ✕</div>
+                    </div>
+                </div>
+
+                <div class="overload-telemetry" id="s1-telemetry">
+                    <div class="ov-header">
+                        <span>LEGACY WORKFLOW DIAGNOSTICS</span>
+                        <span style="color: var(--vermilion);">● STATUS: BOTTLENECK PARAH</span>
+                    </div>
+                    <div class="ov-grid">
+                        <div class="ov-box">
+                            <span class="ov-lbl">CPU &amp; GPU LOAD</span>
+                            <span class="ov-val">99.8%</span>
+                            <span class="ov-sub">KIPAS NGEBUT // THROTTLING</span>
+                        </div>
+                        <div class="ov-box">
+                            <span class="ov-lbl">MEMORI TERPAKAI</span>
+                            <span class="ov-val">63.9 GB</span>
+                            <span class="ov-sub">CACHE PENUH // LAG PARAH</span>
+                        </div>
+                        <div class="ov-box">
+                            <span class="ov-lbl">WAKTU KERJA MANUAL</span>
+                            <span class="ov-val">4+ JAM</span>
+                            <span class="ov-sub">KEYFRAME SATU-SATU</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 SCENE 2A: NGE-PROMPT DI ANTIGRAVITY IDE (6.28s - 10.44s)
+                 VO: "Cukup lempar prompt langsung dari Antigravity IDE."
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-2a">
+                <!-- Full Uncropped 16:10 Antigravity IDE Screenshot -->
+                <div class="ag-ide-showcase" id="s2a-ide-box">
+                    <img src="assets/images/antigravity_ide.png" class="ag-ide-full-img" alt="Antigravity IDE">
+                    <div class="ag-chat-overlay" id="s2a-chat-bubble">
+                        <div class="ag-chat-badge">
+                            <span>● ANTIGRAVITY AGENT</span>
+                            <span>[ACTIVE]</span>
+                        </div>
+                        <div class="ag-chat-msg">
+                            Siap! Ketik konsep videomu di kotak prompt bawah, agen AI akan merakit seluruh kodenya.
+                        </div>
+                    </div>
+                    <div class="ag-prompt-highlight">
+                        <div class="ag-prompt-tag">▼ KOTAK PROMPT ANTIGRAVITY IDE</div>
+                    </div>
+                </div>
+
+                <!-- Zoomed-In Interactive Prompt Input Box -->
+                <div class="ag-prompt-zoom-card" id="s2a-prompt-card">
+                    <div class="cmd-top">
+                        <span class="cmd-tag">ZOOM // ANTIGRAVITY PROMPT INPUT</span>
+                        <span class="cmd-send-btn" id="s2a-send-btn">SEND PROMPT ↵</span>
+                    </div>
+                    <div class="cmd-input-box">
+                        <span id="s2a-typed"></span><span class="cursor-block"></span>
+                    </div>
+                    <div class="cmd-footer-meta">
+                        <span>WORKSPACE: rvctr_remotion_demo</span>
+                        <span class="model-pill">+ Gemini 3.0 Flash // Agent Mode</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 SCENE 2B: FRAME KHUSUS PEMBUATAN HTML (10.44s - 13.80s)
+                 VO: "Di dalam IDE ini, si agen AI bakal otomatis meracik kode HTML..."
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-2b">
+                <div class="brut-card code-editor-card" id="s2b-editor">
+                    <div class="brut-bar">
+                        <div class="brut-dots">
+                            <span class="brut-dot r"></span>
+                            <span class="brut-dot y"></span>
+                            <span class="brut-dot g"></span>
+                        </div>
+                        <span>STEP 01 // MERACIK STRUKTUR KODE HTML5</span>
+                        <span>[INDEX.HTML]</span>
+                    </div>
+                    <div class="editor-body">
+                        <div class="line-nums">01<br>02<br>03<br>04<br>05<br>06<br>07<br>08<br>09</div>
+                        <div class="code-content">
+                            &lt;<span class="tok-tag">main</span> <span class="tok-attr">id</span>=<span class="tok-str">"viewport-9x16"</span>&gt;<br>
+                            &nbsp;&nbsp;&lt;<span class="tok-tag">header</span> <span class="tok-attr">class</span>=<span class="tok-str">"spec-bar"</span>&gt;SCENE HEADER&lt;/<span class="tok-tag">header</span>&gt;<br>
+                            &nbsp;&nbsp;&lt;<span class="tok-tag">section</span> <span class="tok-attr">class</span>=<span class="tok-str">"hero-headline"</span>&gt;<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tok-tag">h1</span>&gt;KINETIC TYPOGRAPHY&lt;/<span class="tok-tag">h1</span>&gt;<br>
+                            &nbsp;&nbsp;&lt;/<span class="tok-tag">section</span>&gt;<br>
+                            &nbsp;&nbsp;&lt;<span class="tok-tag">canvas</span> <span class="tok-attr">id</span>=<span class="tok-str">"three-stage"</span>&gt;&lt;/<span class="tok-tag">canvas</span>&gt;<br>
+                            &nbsp;&nbsp;&lt;<span class="tok-tag">footer</span> <span class="tok-attr">class</span>=<span class="tok-str">"narration-dock"</span>&gt;&lt;/<span class="tok-tag">footer</span>&gt;<br>
+                            &lt;/<span class="tok-tag">main</span>&gt;
+                        </div>
+                    </div>
+                </div>
+
+                <div class="html-preview-card" id="s2b-preview">
+                    <div class="cmd-top">
+                        <span class="cmd-tag" style="background: var(--vermilion); color: #FFF;">LIVE DOM WIREFRAME BUILDER</span>
+                        <span style="font-family: var(--font-mono); font-weight: 700; font-size: 16px;">[AUTO-LAYOUT 1080×1920]</span>
+                    </div>
+                    <div class="wireframe-grid">
+                        <div class="wf-block span-2 hero-slot" id="wf-1">
+                            <span>&lt;header class="spec-bar"&gt; + &lt;h1 class="headline"&gt;</span>
+                            <span>[100% WIDTH]</span>
+                        </div>
+                        <div class="wf-block canvas-slot" id="wf-2">
+                            <span>&lt;canvas id="three-stage"&gt;<br>3D WEBGL VIEWPORT</span>
+                            <span>[LAYER 01]</span>
+                        </div>
+                        <div class="wf-block" id="wf-3" style="background: #FDE68A;">
+                            <span>&lt;aside class="hud-cards"&gt;<br>TELEMETRY OVERLAY</span>
+                            <span>[LAYER 02]</span>
+                        </div>
+                        <div class="wf-block span-2 footer-slot" id="wf-4">
+                            <span>&lt;footer class="narration-dock"&gt; // AUDIO SUBTITLE + MASCOT</span>
+                            <span>[LOCKED]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 SCENE 2C: FRAME KHUSUS ANIMASI GSAP (13.80s - 17.00s)
+                 VO: "...animasi GSAP..."
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-2c">
+                <div class="brut-card code-editor-card" id="s2c-editor">
+                    <div class="brut-bar" style="background: #064E3B;">
+                        <div class="brut-dots">
+                            <span class="brut-dot r"></span>
+                            <span class="brut-dot y"></span>
+                            <span class="brut-dot g"></span>
+                        </div>
+                        <span>STEP 02 // MERACIK ANIMASI KINETIK GSAP 3</span>
+                        <span>[MOTION.JS]</span>
+                    </div>
+                    <div class="editor-body">
+                        <div class="line-nums">01<br>02<br>03<br>04<br>05<br>06<br>07<br>08<br>09</div>
+                        <div class="code-content">
+                            <span class="tok-kw">const</span> tl = gsap.<span class="tok-attr">timeline</span>({ paused: <span class="tok-kw">true</span> });<br>
+                            tl.<span class="tok-attr">fromTo</span>(<span class="tok-str">".headline-line"</span>,<br>
+                            &nbsp;&nbsp;{ y: <span class="tok-tag">80</span>, skewY: <span class="tok-tag">6</span>, autoAlpha: <span class="tok-tag">0</span> },<br>
+                            &nbsp;&nbsp;{ y: <span class="tok-tag">0</span>, skewY: <span class="tok-tag">0</span>, autoAlpha: <span class="tok-tag">1</span>, ease: <span class="tok-str">"back.out(1.7)"</span> }<br>
+                            );<br>
+                            tl.<span class="tok-attr">to</span>(<span class="tok-str">".hud-card"</span>, {<br>
+                            &nbsp;&nbsp;x: <span class="tok-tag">0</span>, stagger: <span class="tok-tag">0.12</span>, ease: <span class="tok-str">"power4.out"</span><br>
+                            });
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gsap-motion-card" id="s2c-preview">
+                    <div class="cmd-top">
+                        <span class="cmd-tag">GSAP PHYSICS &amp; EASING VISUALIZER</span>
+                        <span style="font-family: var(--font-mono); font-weight: 700; font-size: 16px; color: var(--vermilion);">EASE: back.out(1.7) // 60FPS</span>
+                    </div>
+                    <div class="gsap-stage-split">
+                        <div class="bezier-box">
+                            <div style="display: flex; justify-content: space-between; color: var(--acid-mint); font-weight: 700;">
+                                <span>SPRING CURVE</span>
+                                <span>v(t)</span>
+                            </div>
+                            <svg viewBox="0 0 260 150" width="100%" height="145">
+                                <line x1="20" y1="130" x2="240" y2="130" stroke="#334155" stroke-width="2"/>
+                                <line x1="20" y1="20" x2="20" y2="130" stroke="#334155" stroke-width="2"/>
+                                <line x1="20" y1="45" x2="240" y2="45" stroke="#FF3B1D" stroke-width="1.5" stroke-dasharray="5,5"/>
+                                <path d="M 20 130 C 70 130, 95 10, 145 35 C 185 52, 205 45, 240 45" fill="none" stroke="#00E599" stroke-width="5"/>
+                                <circle id="gsap-curve-dot" cx="145" cy="35" r="9" fill="#FFD026" stroke="#111317" stroke-width="3"/>
+                            </svg>
+                            <div style="color: #94A3B8; font-size: 12px;">OVERSHOOT + SETTLE INTERPOLATION</div>
+                        </div>
+
+                        <div class="kinetic-lanes">
+                            <div class="k-lane">
+                                <div class="k-puck p1" id="gsap-puck-1">HEADLINE SLIDE // back.out(1.7)</div>
+                            </div>
+                            <div class="k-lane">
+                                <div class="k-puck p2" id="gsap-puck-2">CARD STAGGER // power4.out</div>
+                            </div>
+                            <div class="k-lane">
+                                <div class="k-puck p3" id="gsap-puck-3">SHUTTER WIPE // scaleY(1)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 SCENE 2D: FRAME KHUSUS ELEMEN 3D THREE.JS (17.00s - 20.20s)
+                 VO: "...sampai elemen tiga dimensi Three.js."
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-2d">
+                <div class="three-builder-hud">
+                    <div class="three-code-top" id="s2d-code">
+                        <div class="brut-bar" style="background: #1E3A8A;">
+                            <div class="brut-dots">
+                                <span class="brut-dot r"></span>
+                                <span class="brut-dot y"></span>
+                                <span class="brut-dot g"></span>
+                            </div>
+                            <span>STEP 03 // MERACIK MULTI-OBJEK 3D THREE.JS</span>
+                            <span>[SCENE3D.JS]</span>
+                        </div>
+                        <div class="editor-body" style="padding: 14px 22px; font-size: 18px; line-height: 1.48;">
+                            <div class="line-nums">01<br>02<br>03<br>04<br>05</div>
+                            <div class="code-content">
+                                scene.<span class="tok-attr">add</span>(<span class="tok-kw">new</span> THREE.<span class="tok-str">TorusKnotGeometry</span>(<span class="tok-tag">0.7, 0.2</span>));<br>
+                                scene.<span class="tok-attr">add</span>(<span class="tok-kw">new</span> THREE.<span class="tok-str">OctahedronGeometry</span>(<span class="tok-tag">0.85</span>));<br>
+                                scene.<span class="tok-attr">add</span>(buildSteppedPodium(), buildArchPortal());<br>
+                                scene.<span class="tok-attr">add</span>(buildConeObelisk(), buildDodecahedron());<br>
+                                renderer.<span class="tok-attr">render</span>(scene, perspectiveCamera);
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="three-viewport-window" id="s2d-stage">
+                        <div class="bcast-overlay-top">
+                            <span class="bcast-tag" style="background: var(--ink); color: var(--acid-mint);">WEBGL 2.0 // MULTI-GEOMETRY STAGE</span>
+                            <span class="bcast-tc" id="s2d-poly-count">7 OBJEK 3D // 18,420 POLIGON</span>
+                        </div>
+                        <div class="mesh-tags-row">
+                            <span class="mesh-pill on">✓ TORUS KNOT</span>
+                            <span class="mesh-pill on">✓ STEPPED PODIUM</span>
+                            <span class="mesh-pill on">✓ ARCH PORTAL</span>
+                            <span class="mesh-pill on">✓ OCTAHEDRON GEM</span>
+                            <span class="mesh-pill on">✓ CONE OBELISK</span>
+                            <span class="mesh-pill on">✓ DODECAHEDRON</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 SCENE 3: STORYBOARD + LOGIKA 3D + TIMING GERAK KAMERA (20.20s - 28.83s)
+                 VO: "Tinggal tulis konsep videonya, Antigravity langsung nyusun
+                      storyboard, nulis logika tiga dimensi, sampai ngatur
+                      timing gerak kameranya."
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-3">
+                <div class="stage-3d-hud" id="s3-hud">
+                    <!-- Top Storyboard Sequence Strip -->
+                    <div class="storyboard-strip">
+                        <div class="sb-card" id="sb-1">
+                            <span class="sb-num">TAHAP // 01</span>
+                            <span class="sb-title">SUSUN STORYBOARD</span>
+                            <span class="sb-sub">Urutan Bab &amp; Komposisi</span>
+                        </div>
+                        <div class="sb-card" id="sb-2">
+                            <span class="sb-num">TAHAP // 02</span>
+                            <span class="sb-title">LOGIKA 3D MESH</span>
+                            <span class="sb-sub">Multi-Objek &amp; Tata Cahaya</span>
+                        </div>
+                        <div class="sb-card" id="sb-3">
+                            <span class="sb-num">TAHAP // 03</span>
+                            <span class="sb-title">GERAK KAMERA</span>
+                            <span class="sb-sub">Lintasan Orbit &amp; Fokus</span>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Camera Timing & Keyframe Panel -->
+                    <div class="cam-timing-panel" id="s3-cam-panel">
+                        <div class="cam-curve-col">
+                            <div class="cam-curve-header">
+                                <span>PENGATUR TIMING GERAK KAMERA</span>
+                                <span>[LINTASAN REL AKTIF]</span>
+                            </div>
+                            <div class="cam-telem-grid">
+                                <div class="cam-telem-item">
+                                    <span>SUDUT ROTASI</span>
+                                    <strong id="s3-cam-angle">045.0°</strong>
+                                </div>
+                                <div class="cam-telem-item">
+                                    <span>KOORDINAT KAMERA</span>
+                                    <strong id="s3-cam-pos">+2.1, +1.8</strong>
+                                </div>
+                                <div class="cam-telem-item">
+                                    <span>LENSA &amp; FOKUS</span>
+                                    <strong>35mm // MULTI-MESH</strong>
+                                </div>
+                            </div>
+                            <div style="font-family: var(--font-mono); font-size: 14px; color: #94A3B8;">
+                                &gt; gsap.to(cameraRig.position, { x: pathX, z: pathZ, ease: "power2.inOut" });
+                            </div>
+                        </div>
+
+                        <div class="pip-viewfinder">
+                            <div class="pip-top">
+                                <span>● MONITOR KAMERA</span>
+                                <span>[60 FPS]</span>
+                            </div>
+                            <div class="pip-reticle">
+                                + FOKUS TERKUNCI +
+                            </div>
+                            <div class="pip-bot">
+                                <span>SHUTTER 1/120</span>
+                                <span id="s3-pip-tc">TC 00:24.5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 SCENE 4: ELEVENLABS VOICE AI (28.83s - 34.88s)
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-4">
+                <div class="brut-card studio-photo-card" id="s4-photo-card">
+                    <div class="brut-bar">
+                        <div class="brut-dots">
+                            <span class="brut-dot r"></span>
+                            <span class="brut-dot y"></span>
+                            <span class="brut-dot g"></span>
+                        </div>
+                        <span>ELEVENLABS // AI_VOICE_INTEGRATION</span>
+                        <span>[API CONNECTED]</span>
+                    </div>
+                    <div class="ide-viewport">
+                        <img src="assets/images/elevenlabs_library.jpg" class="ide-img" id="s4-el-img" alt="ElevenLabs Library">
+                        <div class="sticker-badge">JERNIH &amp; BERKARAKTER!</div>
+                    </div>
+                </div>
+
+                <div class="studio-deck" id="s4-deck-card">
+                    <div class="deck-top">
+                        <div class="deck-voice-id">
+                            <div class="voice-avatar">11L</div>
+                            <div class="voice-meta">
+                                <h4>ELEVENLABS DIRECT BRIDGE</h4>
+                                <p>MULTILINGUAL V2 // NARASI JERNIH // INTONASI NATURAL</p>
+                            </div>
+                        </div>
+                        <div class="rec-indicator">● STREAMING VO</div>
+                    </div>
+                    <div class="vu-meter-strip" id="s4-vu-strip"></div>
+                    <div class="deck-script">
+                        "Untuk suaranya, kita kaitkan langsung ke ElevenLabs buat ngasilin narasi yang jernih dan berkarakter."
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 SCENE 5: TIMELINE BEAT LOCK + TERMINAL RENDER (34.88s - 51.77s)
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-5">
+                <div class="broadcast-frame" id="s5-monitor">
+                    <div class="bcast-overlay-top">
+                        <span class="bcast-tag" id="s5-mon-tag">AUDIO-BEAT LOCK // 3D STAGE</span>
+                        <span class="bcast-tc" id="s5-mon-tc">TC 00:00:36:00</span>
+                    </div>
+                    <div class="bcast-caption-Preview" id="s5-live-sub">
+                        GERAK 3D PRESISI IKUTI KETUKAN SUARA
+                    </div>
+                </div>
+
+                <div class="nle-rack" id="s5-nle">
+                    <div class="nle-ruler">
+                        <span>BEAT_01 (00s)</span>
+                        <span>BEAT_02 (15s)</span>
+                        <span>BEAT_03 (30s)</span>
+                        <span>BEAT_04 (45s)</span>
+                        <span>MASTER (60s)</span>
+                    </div>
+                    <div class="nle-tracks">
+                        <div id="nle-playhead"></div>
+                        <div class="nle-row">
+                            <div class="nle-lbl">A1 // JEDA VO</div>
+                            <div class="nle-lane">
+                                <div class="nle-clip clip-vo">ELEVENLABS_VO.MP3 [LOCKED TO WORD TIMESTAMPS]</div>
+                            </div>
+                        </div>
+                        <div class="nle-row">
+                            <div class="nle-lbl">GSAP // CODE</div>
+                            <div class="nle-lane">
+                                <div class="nle-clip clip-fx">tl.seek(t) // KEYFRAME LOCKED PER MILLISECOND</div>
+                            </div>
+                        </div>
+                        <div class="nle-row">
+                            <div class="nle-lbl">3D // WEBGL</div>
+                            <div class="nle-lane">
+                                <div class="nle-clip clip-v1">THREE.JS_SCENE // BEAT-SYNCED MULTI-OBJECT 3D</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="term-render-box" id="s5-term-box">
+                        <div class="term-head">
+                            <span id="s5-term-cmd">$ antigravity render index.html --fps 60 --out mp4</span>
+                            <span id="s5-term-pct">READY</span>
+                        </div>
+                        <div class="term-progress-bar">
+                            <div class="term-progress-fill" id="s5-term-fill"></div>
+                        </div>
+                        <div class="term-badges">
+                            <div class="term-badge" id="tb-sharp">✓ TAJAM (1080P)</div>
+                            <div class="term-badge" id="tb-smooth">✓ MULUS (60 FPS)</div>
+                            <div class="term-badge" id="tb-zero">✓ ANTI DROP FRAME</div>
+                        </div>
+                    </div>
+
+                    <div class="render-stamp" id="s5-stamp">AUTO-RENDER 100% // ZERO DROP!</div>
+                </div>
+            </div>
+
+            <!-- ==========================================================
+                 SCENE 6: ALL-IN-ONE SELESAI DI SATU TEMPAT + CTA (51.77s - 60.92s)
+                 ========================================================== -->
+            <div class="scene-layer" id="scene-6">
+                <div class="bento-showcase">
+                    <div class="phone-bento" id="s6-phone">
+                        <div class="phone-pill-top">9:16 SIAP UPLOAD</div>
+                        <div class="phone-caption-card">
+                            <strong>SELESAI 1 TEMPAT!</strong>
+                            <span>CHAT ➔ 3D ➔ MP4 UTUH</span>
+                        </div>
+                    </div>
+                    <div class="metrics-stack">
+                        <div class="metric-card mint" id="s6-m1">
+                            <div class="metric-tag">01 // DARI IDE DI CHAT</div>
+                            <div class="metric-val">1 PROMPT SAJA</div>
+                            <div class="metric-sub">LANGSUNG JADI STORYBOARD + KODE 3D</div>
+                        </div>
+                        <div class="metric-card sunny" id="s6-m2">
+                            <div class="metric-tag">02 // ALL-IN-ONE WORKSPACE</div>
+                            <div class="metric-val">1 TEMPAT UTUH</div>
+                            <div class="metric-sub">HTML + GSAP + THREE.JS + ELEVENLABS</div>
+                        </div>
+                        <div class="metric-card vermilion" id="s6-m3">
+                            <div class="metric-tag">03 // SAATNYA UPGRADE!</div>
+                            <div class="metric-val">MULAI BERKARYA!</div>
+                            <div class="metric-sub">ANTIGRAVITY IDE // NEXT-GEN MOTION</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Stage Footer: Live Transcript Pill + SVG Robot Mascot -->
+        <div class="stage-footer">
+            <div class="vo-caption-pill">
+                <div class="vo-pill-header">
+                    <span>VOICEOVER TRANSCRIPT (SYNCED)</span>
+                    <span id="vo-phase-tag">[SCENE 01 // 00:00]</span>
+                </div>
+                <div class="vo-pill-text" id="vo-live-text">
+                    "Bikin video motion graphic sinematik, sekarang gak perlu lagi pusing buka software berat berjam-jam!"
+                </div>
+            </div>
+
+            <div id="mascot-robot">
+                <svg viewBox="0 0 120 120" width="100%" height="100%">
+                    <line x1="60" y1="24" x2="60" y2="8" stroke="#111317" stroke-width="5"/>
+                    <circle cx="60" cy="8" r="7" fill="#FF3B1D" stroke="#111317" stroke-width="4"/>
+                    <rect x="20" y="24" width="80" height="68" rx="14" fill="#FFD026" stroke="#111317" stroke-width="5"/>
+                    <rect x="30" y="36" width="60" height="34" rx="6" fill="#111317"/>
+                    <circle id="eye-l" cx="46" cy="53" r="7" fill="#00E599"/>
+                    <circle id="eye-r" cx="74" cy="53" r="7" fill="#00E599"/>
+                    <rect id="mouth-bar" x="44" y="76" width="32" height="6" rx="3" fill="#111317"/>
+                    <rect x="10" y="46" width="10" height="24" rx="4" fill="#FF3B1D" stroke="#111317" stroke-width="4"/>
+                    <rect x="100" y="46" width="10" height="24" rx="4" fill="#FF3B1D" stroke="#111317" stroke-width="4"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brutalist Wipe Shutter -->
+    <div id="cut-wipe"></div>
+
+    <!-- Audio Track -->
+    <audio id="master-audio" src="assets/audio/master_audio.mp3" preload="auto"></audio>
+
+    <!-- Playback Controls -->
+    <div id="playback-bar">
+        <button class="pb-btn" id="pb-toggle">PLAY</button>
+        <div class="pb-scrubber" id="pb-scrub">
+            <div class="pb-fill" id="pb-fill"></div>
+        </div>
+        <div class="pb-time" id="pb-time">00.0s / 60.9s</div>
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // 1. CONSTANTS & DETERMINISTIC CONFIGURATION
+    // =========================================================================
+    const W = 1080;
+    const H = 1920;
+    const DURATION = 60.92;
+
+    if (navigator.webdriver) {
+        document.getElementById('playback-bar').style.display = 'none';
+    }
+
+    function fitViewport() {
+        if (navigator.webdriver) {
+            document.getElementById('viewport').style.transform = 'none';
+            return;
+        }
+        const scale = Math.min(window.innerWidth / W, window.innerHeight / H) * 0.96;
+        document.getElementById('viewport').style.transform = `scale(${scale})`;
+    }
+    window.addEventListener('resize', fitViewport);
+    fitViewport();
+
+    // Build 28 VU Meter Bars for Scene 4 (ElevenLabs)
+    const vuStrip = document.getElementById('s4-vu-strip');
+    const vuBars = [];
+    for (let i = 0; i < 28; i++) {
+        const b = document.createElement('div');
+        b.className = 'vu-bar' + (i > 22 ? ' hot' : i > 16 ? ' warm' : '');
+        vuStrip.appendChild(b);
+        vuBars.push(b);
+    }
+
+    // =========================================================================
+    // 2. THREE.JS MULTI-OBJECT ARCHITECTURAL SCULPTURE GARDEN + CAMERA RIG
+    //    (Zero "Atom Ball" — 8 Distinct Geometric & Architectural Objects!)
+    // =========================================================================
+    const canvas = document.getElementById('three-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(1);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(44, W / H, 0.1, 100);
+    camera.position.set(0, 0, 10);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.4);
+    dirLight1.position.set(6, 12, 8);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0x38BDF8, 1.2);
+    dirLight2.position.set(-8, 6, -5);
+    scene.add(dirLight2);
+
+    // Master 3D Stage Group
+    const stage3D = new THREE.Group();
+    scene.add(stage3D);
+
+    // --- A. Multi-Object Diorama Group (8 Varied 3D Objects!) ---
+    const dioramaGroup = new THREE.Group();
+    stage3D.add(dioramaGroup);
+
+    // Helper to add crisp dark wireframe overlay to any mesh
+    function addEdgeWire(mesh, geo, color = 0x111317, opacity = 0.45) {
+        const wire = new THREE.Mesh(
+            geo,
+            new THREE.MeshBasicMaterial({ color, wireframe: true, transparent: true, opacity })
+        );
+        mesh.add(wire);
+    }
+
+    // Object 1: Stepped Architectural Podium (Center Base)
+    const podiumGroup = new THREE.Group();
+    const tier1Geo = new THREE.BoxGeometry(2.2, 0.24, 2.2);
+    const tier1 = new THREE.Mesh(tier1Geo, new THREE.MeshStandardMaterial({ color: 0xE2E8F0, roughness: 0.3 }));
+    tier1.position.y = -0.95;
+    podiumGroup.add(tier1);
+
+    const tier2Geo = new THREE.BoxGeometry(1.5, 0.24, 1.5);
+    const tier2 = new THREE.Mesh(tier2Geo, new THREE.MeshStandardMaterial({ color: 0xFFD026, roughness: 0.3 }));
+    tier2.position.y = -0.71;
+    podiumGroup.add(tier2);
+    dioramaGroup.add(podiumGroup);
+
+    // Object 2: Architectural Archway Portal (Behind Podium)
+    const archGroup = new THREE.Group();
+    const pillarGeo = new THREE.CylinderGeometry(0.14, 0.14, 1.85, 20);
+    const pillarMat = new THREE.MeshStandardMaterial({ color: 0xFF3B1D, roughness: 0.3 });
+    const leftPillar = new THREE.Mesh(pillarGeo, pillarMat);
+    leftPillar.position.set(-0.78, 0.08, -0.55);
+    archGroup.add(leftPillar);
+
+    const rightPillar = new THREE.Mesh(pillarGeo, pillarMat);
+    rightPillar.position.set(0.78, 0.08, -0.55);
+    archGroup.add(rightPillar);
+
+    const lintelGeo = new THREE.BoxGeometry(1.96, 0.26, 0.36);
+    const lintel = new THREE.Mesh(lintelGeo, new THREE.MeshStandardMaterial({ color: 0xFFD026, roughness: 0.3 }));
+    lintel.position.set(0, 1.08, -0.55);
+    archGroup.add(lintel);
+    dioramaGroup.add(archGroup);
+
+    // Object 3: Sculptural 3D Torus Knot (Centerpiece above Podium)
+    const knotGeo = new THREE.TorusKnotGeometry(0.48, 0.15, 96, 16);
+    const knotMesh = new THREE.Mesh(
+        knotGeo,
+        new THREE.MeshStandardMaterial({ color: 0x00E599, roughness: 0.2, metalness: 0.3 })
+    );
+    knotMesh.position.set(0, 0.15, 0.1);
+    addEdgeWire(knotMesh, knotGeo, 0x064E3B, 0.35);
+    dioramaGroup.add(knotMesh);
+
+    // Object 4: Floating Octahedron Crystal Gem (Left Front)
+    const octaGeo = new THREE.OctahedronGeometry(0.52, 0);
+    const octaMesh = new THREE.Mesh(
+        octaGeo,
+        new THREE.MeshStandardMaterial({ color: 0xFF3B1D, roughness: 0.2, flatShading: true })
+    );
+    octaMesh.position.set(-1.35, 0.25, 0.65);
+    addEdgeWire(octaMesh, octaGeo, 0xFFFFFF, 0.5);
+    dioramaGroup.add(octaMesh);
+
+    // Object 5: Cone Pyramid Obelisk (Right Front)
+    const coneGeo = new THREE.ConeGeometry(0.48, 1.15, 4);
+    const coneMesh = new THREE.Mesh(
+        coneGeo,
+        new THREE.MeshStandardMaterial({ color: 0x38BDF8, roughness: 0.25, flatShading: true })
+    );
+    coneMesh.position.set(1.35, -0.25, 0.55);
+    addEdgeWire(coneMesh, coneGeo, 0x0F172A, 0.5);
+    dioramaGroup.add(coneMesh);
+
+    // Object 6: Dodecahedron Polyhedron (Right Upper)
+    const dodecaGeo = new THREE.DodecahedronGeometry(0.42, 0);
+    const dodecaMesh = new THREE.Mesh(
+        dodecaGeo,
+        new THREE.MeshStandardMaterial({ color: 0xA855F7, roughness: 0.25, flatShading: true })
+    );
+    dodecaMesh.position.set(1.25, 0.85, -0.25);
+    addEdgeWire(dodecaMesh, dodecaGeo, 0xFFFFFF, 0.45);
+    dioramaGroup.add(dodecaMesh);
+
+    // Object 7: Tilted Thick Torus Donut (Left Upper)
+    const donutGeo = new THREE.TorusGeometry(0.38, 0.14, 16, 48);
+    const donutMesh = new THREE.Mesh(
+        donutGeo,
+        new THREE.MeshStandardMaterial({ color: 0xFFD026, roughness: 0.25 })
+    );
+    donutMesh.position.set(-1.25, 0.92, -0.20);
+    dioramaGroup.add(donutMesh);
+
+    // Object 8: Floating Isometric Cubes & Cylinders Cluster (Foreground & Midground)
+    const cube1Geo = new THREE.BoxGeometry(0.42, 0.42, 0.42);
+    const cube1 = new THREE.Mesh(cube1Geo, new THREE.MeshStandardMaterial({ color: 0x00E599, roughness: 0.3 }));
+    cube1.position.set(-0.65, -0.55, 1.15);
+    addEdgeWire(cube1, cube1Geo, 0x111317, 0.6);
+    dioramaGroup.add(cube1);
+
+    const cyl1Geo = new THREE.CylinderGeometry(0.24, 0.24, 0.55, 20);
+    const cyl1 = new THREE.Mesh(cyl1Geo, new THREE.MeshStandardMaterial({ color: 0xF97316, roughness: 0.3 }));
+    cyl1.position.set(0.68, -0.52, 1.10);
+    dioramaGroup.add(cyl1);
+
+    const allDioramaMeshes = [podiumGroup, archGroup, knotMesh, octaMesh, coneMesh, dodecaMesh, donutMesh, cube1, cyl1];
+
+    // --- B. Camera Dolly Track & Moving Cinema Camera Rig (For Scene 3) ---
+    const directorEnv = new THREE.Group();
+    stage3D.add(directorEnv);
+
+    const ORBIT_R = 1.92;
+    const trackRailGeo = new THREE.TorusGeometry(ORBIT_R, 0.045, 16, 120);
+    const trackRailMat = new THREE.MeshBasicMaterial({ color: 0x38BDF8 });
+    const trackRail = new THREE.Mesh(trackRailGeo, trackRailMat);
+    trackRail.rotation.x = Math.PI / 2;
+    trackRail.position.y = -0.65;
+    directorEnv.add(trackRail);
+
+    const gridHelper = new THREE.GridHelper(5.2, 12, 0x38BDF8, 0x1E293B);
+    gridHelper.position.y = -0.78;
+    directorEnv.add(gridHelper);
+
+    // 3D Cinema Camera Rig Moving on the Track
+    const camRig = new THREE.Group();
+    directorEnv.add(camRig);
+
+    const camBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.62, 0.44, 0.82),
+        new THREE.MeshBasicMaterial({ color: 0xFFD026 })
+    );
+    camRig.add(camBody);
+
+    const camBodyWire = new THREE.Mesh(
+        new THREE.BoxGeometry(0.64, 0.46, 0.84),
+        new THREE.MeshBasicMaterial({ color: 0x111317, wireframe: true })
+    );
+    camRig.add(camBodyWire);
+
+    const reelGeo = new THREE.CylinderGeometry(0.22, 0.22, 0.14, 24);
+    const reelMat = new THREE.MeshBasicMaterial({ color: 0xFF3B1D });
+    const reel1 = new THREE.Mesh(reelGeo, reelMat);
+    reel1.rotation.z = Math.PI / 2;
+    reel1.position.set(0, 0.36, -0.16);
+    camRig.add(reel1);
+
+    const reel2 = new THREE.Mesh(reelGeo, reelMat);
+    reel2.rotation.z = Math.PI / 2;
+    reel2.position.set(0, 0.36, 0.20);
+    camRig.add(reel2);
+
+    const lensBarrel = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.20, 0.26, 0.44, 24),
+        new THREE.MeshBasicMaterial({ color: 0xFF3B1D })
+    );
+    lensBarrel.rotation.x = Math.PI / 2;
+    lensBarrel.position.set(0, 0, 0.56);
+    camRig.add(lensBarrel);
+
+    const tallyLight = new THREE.Mesh(
+        new THREE.SphereGeometry(0.10, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0x00E599 })
+    );
+    tallyLight.position.set(0, 0.54, 0.28);
+    camRig.add(tallyLight);
+
+    // Wireframe View Frustum Pyramid projecting from the Lens toward the Multi-Object Stage
+    const frustumGeo = new THREE.ConeGeometry(0.75, 1.35, 4, 1, true);
+    const frustumMat = new THREE.MeshBasicMaterial({
+        color: 0x00E599,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.88
+    });
+    const frustumCone = new THREE.Mesh(frustumGeo, frustumMat);
+    frustumCone.rotation.x = -Math.PI / 2;
+    frustumCone.rotation.z = Math.PI / 4;
+    frustumCone.position.set(0, 0, 1.28);
+    camRig.add(frustumCone);
+
+    // =========================================================================
+    // 3. EXACT VOICEOVER SCRIPT & DEDICATED SCENE MAPPING
+    // =========================================================================
+    const VO_SEGMENTS = [
+        {
+            t0: 0.0, t1: 6.28,
+            fig: "SCENE 01 // PAIN POINT",
+            label: "SOFTWARE EDITING BERAT // NOT RESPONDING",
+            l1: 'STOP PUSING <span class="pill-accent">SOFTWARE BERAT</span>',
+            l2: 'NGEDIT MANUAL <span class="pill-sunny">BERJAM-JAM!</span>',
+            voTag: "[VO // 00:00 - 00:06]",
+            voText: "\"Bikin video motion graphic sinematik, sekarang gak perlu lagi pusing buka software berat berjam-jam!\""
+        },
+        {
+            t0: 6.28, t1: 10.44,
+            fig: "SCENE 02 // PROMPT IDE",
+            label: "ANTIGRAVITY IDE // AGENT PROMPT INPUT",
+            l1: 'CUKUP LEMPAR <span class="pill-mint">SATU PROMPT</span>',
+            l2: 'LANGSUNG DARI <span class="pill-sunny">ANTIGRAVITY IDE!</span>',
+            voTag: "[VO // 00:06 - 00:10]",
+            voText: "\"Cukup lempar prompt langsung dari Antigravity IDE.\""
+        },
+        {
+            t0: 10.44, t1: 13.80,
+            fig: "SCENE 03 // HTML5 DOM",
+            label: "AGEN AI // MERACIK STRUKTUR HTML5",
+            l1: 'AGEN AI OTOMATIS <span class="pill-accent">MERACIK KODE</span>',
+            l2: 'MULAI DARI <span class="pill-sunny">STRUKTUR HTML5!</span>',
+            voTag: "[VO // 00:10 - 00:13]",
+            voText: "\"Di dalam IDE ini, si agen AI bakal otomatis meracik kode HTML...\""
+        },
+        {
+            t0: 13.80, t1: 17.00,
+            fig: "SCENE 04 // GSAP MOTION",
+            label: "AGEN AI // TIMELINE ANIMASI GSAP 3",
+            l1: 'LANJUT MERAKIT <span class="pill-mint">ANIMASI GSAP</span>',
+            l2: 'GERAK KINETIK <span class="pill-sunny">SUPER MULUS!</span>',
+            voTag: "[VO // 00:13 - 00:17]",
+            voText: "\"...animasi GSAP...\""
+        },
+        {
+            t0: 17.00, t1: 20.20,
+            fig: "SCENE 05 // THREE.JS 3D",
+            label: "AGEN AI // MULTI-OBJEK 3D THREE.JS",
+            l1: 'SAMPAI ELEMEN <span class="pill-mint">TIGA DIMENSI</span>',
+            l2: 'DENGAN ENGINE <span class="pill-accent">THREE.JS!</span>',
+            voTag: "[VO // 00:17 - 00:20]",
+            voText: "\"...sampai elemen tiga dimensi Three.js.\""
+        },
+        {
+            t0: 20.20, t1: 28.83,
+            fig: "SCENE 06 // KAMERA 3D",
+            label: "STORYBOARD + LOGIKA 3D + GERAK KAMERA",
+            l1: 'SUSUN STORYBOARD <span class="pill-mint">&amp; LOGIKA 3D</span>',
+            l2: 'ATUR TIMING <span class="pill-sunny">GERAK KAMERANYA!</span>',
+            voTag: "[VO // 00:20 - 00:28]",
+            voText: "\"Tinggal tulis konsep videonya, Antigravity langsung nyusun storyboard, nulis logika tiga dimensi, sampai ngatur timing gerak kameranya.\""
+        },
+        {
+            t0: 28.83, t1: 34.88,
+            fig: "SCENE 07 // ELEVENLABS",
+            label: "VOICE AI BRIDGE // JERNIH & BERKARAKTER",
+            l1: 'KAITKAN KE <span class="pill-sunny">ELEVENLABS AI</span>',
+            l2: 'NARASI JERNIH <span class="pill-accent">&amp; BERKARAKTER!</span>',
+            voTag: "[VO // 00:28 - 00:34]",
+            voText: "\"Untuk suaranya, kita kaitkan langsung ke ElevenLabs buat ngasilin narasi yang jernih dan berkarakter.\""
+        },
+        {
+            t0: 34.88, t1: 43.70,
+            fig: "SCENE 08 // BEAT SYNC",
+            label: "TIMELINE CODE LOCK // AUDIO BEAT SYNC",
+            l1: 'JEDA KATA <span class="pill-mint">DIKUNCI KE KODE</span>',
+            l2: '3D PRESISI <span class="pill-sunny">IKUTI KETUKAN SUARA!</span>',
+            voTag: "[VO // 00:34 - 00:43]",
+            voText: "\"Setiap jeda kata langsung dikunci ke timeline kode di dalam IDE. Jadi animasi tiga dimensinya gerak presisi ngikutin ketukan suara.\""
+        },
+        {
+            t0: 43.70, t1: 51.77,
+            fig: "SCENE 09 // CLI RENDER",
+            label: "TERMINAL RENDER // TAJAM & ANTI DROP FRAME",
+            l1: 'RENDER OTOMATIS <span class="pill-sunny">VIA TERMINAL</span>',
+            l2: 'TAJAM, MULUS, <span class="pill-accent">ANTI DROP FRAME!</span>',
+            voTag: "[VO // 00:43 - 00:51]",
+            voText: "\"Proses rendernya pun langsung dijalankan otomatis lewat terminal Antigravity. Hasilnya tajam, mulus, dan anti drop frame.\""
+        },
+        {
+            t0: 51.77, t1: 61.0,
+            fig: "SCENE 10 // ALL-IN-ONE",
+            label: "CHAT TO MP4 // SELESAI DI SATU TEMPAT",
+            l1: 'DARI CHAT JADI <span class="pill-mint">VIDEO SIAP UPLOAD</span>',
+            l2: 'UPGRADE CARAMU <span class="pill-accent">BERKARYA SEKARANG!</span>',
+            voTag: "[VO // 00:51 - 01:00]",
+            voText: "\"Dari ide di chat sampai jadi video utuh siap upload, semuanya selesai di satu tempat. Yuk, saatnya upgrade caramu berkarya!\""
+        }
+    ];
+
+    // =========================================================================
+    // 4. GSAP MASTER TIMELINE (DETERMINISTIC)
+    // =========================================================================
+    const tl = gsap.timeline({ paused: true });
+
+    gsap.set('.scene-layer', { autoAlpha: 0 });
+    gsap.set('#scene-1', { autoAlpha: 1 });
+
+    // --- SCENE 1: APLIKASI EDITING BERAT (0.0s - 6.28s) ---
+    tl.fromTo('#s1-heavy-ui', { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power3.out' }, 0.08);
+    tl.fromTo('#s1-telemetry', { y: 60, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power3.out' }, 0.25);
+    tl.fromTo('#s1-crash-modal', { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.4, ease: 'back.out(2)' }, 1.5);
+    tl.to('#s1-reject-stamp', { scale: 1, rotation: -8, duration: 0.45, ease: 'back.out(2.2)' }, 3.7);
+
+    // --- CUT TO SCENE 2A: NGE-PROMPT DI ANTIGRAVITY IDE (6.28s - 10.44s) ---
+    tl.set('#cut-wipe', { transformOrigin: 'bottom center', background: '#00E599' }, 6.08);
+    tl.to('#cut-wipe', { scaleY: 1, duration: 0.18, ease: 'power2.in' }, 6.10);
+    tl.set('#scene-1', { autoAlpha: 0 }, 6.28);
+    tl.set('#scene-2a', { autoAlpha: 1 }, 6.28);
+    tl.to('#cut-wipe', { scaleY: 0, transformOrigin: 'top center', duration: 0.22, ease: 'power2.out' }, 6.30);
+
+    tl.fromTo('#s2a-ide-box', { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: 'power3.out' }, 6.38);
+    tl.fromTo('#s2a-prompt-card', { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: 'back.out(1.3)' }, 6.52);
+
+    // --- CUT TO SCENE 2B: FRAME KHUSUS HTML5 (10.44s - 13.80s) ---
+    tl.set('#cut-wipe', { transformOrigin: 'bottom center', background: '#FFD026' }, 10.24);
+    tl.to('#cut-wipe', { scaleY: 1, duration: 0.18, ease: 'power2.in' }, 10.26);
+    tl.set('#scene-2a', { autoAlpha: 0 }, 10.44);
+    tl.set('#scene-2b', { autoAlpha: 1 }, 10.44);
+    tl.to('#cut-wipe', { scaleY: 0, transformOrigin: 'top center', duration: 0.22, ease: 'power2.out' }, 10.46);
+
+    tl.fromTo('#s2b-editor', { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 10.55);
+    tl.fromTo('#s2b-preview', { x: 50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 10.68);
+    tl.fromTo('#wf-1', { scale: 0.7, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'back.out(1.8)' }, 11.0);
+    tl.fromTo('#wf-2', { scale: 0.7, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'back.out(1.8)' }, 11.4);
+    tl.fromTo('#wf-3', { scale: 0.7, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'back.out(1.8)' }, 11.8);
+    tl.fromTo('#wf-4', { scale: 0.7, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.35, ease: 'back.out(1.8)' }, 12.2);
+
+    // --- CUT TO SCENE 2C: FRAME KHUSUS GSAP 3 (13.80s - 17.00s) ---
+    tl.set('#cut-wipe', { transformOrigin: 'bottom center', background: '#00E599' }, 13.60);
+    tl.to('#cut-wipe', { scaleY: 1, duration: 0.18, ease: 'power2.in' }, 13.62);
+    tl.set('#scene-2b', { autoAlpha: 0 }, 13.80);
+    tl.set('#scene-2c', { autoAlpha: 1 }, 13.80);
+    tl.to('#cut-wipe', { scaleY: 0, transformOrigin: 'top center', duration: 0.22, ease: 'power2.out' }, 13.82);
+
+    tl.fromTo('#s2c-editor', { y: -40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 13.90);
+    tl.fromTo('#s2c-preview', { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 14.05);
+
+    // --- CUT TO SCENE 2D: FRAME KHUSUS THREE.JS 3D (17.00s - 20.20s) ---
+    tl.set('#cut-wipe', { transformOrigin: 'bottom center', background: '#38BDF8' }, 16.80);
+    tl.to('#cut-wipe', { scaleY: 1, duration: 0.18, ease: 'power2.in' }, 16.82);
+    tl.set('#scene-2c', { autoAlpha: 0 }, 17.00);
+    tl.set('#scene-2d', { autoAlpha: 1 }, 17.00);
+    tl.to('#cut-wipe', { scaleY: 0, transformOrigin: 'top center', duration: 0.22, ease: 'power2.out' }, 17.02);
+
+    tl.fromTo('#s2d-code', { y: -40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 17.10);
+    tl.fromTo('#s2d-stage', { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 17.22);
+
+    // --- CUT TO SCENE 3: STORYBOARD & GERAK KAMERA (20.20s - 28.83s) ---
+    tl.set('#cut-wipe', { transformOrigin: 'bottom center', background: '#FF3B1D' }, 20.00);
+    tl.to('#cut-wipe', { scaleY: 1, duration: 0.18, ease: 'power2.in' }, 20.02);
+    tl.set('#scene-2d', { autoAlpha: 0 }, 20.20);
+    tl.set('#scene-3', { autoAlpha: 1 }, 20.20);
+    tl.to('#cut-wipe', { scaleY: 0, transformOrigin: 'top center', duration: 0.22, ease: 'power2.out' }, 20.22);
+
+    tl.fromTo('.storyboard-strip', { y: -40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: 'power3.out' }, 20.35);
+    tl.fromTo('#s3-cam-panel', { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, ease: 'back.out(1.2)' }, 20.50);
+
+    // --- CUT TO SCENE 4: ELEVENLABS VOICE AI (28.83s - 34.88s) ---
+    tl.set('#cut-wipe', { transformOrigin: 'bottom center', background: '#FFD026' }, 28.63);
+    tl.to('#cut-wipe', { scaleY: 1, duration: 0.18, ease: 'power2.in' }, 28.65);
+    tl.set('#scene-3', { autoAlpha: 0 }, 28.83);
+    tl.set('#scene-4', { autoAlpha: 1 }, 28.83);
+    tl.to('#cut-wipe', { scaleY: 0, transformOrigin: 'top center', duration: 0.22, ease: 'power2.out' }, 28.85);
+
+    tl.fromTo('#s4-photo-card', { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power3.out' }, 28.98);
+    tl.fromTo('#s4-deck-card', { y: 60, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, ease: 'back.out(1.2)' }, 29.15);
+    tl.fromTo('#s4-el-img', { scale: 1.02, x: 0 }, { scale: 1.18, x: -30, duration: 5.8, ease: 'none' }, 28.90);
+
+    // --- CUT TO SCENE 5: TIMELINE BEAT LOCK + TERMINAL RENDER (34.88s - 51.77s) ---
+    tl.set('#cut-wipe', { transformOrigin: 'bottom center', background: '#FF3B1D' }, 34.68);
+    tl.to('#cut-wipe', { scaleY: 1, duration: 0.18, ease: 'power2.in' }, 34.70);
+    tl.set('#scene-4', { autoAlpha: 0 }, 34.88);
+    tl.set('#scene-5', { autoAlpha: 1 }, 34.88);
+    tl.to('#cut-wipe', { scaleY: 0, transformOrigin: 'top center', duration: 0.22, ease: 'power2.out' }, 34.90);
+
+    tl.fromTo('#s5-monitor', { y: -40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: 'power3.out' }, 35.02);
+    tl.fromTo('#s5-nle', { y: 50, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.55, ease: 'power3.out' }, 35.18);
+    tl.fromTo('#nle-playhead', { left: '122px' }, { left: '780px', duration: 16.2, ease: 'none' }, 35.20);
+    tl.to('#s5-stamp', { scale: 1, rotation: -3, duration: 0.45, ease: 'back.out(2.2)' }, 48.35);
+
+    // --- CUT TO SCENE 6: ALL-IN-ONE SHOWCASE (51.77s - 60.92s) ---
+    tl.set('#cut-wipe', { transformOrigin: 'bottom center', background: '#00E599' }, 51.57);
+    tl.to('#cut-wipe', { scaleY: 1, duration: 0.18, ease: 'power2.in' }, 51.59);
+    tl.set('#scene-5', { autoAlpha: 0 }, 51.77);
+    tl.set('#scene-6', { autoAlpha: 1 }, 51.77);
+    tl.to('#cut-wipe', { scaleY: 0, transformOrigin: 'top center', duration: 0.22, ease: 'power2.out' }, 51.80);
+
+    tl.fromTo('#s6-phone', { x: -50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.55, ease: 'back.out(1.3)' }, 51.95);
+    tl.fromTo('#s6-m1', { x: 50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 52.10);
+    tl.fromTo('#s6-m2', { x: 50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 52.30);
+    tl.fromTo('#s6-m3', { x: 50, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.45, ease: 'power3.out' }, 52.50);
+
+    tl.to({}, { duration: 0.1 }, DURATION);
+
+    // =========================================================================
+    // 5. DETERMINISTIC FRAME SEEKER (seekTimeline(t))
+    // =========================================================================
+    const viewportEl = document.getElementById('viewport');
+    const bgTicker = document.getElementById('bg-ticker');
+    const specNum = document.getElementById('spec-num');
+    const specLabel = document.getElementById('spec-label');
+    const specTc = document.getElementById('spec-tc');
+    const hl1 = document.getElementById('hl-line-1');
+    const hl2 = document.getElementById('hl-line-2');
+    const voPhaseTag = document.getElementById('vo-phase-tag');
+    const voLiveText = document.getElementById('vo-live-text');
+
+    const s1Spinner = document.getElementById('s1-spinner');
+    const s2aTyped = document.getElementById('s2a-typed');
+    const s2aSendBtn = document.getElementById('s2a-send-btn');
+
+    const gsapPuck1 = document.getElementById('gsap-puck-1');
+    const gsapPuck2 = document.getElementById('gsap-puck-2');
+    const gsapPuck3 = document.getElementById('gsap-puck-3');
+
+    const sb1 = document.getElementById('sb-1');
+    const sb2 = document.getElementById('sb-2');
+    const sb3 = document.getElementById('sb-3');
+    const s3CamAngle = document.getElementById('s3-cam-angle');
+    const s3CamPos = document.getElementById('s3-cam-pos');
+    const s3PipTc = document.getElementById('s3-pip-tc');
+
+    const s5MonTag = document.getElementById('s5-mon-tag');
+    const s5MonTc = document.getElementById('s5-mon-tc');
+    const s5LiveSub = document.getElementById('s5-live-sub');
+    const s5TermPct = document.getElementById('s5-term-pct');
+    const s5TermFill = document.getElementById('s5-term-fill');
+    const tbSharp = document.getElementById('tb-sharp');
+    const tbSmooth = document.getElementById('tb-smooth');
+    const tbZero = document.getElementById('tb-zero');
+
+    const mouthBar = document.getElementById('mouth-bar');
+    const mascotEl = document.getElementById('mascot-robot');
+    const pbFill = document.getElementById('pb-fill');
+    const pbTime = document.getElementById('pb-time');
+
+    const PROMPT_STR = 'Buat video motion graphic 3D sinematik + gerak kamera + narasi ElevenLabs...';
+    let lastSegIdx = -1;
+
+    function seekTimeline(rawT) {
+        const t = Math.max(0, Math.min(DURATION, rawT));
+
+        // 1. Seek GSAP master timeline
+        tl.seek(t, false);
+
+        // 2. Blueprint Dark Mode strictly in Scene 3 (20.20s - 28.83s)
+        viewportEl.classList.toggle('blueprint-mode', t >= 20.20 && t < 28.83);
+
+        // 3. Update Spec Bar, 2-Line Headline & Exact VO Transcript
+        specTc.textContent = `00:${t < 10 ? '0' : ''}${t.toFixed(1)}`;
+        const segIdx = VO_SEGMENTS.findIndex(s => t >= s.t0 && t < s.t1);
+        if (segIdx !== -1 && segIdx !== lastSegIdx) {
+            lastSegIdx = segIdx;
+            const s = VO_SEGMENTS[segIdx];
+            specNum.textContent = s.fig;
+            specLabel.textContent = s.label;
+            hl1.innerHTML = s.l1;
+            hl2.innerHTML = s.l2;
+            voPhaseTag.textContent = s.voTag;
+            voLiveText.textContent = s.voText;
+        }
+
+        // 4. Kinetic Background Marquee
+        const tickerOffset = -((t * 140) % 2400);
+        bgTicker.style.transform = `translate3d(${tickerOffset}px, 0, 0)`;
+
+        // 5. SCENE 1 (0.0s - 6.28s): Heavy Legacy Editor Beachball
+        if (t < 6.28) {
+            const stutterAngle = Math.floor(t * 6) * 45;
+            s1Spinner.style.transform = `rotate(${stutterAngle}deg)`;
+        }
+
+        // 6. SCENE 2A (6.28s - 10.44s): Antigravity IDE Prompt Typing
+        if (t >= 6.28 && t < 10.44) {
+            const typeP = Math.max(0, Math.min(1, (t - 6.55) / 2.9));
+            const chars = Math.floor(typeP * PROMPT_STR.length);
+            s2aTyped.textContent = PROMPT_STR.slice(0, chars);
+
+            const isSent = t >= 9.6;
+            s2aSendBtn.classList.toggle('sent', isSent);
+            s2aSendBtn.textContent = isSent ? '✓ PROMPT SENT' : 'SEND PROMPT ↵';
+        }
+
+        // 7. SCENE 2C (13.80s - 17.00s): GSAP Kinetic Pucks Animation
+        if (t >= 13.80 && t < 17.00) {
+            const localG = t - 13.80;
+            const p1X = Math.sin(localG * 3.2) * 45 + 45;
+            const p2X = Math.sin(localG * 3.2 - 0.8) * 55 + 55;
+            const p3X = Math.sin(localG * 3.2 - 1.6) * 50 + 50;
+            gsapPuck1.style.transform = `translateX(${p1X}px)`;
+            gsapPuck2.style.transform = `translateX(${p2X}px)`;
+            gsapPuck3.style.transform = `translateX(${p3X}px)`;
+        }
+
+        // 8. SCENE 3 (20.20s - 28.83s): Storyboard & Moving Camera Telemetry
+        if (t >= 20.20 && t < 28.83) {
+            sb1.classList.toggle('active', t >= 20.3 && t < 23.0);
+            sb2.classList.toggle('active', t >= 23.0 && t < 25.3);
+            sb3.classList.toggle('active', t >= 25.3);
+
+            const localT = t - 20.20;
+            const orbitDeg = ((localT * 52) % 360).toFixed(1);
+            s3CamAngle.textContent = `${orbitDeg}°`;
+            s3PipTc.textContent = `TC 00:${t.toFixed(1)}`;
+        }
+
+        // 9. SCENE 4 (28.83s - 34.88s): ElevenLabs VU Meter Waveform
+        if (t >= 28.83 && t < 34.88) {
+            for (let i = 0; i < vuBars.length; i++) {
+                const wave = Math.abs(Math.sin(t * 10.5 + i * 0.45) * Math.cos(t * 4.8 - i * 0.25));
+                const hPct = Math.floor(16 + wave * 82);
+                vuBars[i].style.height = `${hPct}%`;
+            }
+        }
+
+        // 10. SCENE 5 (34.88s - 51.77s): Beat-Sync Monitor & Terminal Auto-Render
+        if (t >= 34.88 && t < 51.77) {
+            const sec = Math.floor(t);
+            const frm = Math.floor((t % 1) * 60);
+            s5MonTc.textContent = `TC 00:00:${sec < 10 ? '0' : ''}${sec}:${frm < 10 ? '0' : ''}${frm}`;
+
+            if (t < 43.70) {
+                s5MonTag.textContent = 'AUDIO-BEAT LOCK // 3D STAGE';
+                s5LiveSub.textContent = 'GERAK 3D PRESISI IKUTI KETUKAN SUARA';
+                s5TermPct.textContent = 'STANDBY';
+                s5TermFill.style.width = '0%';
+            } else {
+                s5MonTag.textContent = 'TERMINAL RENDER // 60 FPS MP4';
+                s5LiveSub.textContent = 'HASIL TAJAM, MULUS & ANTI DROP FRAME!';
+                const rProg = Math.max(0, Math.min(1, (t - 44.0) / 4.2));
+                const pct = Math.floor(rProg * 100);
+                s5TermPct.textContent = `${pct}% (${Math.floor(rProg * 3655)}/3655 FRAMES)`;
+                s5TermFill.style.width = `${pct}%`;
+            }
+
+            tbSharp.classList.toggle('lit', t >= 47.8);
+            tbSmooth.classList.toggle('lit', t >= 48.6);
+            tbZero.classList.toggle('lit', t >= 49.4);
+        }
+
+        // =====================================================================
+        // 11. THREE.JS MULTI-OBJECT 3D CHOREOGRAPHY (NO ATOM BALL!)
+        // =====================================================================
+        // Individual object animations so the 3D scene feels alive & diverse
+        knotMesh.rotation.y = t * 1.4;
+        knotMesh.rotation.x = t * 0.9;
+        octaMesh.rotation.y = -t * 1.6;
+        octaMesh.position.y = 0.25 + Math.sin(t * 3.0) * 0.16;
+        coneMesh.rotation.y = t * 1.1;
+        dodecaMesh.rotation.x = t * 1.3;
+        dodecaMesh.rotation.y = t * 1.1;
+        donutMesh.rotation.x = t * 1.5;
+        donutMesh.rotation.y = -t * 1.2;
+        cube1.rotation.y = t * 1.8;
+        cube1.rotation.z = t * 0.9;
+        cyl1.position.y = -0.52 + Math.cos(t * 3.5) * 0.12;
+
+        if (t < 17.00) {
+            // Hidden during Scene 1, Scene 2A (Prompt), Scene 2B (HTML), Scene 2C (GSAP)
+            stage3D.visible = false;
+        } else if (t >= 17.00 && t < 20.20) {
+            // SCENE 2D (Dedicated Three.js Frame): Multi-Object 3D Stage in lower window!
+            stage3D.visible = true;
+            directorEnv.visible = false;
+            dioramaGroup.scale.setScalar(1.0);
+            stage3D.position.set(-0.20, -0.78, 0);
+            stage3D.scale.setScalar(0.72);
+            dioramaGroup.rotation.y = (t - 17.00) * 0.55;
+
+            // Stagger-pop the 9 objects in as Three.js builds the scene!
+            const buildElapsed = t - 17.15;
+            for (let i = 0; i < allDioramaMeshes.length; i++) {
+                const m = allDioramaMeshes[i];
+                const s = Math.max(0.001, Math.min(1, (buildElapsed - i * 0.14) * 4.0));
+                m.scale.setScalar(s);
+            }
+
+            camera.position.set(0, 1.15, 10.2);
+            camera.lookAt(0, -0.45, 0);
+        } else if (t >= 20.20 && t < 28.83) {
+            // SCENE 3: Storyboard + 3D Logic + Moving Camera Rig orbiting around the Multi-Object Stage!
+            stage3D.visible = true;
+            directorEnv.visible = true;
+            for (let i = 0; i < allDioramaMeshes.length; i++) {
+                allDioramaMeshes[i].scale.setScalar(1);
+            }
+            dioramaGroup.scale.setScalar(0.62);
+            camRig.scale.setScalar(0.82);
+            stage3D.position.set(-0.20, 0.08, 0);
+            stage3D.scale.setScalar(0.76);
+            dioramaGroup.rotation.y = Math.sin(t * 0.3) * 0.25;
+
+            // Elevated observer perspective looking down at the multi-object stage & dolly track
+            camera.position.set(0, 4.3, 10.8);
+            camera.lookAt(0, -0.15, 0);
+
+            // Orbit the 3D Cinema Camera Rig along the circular track around the multi-object stage
+            const camAngle = (t - 20.20) * 0.88 + 0.65;
+            const cx = Math.cos(camAngle) * ORBIT_R;
+            const cz = Math.sin(camAngle) * ORBIT_R;
+            const cy = -0.15 + Math.sin((t - 20.20) * 1.8) * 0.18;
+
+            camRig.position.set(cx, cy, cz);
+            camRig.lookAt(0, -0.10, 0);
+
+            if (s3CamPos) {
+                s3CamPos.textContent = `${cx >= 0 ? '+' : ''}${cx.toFixed(1)}, ${cz >= 0 ? '+' : ''}${cz.toFixed(1)}`;
+            }
+        } else if (t >= 28.83 && t < 34.88) {
+            // Hidden during Scene 4 (ElevenLabs Studio Deck)
+            stage3D.visible = false;
+        } else if (t >= 34.88 && t < 51.77) {
+            // SCENE 5: Inside Top Broadcast Monitor — Multi-Object Stage pulsing to voiceover beat!
+            stage3D.visible = true;
+            directorEnv.visible = false;
+            dioramaGroup.scale.setScalar(1.0);
+            for (let i = 0; i < allDioramaMeshes.length; i++) {
+                allDioramaMeshes[i].scale.setScalar(1);
+            }
+            stage3D.position.set(-0.22, 1.34, 0);
+            const beatPulse = 0.42 + Math.abs(Math.sin(t * 6.28)) * 0.05;
+            stage3D.scale.setScalar(beatPulse);
+            dioramaGroup.rotation.y = t * 0.75;
+            camera.position.set(0, 0.4, 10.5);
+            camera.lookAt(0, 0, 0);
+        } else {
+            // SCENE 6: Inside Left Bento Smartphone Frame — Multi-Object 3D Showcase!
+            stage3D.visible = true;
+            directorEnv.visible = false;
+            dioramaGroup.scale.setScalar(1.0);
+            for (let i = 0; i < allDioramaMeshes.length; i++) {
+                allDioramaMeshes[i].scale.setScalar(1);
+            }
+            stage3D.position.set(-1.32, -0.05, 0);
+            stage3D.scale.setScalar(0.42);
+            dioramaGroup.rotation.y = t * 0.85;
+            camera.position.set(0, 0.4, 10.5);
+            camera.lookAt(0, 0, 0);
+        }
+
+        renderer.render(scene, camera);
+
+        // 12. Robot Mascot Deterministic Bobbing & Speech Mouth
+        const bobY = Math.sin(t * 5.0) * 6;
+        const tilt = Math.cos(t * 2.5) * 4;
+        mascotEl.style.transform = `translateY(${bobY}px) rotate(${tilt}deg)`;
+        const mouthH = 4 + Math.abs(Math.sin(t * 14)) * 10;
+        mouthBar.setAttribute('height', mouthH.toFixed(1));
+        mouthBar.setAttribute('y', (79 - mouthH / 2).toFixed(1));
+
+        // 13. Scrubber UI update
+        pbFill.style.width = `${(t / DURATION) * 100}%`;
+        pbTime.textContent = `${t.toFixed(1)}s / ${DURATION.toFixed(1)}s`;
+    }
+
+    // =========================================================================
+    // 6. INTERACTIVE PLAYBACK & HEADLESS CAPTURE HOOKS
+    // =========================================================================
+    const audioEl = document.getElementById('master-audio');
+    const pbToggle = document.getElementById('pb-toggle');
+    const pbScrub = document.getElementById('pb-scrub');
+
+    let isPlaying = false;
+    let fallbackStart = 0;
+    let currentT = 0;
+
+    function tick(now) {
+        if (isPlaying) {
+            if (!audioEl.paused && !audioEl.ended) {
+                currentT = audioEl.currentTime;
+            } else {
+                currentT = (now - fallbackStart) / 1000;
+            }
+            if (currentT >= DURATION) {
+                currentT = 0;
+                fallbackStart = now;
+                audioEl.currentTime = 0;
+            }
+            seekTimeline(currentT);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    function togglePlay() {
+        if (isPlaying) {
+            isPlaying = false;
+            audioEl.pause();
+            pbToggle.textContent = 'PLAY';
+        } else {
+            isPlaying = true;
+            fallbackStart = performance.now() - currentT * 1000;
+            audioEl.currentTime = currentT;
+            audioEl.play().catch(() => {});
+            pbToggle.textContent = 'PAUSE';
+        }
+    }
+
+    pbToggle.addEventListener('click', togglePlay);
+    pbScrub.addEventListener('click', (e) => {
+        const rect = pbScrub.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        currentT = ratio * DURATION;
+        audioEl.currentTime = currentT;
+        fallbackStart = performance.now() - currentT * 1000;
+        seekTimeline(currentT);
+    });
+
+    window.seekTo = (sec) => {
+        isPlaying = false;
+        audioEl.pause();
+        currentT = sec;
+        seekTimeline(sec);
+    };
+
+    window.OPENER = {
+        W,
+        H,
+        DURATION,
+        tl,
+        seek: (sec) => window.seekTo(sec),
+        ready: false
+    };
+
+    document.fonts.ready.then(() => {
+        seekTimeline(0);
+        window.OPENER.ready = true;
+        if (!navigator.webdriver) {
+            requestAnimationFrame(tick);
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Jersey SFC Arafs</title>
+<meta name="viewport" content="width=1080">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Manrope:wght@600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#0E2A1D;--paper:#FBFAF6;--red:#C8102E;--brown:#6B1A12;--gold:#8A6A12;--ink:#141619}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{width:100%;height:100%;background:#000;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden;background:var(--green);font-family:Manrope,sans-serif;transform-origin:0 0}
+#tex{position:absolute;left:-200px;right:-200px;top:-200px;height:2900px;background:url(assets/songket-motif.png) 0 0/245px 330px repeat;opacity:.13;filter:grayscale(1)}
+#glow{position:absolute;inset:0;background:radial-gradient(60% 40% at 50% 100%,rgba(245,196,0,.22),transparent 70%)}
+#sheet{position:absolute;left:36px;top:110px;width:1008px;height:1700px;border-radius:52px;background:var(--paper);box-shadow:0 40px 90px rgba(0,0,0,.45);transform-origin:50% 50%}
+#safe{position:absolute;top:180px;left:80px;width:870px;height:1290px;z-index:5}
+.k{position:absolute;left:0;top:20px;font:700 28px 'JetBrains Mono';letter-spacing:.06em;color:var(--gold);white-space:nowrap}
+.cr{position:absolute;right:0;top:22px;font:700 26px 'JetBrains Mono';color:#9A948A;white-space:nowrap}
+#title{position:absolute;left:-4px;top:62px;font:400 168px/1.05 'Permanent Marker';color:var(--red);white-space:nowrap;padding-right:30px}
+#sub{position:absolute;left:4px;top:250px;font:800 52px Manrope;letter-spacing:.02em;color:var(--brown);white-space:nowrap}
+#cap{position:absolute;left:0;width:870px;top:1140px;text-align:center;font:600 44px/1.25 Manrope;color:var(--ink)}
+#cap small{display:block;font:700 30px 'JetBrains Mono';color:#7A746A;margin-top:10px}
+#deckwrap{position:absolute;left:230px;top:540px;width:620px;height:760px;z-index:3;transform-origin:50% 50%}
+#deck{position:absolute;inset:0}
+.card{position:absolute;inset:0;border-radius:36px;overflow:hidden;box-shadow:0 24px 50px rgba(20,22,25,.28);background:#1a1a1a;transform-origin:50% 60%}
+.card img{width:100%;height:100%;object-fit:cover;object-position:50% 40%;display:block}
+.pill{position:absolute;left:24px;bottom:24px;font:800 32px Manrope;color:var(--ink);background:#fff;padding:10px 22px;border-radius:99px;white-space:nowrap}
+#guides{display:none}
+</style></head><body>
+<div id="stage">
+  <div id="tex"></div><div id="glow"></div><div id="sheet"></div>
+  <div id="deckwrap"><div id="deck">
+    <div class="card"><img src="assets/home.png"><div class="pill">· HOME KIT</div></div>
+    <div class="card"><img src="assets/away.png"><div class="pill">· AWAY KIT</div></div>
+    <div class="card"><img src="assets/third.png"><div class="pill">· THIRD KIT</div></div>
+    <div class="card"><img src="assets/songket-motif.png"><div class="pill">· SONGKET LEPUS</div></div>
+  </div></div>
+  <div id="safe">
+    <div class="k">— SRIWIJAYA FC · KIT 2026/27</div>
+    <div class="cr">foto: Arafs Apparel</div>
+    <div id="title"></div><div id="sub"></div><div id="cap"></div>
+  </div>
+</div>
+<script>
+const W = 1080, H = 1920, FPS = 30;
+// Semua isi dari postingan @arafs.apparel "Beginning of Glory — Sriwijaya FC" (slide + caption).
+const SCENES = [
+  // Batas scene = titik tengah jeda antar-paragraf di vo.wav (silencedetect -70dB)
+  { t0: 0,     t1: 7.71,  a: 0, title: 'Udah jadi', sub: 'JERSEY SFC 2026/27', cap: 'Tapi musim ini,<br>belum sempat dipakai bertanding' },
+  { t0: 7.71,  t1: 12.37, a: 0, title: 'Home',      sub: 'KUNING · MERAH',     cap: 'Warna yang dulu<br>dibanggakan satu kota' },
+  { t0: 12.37, t1: 20.07, a: 1, title: 'Away',      sub: 'HIJAU · BIRU MUDA',  cap: 'Kapal layar yang<br>belum sempat berlayar' },
+  { t0: 20.07, t1: 24.92, a: 2, title: 'Third',     sub: 'HITAM · MERAH · EMAS', cap: 'Paling gagah,<br>paling sunyi' },
+  { t0: 24.92, t1: 33.49, a: 3, title: 'Songket',   sub: 'LEPUS · PALEMBANG',  cap: 'Lepus artinya menutupi' },
+  { t0: 33.49, t1: 42.50, a: 3, title: 'Tapi…',     sub: 'MUSIM INI',          cap: '"belum dapat melanjutkan langkahnya di kompetisi"<small>— Arafs Apparel</small>' },
+  { t0: 42.50, t1: 51.5,  a: 3, title: 'Pre-order', sub: 'DIPAKAI SUPORTER',   cap: 'Bukan pemain. Setidaknya,<br>warnanya masih hidup<small>foto &amp; desain: Arafs Apparel</small>' },
+];
+const DURATION = 51.5;
+// Nada sendu: hanya whoosh pelan di kocokan kartu + satu klik di "Tapi…"
+const SFX = [
+  { t: 12.07, file: 'sfx_whoosh.wav', vol: 0.12 },
+  { t: 19.77, file: 'sfx_whoosh.wav', vol: 0.12 },
+  { t: 24.62, file: 'sfx_whoosh.wav', vol: 0.12 },
+  { t: 33.70, file: 'sfx_click.wav',  vol: 0.14 },
+  { t: 42.50, file: 'sfx_whoosh.wav', vol: 0.12 },
+];
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const eOut = p => 1 - Math.pow(1 - p, 3);
+const eIn = p => p * p * p;
+const eIO = p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+const lerp = (a, b, k) => a + (b - a) * k;
+
+const $ = s => document.querySelector(s);
+const tex = $('#tex'), glow = $('#glow'), sheet = $('#sheet'), deckwrap = $('#deckwrap'), deck = $('#deck');
+const elT = $('#title'), elS = $('#sub'), elC = $('#cap');
+const cards = [...document.querySelectorAll('.card')];
+const FAN = [{ x: -270, y: 60, r: -9 }, { x: 0, y: 30, r: 0 }, { x: 270, y: 60, r: 9 }];
+
+// Kartu aktif kontinu: kocok kartu di batas scene (tanda tangan gerak).
+function activeAt(t) {
+  let a = SCENES[0].a;
+  for (let j = 1; j < SCENES.length; j++) {
+    const d = SCENES[j].a - SCENES[j - 1].a;
+    if (d) a += d * eIO(clamp((t - (SCENES[j].t0 - 0.35)) / 0.7));
+  }
+  return a;
+}
+let lastScene = -1;
+function seekTo(t) {
+  t = clamp(t, 0, DURATION);
+  // latar: tekstur songket naik pelan, glow bernapas, lembar putih bernapas
+  tex.style.transform = `translateY(${-((t * 14) % 330)}px)`;
+  glow.style.opacity = (0.8 + 0.2 * Math.sin(t * 0.9)).toFixed(3);
+  sheet.style.transform = `scale(${(1 + 0.004 * Math.sin(t * 0.7)).toFixed(4)})`;
+
+  const si = Math.max(0, SCENES.findIndex(s => t >= s.t0 && t < s.t1) === -1 ? SCENES.length - 1 : SCENES.findIndex(s => t >= s.t0 && t < s.t1));
+  const S = SCENES[si], lt = t - S.t0, dur = S.t1 - S.t0;
+
+  // deck: naik di awal, dorong pelan per scene
+  const rise = 1 - eOut(clamp(t / 0.9));
+  const push = 1 + 0.03 * eOut(clamp(lt / dur));
+  deckwrap.style.transform = `translateY(${(rise * 1400).toFixed(1)}px) scale(${push.toFixed(4)})`;
+  // warna memudar pelan sepanjang video, abu-abu penuh di "Tapi…", hidup lagi di kalimat terakhir
+  // "warnanya masih hidup" diucapkan ±48,4–50,6 dtk → warna kembali di situ
+  const g = (0.5 * clamp((t - 7.7) / 25.8) + 0.5 * eIO(clamp((t - 33.9) / 1.2))) * (1 - eIO(clamp((t - 48.2) / 1.8)));
+  deck.style.filter = g > 0.001 ? `grayscale(${g.toFixed(3)}) brightness(${(1 - 0.12 * g).toFixed(3)})` : 'none';
+
+  const a = activeAt(t), k = eIO(clamp((t - 42.5) / 1.2));
+  cards.forEach((c, i) => {
+    const d = i - a;
+    let x, y, r, s, o, z;
+    if (d >= 0) { x = -36 * d; y = 14 * d; r = -4 * d; s = 1 - 0.035 * d; o = clamp(3 - d); z = 100 - Math.round(d * 10); }
+    else { const q = -d; x = -1250 * q; y = -80 * q; r = -22 * q; s = 1; o = 1; z = q < 1 ? 200 : 0; }
+    if (k > 0) {
+      const f = FAN[i] || { x: 0, y: 900, r: 0 };
+      x = lerp(x, f.x, k); y = lerp(y, f.y, k); r = lerp(r, f.r, k);
+      s = lerp(s, 0.58, k); o = i < 3 ? lerp(o, 1, k) : lerp(o, 0, k); z = i === 1 ? 150 : 140 - i;
+    }
+    c.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${r.toFixed(2)}deg) scale(${s.toFixed(4)})`;
+    c.style.opacity = o.toFixed(3); c.style.zIndex = z;
+  });
+
+  // teks: judul tersingkap dari kiri, sub & caption naik dengan blur, keluar cepat
+  if (si !== lastScene) { elT.textContent = S.title; elS.textContent = S.sub; elC.innerHTML = S.cap; lastScene = si; }
+  const dl = si === 0 ? 0.9 : 0.15;
+  const pT = eOut(clamp((lt - dl) / 0.55)), pS = eOut(clamp((lt - dl - 0.3) / 0.5)), pC = eOut(clamp((lt - dl - 0.55) / 0.5));
+  const out = si === SCENES.length - 1 ? 0 : eIn(clamp((lt - (dur - 0.35)) / 0.3));
+  elT.style.clipPath = `inset(-20px ${((1 - pT) * 100).toFixed(2)}% -20px -20px)`;
+  elT.style.opacity = (1 - out).toFixed(3); elT.style.transform = `translateY(${(-24 * out).toFixed(1)}px)`;
+  [[elS, pS], [elC, pC]].forEach(([el, p]) => {
+    el.style.opacity = (p * (1 - out)).toFixed(3);
+    el.style.transform = `translateY(${((1 - p) * 34 - 24 * out).toFixed(1)}px)`;
+    el.style.filter = p < 0.999 ? `blur(${((1 - p) * 8).toFixed(2)}px)` : 'none';
+  });
+}
+window.seekTo = seekTo;
+
+const RENDER = new URLSearchParams(location.search).has('render');
+const ready = Promise.all([document.fonts.ready, ...[...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))]);
+ready.then(() => {
+  seekTo(0);
+  window.OPENER = { ready: true, DURATION, FPS, WIDTH: W, HEIGHT: H, SCENES, SFX, seek: seekTo };
+  if (RENDER) return;
+  // Preview saja: skala ke jendela + putar ulang. Spasi = jeda.
+  const st = $('#stage');
+  const fit = () => { const sc = Math.min(innerWidth / W, innerHeight / H); st.style.transform = `translate(${(innerWidth - W * sc) / 2}px,${(innerHeight - H * sc) / 2}px) scale(${sc})`; };
+  fit(); addEventListener('resize', fit);
+  let playing = true, base = performance.now(), held = 0;
+  addEventListener('keydown', e => { if (e.code === 'Space') { playing = !playing; if (playing) base = performance.now() - held * 1000; } });
+  (function loop(now) { if (playing) { held = ((now - base) / 1000) % DURATION; seekTo(held); } requestAnimationFrame(loop); })(performance.now());
+});
+</script>
+</body></html>

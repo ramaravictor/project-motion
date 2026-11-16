@@ -1,0 +1,100 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><title>Opsi A</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Caveat+Brush&display=swap" rel="stylesheet">
+<style>:root{--bg:#F4EFE8;--ink:#141619;--orange:#FF5500;--border:#DFD8CE}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif}
+#viewport{position:absolute;inset:0;width:1080px;height:1920px;background:var(--bg);overflow:hidden}
+.bg-grid{position:absolute;inset:0;background-size:48px 48px;background-image:linear-gradient(to right,rgba(20,22,25,.035) 1px,transparent 1px),linear-gradient(to bottom,rgba(20,22,25,.035) 1px,transparent 1px)}
+#safe{position:absolute;top:180px;left:80px;width:870px;height:1290px;z-index:20}
+.brand-header{position:absolute;top:0;left:0;right:0;height:50px;display:flex;justify-content:space-between;align-items:center}
+.brand-logo-badge{display:flex;align-items:center;gap:14px}
+.brand-monogram{width:56px;height:42px}.brand-monogram img{width:100%;height:100%;object-fit:contain}
+.brand-text-col{display:flex;flex-direction:column;line-height:1.08}
+.brand-title{font-size:25px;font-weight:800;color:var(--ink);letter-spacing:-.03em}
+.brand-sub{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--orange)}
+.header-right-group{display:flex;align-items:center;gap:10px}
+.scene-tag-pill{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:#fff;background:var(--orange);padding:8px 14px;border-radius:99px;white-space:nowrap}
+.brand-handle{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;color:var(--ink);background:rgba(255,255,255,.9);border:1.5px solid var(--border);padding:7px 14px 7px 10px;border-radius:99px;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand-handle img{width:24px;height:24px}
+#top-card-container{position:absolute;top:90px;left:0;width:870px;height:520px}
+#headline-dock{position:absolute;top:626px;left:0;width:870px;height:220px;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:0 6px}
+.headline-main{font-size:48px;font-weight:800;line-height:1.1;letter-spacing:-.035em;color:var(--ink)}
+.highlight-orange{color:var(--orange)}
+.genz-caption-pill{background:rgba(255,255,255,.86);border:1.5px solid var(--border);padding:12px 20px;border-radius:16px;font-size:20px;font-weight:600;line-height:1.35;color:#374151}
+#character-stage{position:absolute;left:80px;width:870px;bottom:130px;height:740px;display:flex;justify-content:center;align-items:flex-end;z-index:10}
+#character-rig{position:relative;width:740px;height:740px;-webkit-mask-image:linear-gradient(to bottom,#000 78%,transparent 100%);mask-image:linear-gradient(to bottom,#000 78%,transparent 100%)}
+#character-rig img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+#character-rig .pose{filter:drop-shadow(0 20px 45px rgba(0,0,0,.14))}
+.char-ground-shadow{position:absolute;bottom:20px;width:500px;height:44px;background:radial-gradient(ellipse at center,rgba(0,0,0,.18) 0%,transparent 70%)}
+</style></head><body><div id="viewport"><div class="bg-grid"></div>
+  <div id="safe">
+    <header class="brand-header">
+      <div class="brand-logo-badge">
+        <div class="brand-monogram"><img src="../../_shared/brand/logo-youtube.svg"></div>
+        <div class="brand-text-col"><span class="brand-title">ChillDev</span><span class="brand-sub">@chilldevibe</span></div>
+      </div>
+      <div class="header-right-group">
+        <div class="scene-tag-pill">TIMNAS FUTSAL</div>
+        <div class="brand-handle"><img src="../../_shared/brand/logo-instagram.svg"><span>@ramarvctr_</span></div>
+      </div>
+    </header>
+    <section id="top-card-container"><style>
+.board{position:absolute;inset:0;border-radius:28px;overflow:hidden;background:
+  radial-gradient(ellipse 60% 50% at 30% 30%,rgba(255,255,255,.07),transparent 70%),
+  radial-gradient(ellipse 50% 60% at 80% 80%,rgba(255,255,255,.05),transparent 70%),
+  linear-gradient(160deg,#25443A,#1A3029);border:10px solid #8A5A34;box-shadow:0 24px 50px -14px rgba(20,22,25,.35),inset 0 0 0 2px rgba(0,0,0,.25)}
+.board svg{position:absolute;inset:0;width:100%;height:100%}
+.chalk{fill:none;stroke:rgba(245,242,230,.82);stroke-width:4;stroke-linecap:round;filter:url(#rough)}
+.shot{fill:none;stroke:#F7E26B;stroke-width:5;stroke-linecap:round;stroke-dasharray:14 12;filter:url(#rough)}
+.shot.miss{stroke:rgba(245,242,230,.45)}
+.mag{position:absolute;width:46px;height:46px;border-radius:50%;box-shadow:0 6px 0 rgba(0,0,0,.3),inset 0 -5px 0 rgba(0,0,0,.18),inset 0 4px 0 rgba(255,255,255,.35);font:800 20px 'JetBrains Mono';color:#fff;display:flex;align-items:center;justify-content:center}
+.red{background:#E2272F}.blue{background:#2F6FE0}
+.score{position:absolute;right:34px;top:24px;font:400 92px 'Caveat Brush',cursive;color:#F5F2E6;line-height:1;transform:rotate(-4deg);text-shadow:0 0 1px #fff}
+.score small{display:block;font:700 24px 'JetBrains Mono';color:#F7E26B;letter-spacing:.12em;transform:rotate(2deg);margin-top:4px}
+.note{position:absolute;left:40px;bottom:30px;font:400 40px 'Caveat Brush';color:#F7E26B;transform:rotate(-3deg)}
+.medal{position:absolute;right:60px;bottom:40px;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF1A8,#E7B530 55%,#B9851B);box-shadow:0 8px 0 rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font:800 22px 'JetBrains Mono';color:#6B4A0E;transform:rotate(12deg)}
+.dust{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.18) 1px,transparent 1.5px);background-size:9px 9px;opacity:.25;mix-blend-mode:screen}
+</style>
+<div class="board">
+  <div class="dust"></div>
+  <svg viewBox="0 0 850 500">
+    <defs><filter id="rough"><feTurbulence baseFrequency=".9" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter></defs>
+    <rect class="chalk" x="40" y="40" width="770" height="420" rx="6"/>
+    <line class="chalk" x1="425" y1="40" x2="425" y2="460"/>
+    <circle class="chalk" cx="425" cy="250" r="62"/>
+    <path class="chalk" d="M810 150 A110 110 0 0 0 700 250 A110 110 0 0 0 810 350"/>
+    <path class="chalk" d="M40 150 A110 110 0 0 1 150 250 A110 110 0 0 1 40 350"/>
+    <rect class="chalk" x="810" y="205" width="24" height="90"/>
+    <path class="shot" d="M250 110 Q600 60 806 225"/>
+    <path class="shot" d="M300 400 Q620 430 806 280"/>
+    <path class="shot" d="M470 180 Q680 170 806 238"/>
+    <path class="shot" d="M520 330 Q700 330 806 265"/>
+    <path class="shot" d="M380 250 Q620 250 806 250"/>
+    <path class="shot" d="M640 120 Q760 160 806 232"/>
+    <path class="shot miss" d="M600 300 Q300 360 44 262"/>
+  </svg>
+  <div class="mag red" style="left:226px;top:88px">7</div>
+  <div class="mag red" style="left:276px;top:378px">10</div>
+  <div class="mag red" style="left:446px;top:158px">9</div>
+  <div class="mag red" style="left:496px;top:308px">11</div>
+  <div class="mag blue" style="left:690px;top:220px">1</div>
+  <div class="mag blue" style="left:600px;top:390px">4</div>
+  <div class="score">6–1<small>IDN · THA</small></div>
+  <div class="note">emas!</div>
+  <div class="medal">SEA<br></div>
+</div>
+</section>
+    <section id="headline-dock">
+      <h1 class="headline-main">Final lawan Thailand, <span class="highlight-orange">menang 6–1</span></h1>
+      <div class="genz-caption-pill">SEA Games 2025, medali emas buat Timnas Futsal. Gacor parah, no debat!</div>
+    </section>
+  </div>
+  <section id="character-stage">
+    <div class="char-ground-shadow"></div>
+    <div id="character-rig">
+      <img class="pose" src="../../_shared/rama/rama_pose_thumbsup.png">
+      <img src="../../_shared/rama/mouth_v3_med.png">
+    </div>
+  </section>
+
+</div></body></html>

@@ -1,0 +1,22 @@
+/* Dunia bersama seri "Lampu Terakhir di Jakabaring": stadion malam + papan skor + kliping */
+#world{position:absolute;left:0;top:0;width:1080px;height:1920px;transform-origin:0 0;will-change:transform}
+#world canvas{position:absolute;left:0;top:0;width:1080px;height:1920px}
+
+/* papan skor dot-matrix */
+#board{position:absolute;left:150px;top:380px;width:780px;height:300px;padding:26px 34px;background:#05070d;
+  border:6px solid #1d2647;border-radius:14px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8),0 0 0 2px #000 inset;overflow:hidden}
+#board::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.5) 1px,transparent 1.7px);background-size:5px 5px;pointer-events:none}
+#board .row{font:400 52px/1.3 'DotGothic16',monospace;color:#ffb340;text-shadow:0 0 12px rgba(255,170,60,.75);white-space:nowrap;overflow:hidden;height:80px;letter-spacing:.03em}
+#board .row.r{color:#ff5a4a;text-shadow:0 0 12px rgba(255,80,60,.75)}
+#board .row.g{color:#ffd54a;text-shadow:0 0 14px rgba(255,210,70,.8)}
+
+/* kliping koran (objek dunia) */
+.clip{position:absolute;width:520px;background:#efe6d2;padding:28px 32px 32px;box-shadow:0 30px 60px -18px rgba(0,0,0,.8);transform-origin:50% 50%;visibility:hidden}
+.clip::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.2) 1.2px,transparent 1.5px);background-size:7px 7px;mix-blend-mode:multiply;opacity:.35;pointer-events:none}
+.clip .mast{font:700 24px 'Old Standard TT',serif;letter-spacing:.18em;border-bottom:3px double #2b2520;padding-bottom:6px;color:#2b2520;white-space:nowrap}
+.clip .date{font:600 24px 'IBM Plex Mono',monospace;color:#5b5146;margin:9px 0 10px;white-space:nowrap}
+.clip h3{font:900 54px/.98 'Playfair Display',serif;color:#1f1a15;letter-spacing:-.02em}
+.clip .ph{margin-top:16px;height:210px;position:relative;background:linear-gradient(160deg,#f5c400 0 48%,#0f7a3c 48% 100%)}
+.clip .ph::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,.28) 1.6px,transparent 2px);background-size:8px 8px}
+.clip .ph svg{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);height:160px}
+.clip .stamp{position:absolute;font:400 58px 'Special Elite',monospace;color:#b3261e;border:6px solid #b3261e;padding:4px 18px;letter-spacing:.06em;transform:rotate(-12deg);mix-blend-mode:multiply;white-space:nowrap}

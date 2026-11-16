@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Thumbnail Part 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=DotGothic16&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../_world/stadium.css">
+<script src="../_world/stadium.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1080px;height:1920px;background:#070b18;overflow:hidden}
+  #stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden}
+  #scrim{position:absolute;left:0;right:0;top:700px;height:640px;background:radial-gradient(75% 55% at 50% 50%,rgba(4,6,14,.88),rgba(4,6,14,0) 75%)}
+  #kick{position:absolute;left:0;right:0;top:300px;text-align:center;font:600 34px 'IBM Plex Mono',monospace;color:#f0c35a;letter-spacing:.22em}
+  #title{position:absolute;left:60px;right:60px;top:760px;text-align:center;font:700 176px/.92 'Cormorant Garamond',serif;color:#efe8d6;letter-spacing:-.02em;text-shadow:0 6px 40px rgba(0,0,0,.75)}
+  #title i{font-style:italic;color:#ff7a66}
+  #sub{position:absolute;left:80px;right:80px;top:1150px;text-align:center;font:600 italic 58px/1.15 'Cormorant Garamond',serif;color:#e9e2cf;text-shadow:0 4px 24px rgba(0,0,0,.8)}
+  #sub b{font-style:italic;color:#f0c35a;font-weight:700}
+  #part{position:absolute;left:50%;top:1300px;transform:translateX(-50%);font:600 30px 'IBM Plex Mono',monospace;color:#070b18;background:#f5c400;padding:10px 26px;border-radius:6px;letter-spacing:.14em;white-space:nowrap}
+  #tag{position:absolute;left:0;right:0;top:1640px;text-align:center;font:600 30px 'IBM Plex Mono',monospace;color:#9aa6c4;letter-spacing:.12em}
+  #grain{position:absolute;inset:0;opacity:.09;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
+  #vig{position:absolute;inset:0;background:radial-gradient(85% 60% at 50% 48%,transparent 50%,rgba(0,0,0,.6) 100%)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="world">
+    <canvas id="cv" width="1080" height="1920"></canvas>
+    <div id="board">
+      <div class="row r">DEGRADASI · 2X</div>
+      <div class="row">DENDA FIFA RP2,7 M</div>
+      <div class="row r">TOTAL RP4,1 M</div>
+    </div>
+  </div>
+  <div id="scrim"></div>
+  <div id="kick">SRIWIJAYA FC · 2018–2026</div>
+  <div id="title">Satu per satu,<br><i>padam.</i></div>
+  <div id="sub">Utang <b>Rp4,1 miliar</b> yang cuma diwariskan</div>
+  <div id="part">PART 2 / 4</div>
+  <div id="tag">@ramarvctr_</div>
+  <div id="grain"></div>
+  <div id="vig"></div>
+</div>
+<script>
+  const S = window.Stadium, ctx = document.getElementById('cv').getContext('2d');
+  // tiga lampu padam, satu masih menyala: keadaan di akhir Part 2
+  window.seekTo = (t) => S.render(ctx, t, { lights: [0, 0, 0, 1], crowd: .2, cheer: 0, confetti: 0, confettiT: 0, players: { mode: 'walk', a: .3 } });
+  window.seekTo(40);
+</script>
+</body>
+</html>

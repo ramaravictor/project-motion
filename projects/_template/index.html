@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Template v2 · ChillDev</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Plus+Jakarta+Sans:wght@500;600;800&display=swap" rel="stylesheet">
+<style>
+/* Template v2 (AGENTS.md v2). Kerangka tetap: kanvas, safe zone, header ramping, Rama voxel, lip-sync, panel cek.
+   Dunia visual (#world) dan teks scene (#copy) adalah PLACEHOLDER: ganti sesuai style brief Bang Motion.
+   Dari folder part (projects/<seri>/part-1/), ubah semua "../_shared/" menjadi "../../_shared/". */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+html,body{width:100%;height:100%;background:#05070D;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden;transform-origin:0 0;background:#0B0E14}
+
+/* ===== EDIT DI SINI: dunia / panggung visual (placeholder) ===== */
+#world{position:absolute;inset:0;overflow:hidden}
+#world .blob{position:absolute;border-radius:50%;filter:blur(40px)}
+#world .b1{left:520px;top:180px;width:760px;height:760px;background:radial-gradient(circle,#2A4C9A 0%,rgba(42,76,154,0) 70%)}
+#world .b2{left:-260px;top:900px;width:820px;height:820px;background:radial-gradient(circle,#7A2E12 0%,rgba(122,46,18,0) 70%)}
+#world .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.035) 2px,transparent 2px);background-size:48px 48px}
+#copy .line{position:absolute;left:0;width:870px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;letter-spacing:-.035em;color:#fff}
+#copy .line span{display:inline-block;margin-right:.24em}
+#copy .note{position:absolute;left:0;top:76px;font:700 22px 'JetBrains Mono',monospace;color:#9CC2FF;opacity:.8}
+/* ===== akhir bagian EDIT ===== */
+
+/* safe zone: top 180, left 80, right 130, bottom 450 */
+#safe{position:absolute;top:180px;left:80px;width:870px;height:1290px;z-index:3}
+.hdr{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;z-index:5}
+#topic-pill{font:800 24px 'JetBrains Mono',monospace;letter-spacing:.04em;color:#fff;background:#FF5500;padding:9px 16px;border-radius:10px;white-space:nowrap}
+.handle{display:flex;align-items:center;gap:10px;font:700 22px 'JetBrains Mono',monospace;color:#fff;white-space:nowrap;padding:7px 14px 7px 8px;border-radius:99px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.18)}
+.handle img{width:28px;height:28px;display:block}
+.handle b{font:800 22px 'Plus Jakarta Sans',sans-serif}
+
+/* Rama voxel: kanvas 580px, diskalakan per scene */
+#rama{position:absolute;left:0;top:0;width:580px;height:580px;transform-origin:0 0;z-index:4;pointer-events:none}
+#rama-body{position:absolute;inset:0;transform-origin:50% 100%;filter:drop-shadow(0 26px 28px rgba(0,0,0,.5));
+  -webkit-mask-image:linear-gradient(to bottom,#000 84%,transparent 100%);mask-image:linear-gradient(to bottom,#000 84%,transparent 100%)}
+#rama canvas{display:block;width:580px;height:580px}
+
+#guides{position:absolute;inset:0;pointer-events:none;display:none;z-index:20}
+#stage.show-guides #guides{display:block}
+#guides .safe{position:absolute;left:80px;top:180px;width:870px;height:1290px;outline:3px dashed #33CCFF}
+#guides .bottom{position:absolute;left:0;right:0;top:1470px;bottom:0;background:rgba(255,60,60,.12)}
+#guides .right{position:absolute;left:950px;right:0;top:0;bottom:0;background:rgba(255,60,60,.12)}
+
+/* preview: kontrol & panel cek (disembunyikan saat ?render=1) */
+#ctrl{position:absolute;left:0;bottom:0;height:48px;display:flex;gap:12px;align-items:center;padding:0 14px;background:#0F1218;color:#DDE3EE;font:600 13px 'JetBrains Mono',monospace;z-index:30}
+#ctrl button{font:inherit;background:#FF5500;color:#fff;border:0;border-radius:8px;padding:6px 12px;cursor:pointer}
+#ctrl input{width:360px}
+#panel{position:absolute;right:0;top:0;bottom:0;width:440px;background:#0F1218;color:#DDE3EE;font:500 13px/1.4 'JetBrains Mono',monospace;overflow:auto;padding:16px;border-left:1px solid #222;z-index:30}
+#panel h3{font-size:15px;margin-bottom:4px}
+#summary{font-weight:700;margin-bottom:10px}
+.chk{display:grid;grid-template-columns:20px 1fr;gap:2px 8px;padding:8px 0;border-bottom:1px solid #1D2230}
+.chk .dt{grid-column:2;color:#8A93A6;font-size:11px}
+.chk.pass .ic{color:#34D399}.chk.fail .ic{color:#F87171}.chk.warn .ic{color:#FBBF24}
+body.render #ctrl,body.render #panel{display:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- EDIT DI SINI: dunia/panggung sesuai style brief. Hapus atribut data-placeholder setelah diganti. -->
+  <div id="world" data-placeholder><div class="blob b1"></div><div class="blob b2"></div><div class="grid"></div></div>
+
+  <div id="safe">
+    <div class="hdr">
+      <div id="topic-pill">TOPIK VIDEO</div>
+      <div class="handle"><img src="../_shared/brand/logo-instagram.svg" alt=""><b>ChillDev</b>&nbsp;@ramarvctr_</div>
+    </div>
+    <!-- EDIT DI SINI: teks scene. Template mengisi #copy dari SCENES[].text sebagai contoh. -->
+    <div id="copy" data-placeholder><div class="note">placeholder · ganti dunia & teks sesuai style brief (AGENTS.md §3)</div></div>
+  </div>
+
+  <div id="rama"><div id="rama-body"></div></div>
+  <div id="guides"><div class="bottom"></div><div class="right"></div><div class="safe"></div></div>
+</div>
+<div id="ctrl"><button id="play">▶ Putar</button><input id="scrub" type="range" min="0" max="1000" value="0"><span id="clock">0.00 s</span><span>G = garis bantu</span></div>
+<div id="panel"><h3>Cek Aturan Video v2</h3><div id="summary">menjalankan…</div><div id="checks"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="../_shared/rama/voxel/rama-voxel.js"></script>
+<script>
+(() => {
+  const Q = new URLSearchParams(location.search);
+  if (Q.has('render')) document.body.classList.add('render');
+  const $ = q => document.querySelector(q);
+
+  /* ===================== EDIT DI SINI ===================== */
+  const TOPIC = 'TOPIK VIDEO';          // pill kiri header (tanpa nomor slide)
+  const DURATION = 46.65;               // detik, ikuti durasi vo.mp3 (+ end card bila ada)
+  // rama.pos: 'kiri' | 'tengah' | 'kanan' | 'sembunyi' · size: 300–440 (CTA s.d. 580)
+  // rama.pose: 'present' | 'point' | 'thumbs' | 'shocked' · rama.look (opsional): -1 kiri layar … 1 kanan layar
+  const SCENES = [
+    { id: 's01', t0: 0.00,  t1: 11.15, text: 'Satu kalimat hook yang besar', rama: { pos: 'kanan', size: 420, pose: 'present' } },
+    { id: 's02', t0: 11.15, t1: 19.25, text: 'Masalahnya mulai kelihatan',   rama: { pos: 'kiri', size: 400, pose: 'shocked' } },
+    { id: 's03', t0: 19.25, t1: 29.95, text: 'Kenalin solusinya',            rama: { pos: 'kanan', size: 380, pose: 'point' } },
+    { id: 's04', t0: 29.95, t1: 38.29, text: 'Cara kerjanya di dalam dunia', rama: { pos: 'sembunyi' } },
+    { id: 's05', t0: 38.29, t1: 46.65, text: 'Ketik KATA di kolom komentar', rama: { pos: 'tengah', size: 540, pose: 'thumbs' } },
+  ];
+  // Tata letak teks contoh: ukuran, posisi, dan perataan berganti tiap scene (Hukum #4 Bang Motion)
+  const LAYOUT = [{ top: 150, size: 96, align: 'left' }, { top: 420, size: 76, align: 'right' }, { top: 260, size: 110, align: 'left' },
+    { top: 520, size: 84, align: 'center' }, { top: 150, size: 88, align: 'center' }];
+  const SFX = [...SCENES.slice(1).map(s => ({ t: s.t0, file: 'sfx_whoosh.wav', vol: 0.15 })),
+    { t: SCENES[SCENES.length - 1].t0 + 0.6, file: 'sfx_pop.wav', vol: 0.15 }];
+  /* =================== akhir bagian EDIT =================== */
+
+  const AUDIO_ENV = /*ENV*/[0.001,0.077,0.264,0.441,0.474,0.609,0.956,0.965,0.841,0.388,0.095,0.061,0.205,0.69,0.871,0.921,0.846,0.703,0.666,0.608,0.294,0.282,0.189,0.107,0.083,0.038,0.015,0.012,0.007,0.003,0.002,0.003,0.005,0.015,0.061,0.112,0.138,0.153,0.352,0.885,0.959,1,0.609,0.096,0.126,1,0.952,0.208,0.352,0.473,0.225,0.158,0.264,0.375,0.223,0.286,0.372,0.422,0.4,0.482,0.754,0.594,0.264,0.485,0.738,0.853,0.717,0.175,0.156,0.51,0.282,0.022,0.225,0.415,0.025,0.054,0.418,0.832,0.685,0.386,0.393,0.379,0.55,0.758,0.906,0.601,0.383,0.352,0.103,0.09,0.085,0.693,0.88,0.695,0.313,0.075,0.035,0.047,0.125,0.543,0.905,0.884,0.287,0.157,0.142,0.61,0.391,0.257,0.284,0.176,0.043,0.036,0.832,0.374,0.032,0.021,0.342,0.435,0.343,0.107,0.013,0.014,0.382,0.705,0.44,0.252,0.086,0.02,0.077,0.419,0.268,0.116,0.134,0.512,0.558,0.929,0.7,0.118,0.061,0.267,0.413,0.099,0.019,0.011,0.221,0.287,0.262,0.138,0.046,0.015,0.005,0.206,0.575,0.658,0.596,0.472,0.245,0.129,0.118,0.279,0.244,0.172,0.092,0.037,0.151,0.213,0.2,0.146,0.087,0.056,0.037,0.015,0.005,0.002,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.194,0.257,0.385,0.407,0.59,0.805,0.724,0.236,0.027,0.145,0.312,0.041,0.023,0.451,0.128,0.033,0.011,0.005,0.002,0.277,0.637,0.725,0.758,0.28,0.311,0.233,0.191,0.158,0.528,0.683,0.423,0.366,0.183,0.19,0.13,0.025,0.014,0.534,0.588,0.589,0.517,0.356,0.144,0.371,0.637,0.38,0.371,0.255,0.632,0.72,0.435,0.29,0.292,0.567,0.556,0.464,0.25,0.02,0.009,0.002,0.035,0.327,0.343,0.328,0.235,0.144,0.05,0.003,0.002,0.001,0.001,0.001,0.024,0.677,0.449,0.363,0.331,0.259,0.15,0.081,0.06,0.038,0.008,0.002,0.235,0.47,0.529,0.602,0.557,0.081,0.018,0.352,0.701,0.78,0.876,0.574,0.764,0.924,0.922,0.13,0.084,0.514,0.464,0.211,0.108,0.484,0.853,0.564,0.143,0.135,0.371,0.552,0.661,0.746,0.983,0.642,0.544,0.208,0.755,0.619,0.182,0.114,0.493,0.894,0.737,0.604,0.745,0.756,0.298,0.232,0.326,0.453,0.615,0.692,0.868,0.499,0.284,0.196,0.215,0.653,1,0.834,0.445,0.145,0.069,0.024,0.009,0.003,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.046,0.113,0.644,0.165,0.155,0.373,0.424,0.073,0.04,0.449,0.657,0.612,0.608,1,0.589,0.188,0.178,0.524,0.782,0.5,0.843,0.606,0.364,0.187,0.634,0.585,0.335,0.386,0.892,0.567,0.474,0.441,0.24,0.246,0.123,0.139,0.506,0.613,0.065,0.119,0.454,0.265,0.025,0.06,0.803,0.757,0.234,0.224,0.408,0.918,0.906,0.733,0.391,0.165,0.583,0.842,1,0.949,0.926,0.815,0.678,0.422,0.348,0.148,0.148,0.18,0.141,0.089,0.026,0.007,0.004,0.001,0.001,0.001,0.008,0.259,0.226,0.168,0.799,0.756,0.059,0.024,0.178,0.286,0.297,0.203,0.163,0.174,1,0.971,0.817,0.436,0.386,0.51,0.939,0.795,0.749,0.763,0.154,0.287,0.741,0.277,0.313,0.54,0.843,0.802,0.281,0.116,0.176,0.512,0.279,0.21,0.092,0.123,0.377,0.612,0.695,0.743,0.52,0.529,0.55,0.755,0.939,0.985,1,0.943,0.638,0.507,0.472,0.217,0.058,0.015,0.005,0.003,0.001,0.003,0.085,0.559,0.618,0.11,0.027,0.545,0.72,0.359,0.154,0.399,0.66,0.421,0.189,0.138,0.051,0.165,0.273,0.613,0.781,0.856,0.546,0.273,0.253,0.14,0.024,0.021,0.104,0.58,1,0.857,0.037,0.019,0.013,0.003,0.001,0.001,0.008,0.076,0.143,0.179,0.281,0.685,0.21,0.219,0.262,0.492,0.667,1,1,0.927,0.813,0.407,0.378,0.637,0.609,0.486,0.346,0.057,0.063,0.499,0.446,0.063,0.033,0.515,0.454,0.739,0.664,0.733,0.421,0.358,0.122,0.023,0.026,0.654,1,0.342,0.056,0.111,0.167,0.654,0.516,0.175,0.11,0.584,0.987,0.694,0.326,0.659,0.684,0.35,0.202,0.283,0.363,0.22,0.136,0.131,0.072,0.039,0.01,0.002,0.002,0.001,0.001,0.001,0.001,0,0.001,0.001,0.049,0.271,0.386,0.903,0.956,0.928,0.658,0.471,0.35,0.292,0.24,0.24,0.198,0.116,0.083,0.084,0.108,0.129,0.246,0.336,0.394,0.991,0.797,0.655,0.501,0.318,0.446,0.952,1,1,0.9,0.17,0.207,0.761,0.568,0.112,0.031,0.146,0.644,0.33,0.285,0.28,0.103,0.018,0.173,0.347,0.342,0.234,0.199,0.231,0.217,0.151,0.061,0.01,0.004,0.002,0.026,0.161,0.421,0.718,1,0.626,0.218,0.276,0.18,0.181,0.167,0.508,0.377,0.274,0.277,0.107,0.012,0.022,0.148,0.791,0.618,0.055,0.03,0.143,0.338,0.558,0.674,0.51,0.034,0.021,0.302,0.729,0.63,0.135,0.107,0.168,0.498,0.355,0.036,0.087,0.177,0.263,0.465,0.903,0.676,0.052,0.026,0.027,0.015,0.006,0.239,0.602,0.438,0.127,0.144,0.603,0.862,0.618,0.281,0.345,0.541,0.204,0.133,0.151,0.101,0.019,0.009,0.245,0.571,0.555,0.455,0.189,0.033,0.207,0.482,0.731,0.682,0.581,0.479,0.346,0.145,0.098,0.106,0.119,0.13,0.102,0.344,0.516,0.689,0.747,0.558,0.193,0.221,0.262,0.139,0.012,0.005,0.009,0.583,0.841,0.244,0.253,0.187,0.565,0.548,0.337,0.214,0.128,0.039,0.027,0.65,0.77,0.68,0.299,0.182,0.058,0.02,0.162,0.571,0.702,0.382,0.365,0.36,0.284,0.067,0.053,0.045,0.283,0.249,0.161,0.054,0.045,0.034,0.023,0.01,0.005,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.163,0.34,0.389,0.291,0.32,0.43,0.528,0.79,0.684,0.866,0.825,0.566,0.68,0.645,0.255,0.148,0.135,0.207,0.619,0.774,0.805,0.219,0.124,0.119,0.421,0.846,0.662,0.274,0.295,0.19,0.026,0.182,0.537,0.841,0.611,0.311,0.324,0.354,0.152,0.307,1,0.882,0.556,0.53,0.192,0.185,0.354,0.821,0.725,0.089,0.064,0.117,0.271,0.267,0.031,0.087,0.383,0.282,0.351,0.208,0.075,0.18,0.366,0.337,0.05,0.018,0.215,0.314,0.283,0.353,0.54,0.523,0.168,0.134,0.089,0.092,0.515,0.592,0.243,0.141,0.129,0.275,0.228,0.027,0.065,0.62,0.092,0.023,0.019,0.395,0.592,0.43,0.047,0.014,0.627,1,0.597,0.246,0.889,1,0.959,1,0.952,0.97,0.865,0.801,0.823,0.462,0.15,0.101,0.067,0.024,0.009,0.003,0.002,0.002,0.001,0.001,0.001,0,0.001,0.002,0.048,0.173,0.756,0.626,0.213,0.129,0.13,0.471,0.585,0.552,0.599,0.673,0.925,0.935,0.386,0.286,0.124,0.162,0.545,0.274,0.292,0.147,0.066,0.768,0.854,0.848,0.373,0.146,0.124,0.266,0.263,0.257,0.248,0.287,0.207,0.274,0.405,0.548,0.764,0.823,0.417,0.204,0.232,0.173,0.164,0.149,0.269,0.437,0.28,0.298,0.238,0.259,0.32,0.269,0.401,0.503,0.414,0.124,0.11,0.549,0.983,0.531,0.382,0.264,0.069,0.204,0.585,0.393,0.104,0.405,0.247,0.058,0.042,0.044,0.292,0.395,0.253,0.263,0.275,0.258,0.409,0.921,0.755,0.668,0.436,0.234,0.416,0.635,0.695,0.529,0.374,0.637,0.363,0.028,0.157,0.193,0.024,0.103,0.236,0.461,0.591,0.643,0.312,0.08,0.052,0.08,0.271,0.408,0.409,0.149,0.142,0.134,0.177,0.2,0.204,0.206,0.193,0.185,0.358,0.365,0.202,0.047,0.002,0.002,0.449,0.892,0.605,0.533,0.576,0.783,0.769,0.669,0.069,0.025,0.017,0.029,0.192,0.162,0.111,0.07,0.037,0.016,0.004,0.001,0.001,0.001,0.001,0.001,0.073,0.236,0.425,0.463,0.205,0.208,0.119,0.013,0.003,0.117,0.698,0.943,0.351,0.03,0.061,0.109,0.394,0.773,0.63,0.316,0.346,0.053,0.015,0.494,0.561,0.266,0.167,0.052,0.321,0.337,0.418,0.503,0.305,0.303,0.178,0.324,0.143,0.014,0.007,0.001,0.183,0.698,0.736,0.393,0.21,0.192,0.103,0.123,0.121,0.113,0.124,0.514,0.415,0.461,0.185,0.178,0.108,0.016,0.007,0.658,0.774,0.643,0.336,0.038,0.305,0.322,0.017,0.134,0.642,0.689,0.161,0.121,0.532,0.574,0.496,0.208,0.45,0.561,0.19,0.011,0.348,0.475,0.409,0.115,0.122,0.252,0.191,0.115,0.094,0.099,0.112,0.113,0.091,0.061,0.027,0.004,0.002,0.001,0.001,0.001,0.001,0.005,0.958,0.978,0.171,0.071,0.062,0.05,0.038,0.585,0.459,0.344,0.366,0.784,0.49,0.45,0.408,0.76,0.951,1,1,1,1,1,0.931,0.368,0.341,0.31,0.723,0.554,0.159,0.144,0.405,0.596,0.507,0.448,0.548,0.68,0.432,0.371,0.108,0.151,0.867,0.417,0.096,0.139,0.34,0.514,0.421,0.127,0.11,0.315,0.884,0.96,0.396,0.398,0.609,0.622,0.39,0.248,0.059,0.128,0.326,0.784,0.653,0.293,0.237,0.184,0.044,0.023,0.136,0.79,0.555,0.13,0.177,0.184,0.081,0.073,0.659,0.778,0.568,0.112,0.029,0.033,0.037,0.399,0.779,0.825,0.455,0.163,0.166,0.589,0.276,0.368,0.449,0.219,0.506,0.543,0.399,0.473,0.304,0.121,0.196,0.325,0.111,0.13,0.266,0.524,0.668,0.517,0.122,0.098,0.356,0.544,0.377,0.036,0.022,0.152,0.431,0.389,0.225,0.135,0.088,0.054,0.021,0.007,0.002,0.002,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.002,0.26,0.649,0.266,0.221,0.497,0.437,0.041,0.165,1,1,1,1,0.304,0.219,0.424,0.383,0.947,1,0.904,0.513,0.294,0.251,0.141,0.07,0.023,0.006,0.001,0.001,0.001,0.001,0.001,0.001,0.051,0.494,0.727,0.191,0.447,0.921,0.567,0.035,0.031,0.038,0.847,0.103,0.037,0.028,0.021,0.014,0.92,1,0.915,0.761,0.406,0.352,0.268,0.121,0.076,0.096,0.228,0.448,0.711,0.782,0.444,0.397,0.134,0.215,0.569,0.669,0.213,0.141,0.295,0.37,0.258,0.312,0.325,0.605,0.627,0.375,0.395,0.574,0.76,0.378,0.518,0.555,0.594,0.889,0.777,0.615,0.702,0.682,0.67,0.933,1,1,0.984,0.498,0.212,0.209,0.245,0.334,0.349,0.321,0.31,0.357,0.26,0.145,0.068,0.052,0.03,0.014,0.005,0.002,0.001,0]/*ENV*/;
+  const FPS = 30;
+  $('#topic-pill').textContent = TOPIC;
+
+  // ---------- timeline GSAP (dunia & teks) ----------
+  const tl = gsap.timeline({ paused: true });
+  tl.to('#world .b1', { x: -260, y: 220, duration: DURATION / 2, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 0)
+    .to('#world .b2', { x: 300, y: -180, duration: DURATION / 2, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 0)
+    .fromTo('.hdr', { y: -40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power3.out' }, 0.05);
+  const copy = $('#copy');
+  SCENES.forEach((s, i) => {
+    const L = LAYOUT[i % LAYOUT.length], el = document.createElement('div');
+    el.className = 'line'; el.style.top = L.top + 'px'; el.style.fontSize = L.size + 'px'; el.style.lineHeight = '1.04'; el.style.textAlign = L.align;
+    el.innerHTML = s.text.split(' ').map(w => `<span>${w}</span>`).join('');
+    copy.appendChild(el);
+    const words = el.querySelectorAll('span'), dir = i % 2 ? -1 : 1;
+    tl.fromTo(words, { x: 90 * dir, opacity: 0, filter: 'blur(10px)' }, { x: 0, opacity: 1, filter: 'blur(0px)', duration: 0.55, stagger: 0.06, ease: 'power3.out' }, s.t0 + 0.2);
+    if (i < SCENES.length - 1) tl.to(words, { x: -120 * dir, opacity: 0, duration: 0.3, stagger: 0.03, ease: 'power2.in' }, s.t1 - 0.4);
+  });
+  tl.to({}, { duration: 0.01 }, DURATION);
+
+  // ---------- Rama voxel ----------
+  const RAMA_X = { kiri: 250, tengah: 540, kanan: 830 };
+  const LOOK_DEF = { kiri: 1, tengah: 0, kanan: -1 };
+  const FOOT = 1815, MOVE = 0.55, POSE_T = 0.3, ENTER = 0.6;
+  const RAMA = (() => { let cx = 540, size = 400, pose = 'present';
+    return SCENES.map(s => { const r = s.rama || {}, pos = r.pos || 'tengah', hidden = pos === 'sembunyi';
+      if (!hidden) { cx = RAMA_X[pos] ?? 540; size = r.size || 400; }
+      pose = r.pose || pose;
+      return { cx, size, hidden, pose, look: r.look ?? (LOOK_DEF[pos] ?? 0) }; }); })();
+  const rv = RamaVoxel.create(580);
+  $('#rama-body').appendChild(rv.canvas);
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  const ease3 = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  const easeOut = x => 1 - Math.pow(1 - x, 3);
+  const sceneIdx = t => { let i = 0; SCENES.forEach((s, j) => { if (t >= s.t0) i = j; }); return i; };
+  const hideOff = r => r.hidden ? r.size + 160 : 0;
+  function ramaAt(t) {
+    const i = sceneIdx(t), cur = RAMA[i], prev = RAMA[Math.max(0, i - 1)];
+    const e = i ? ease3(clamp01((t - SCENES[i].t0) / MOVE)) : 1;
+    const enter = i ? 0 : (1 - easeOut(clamp01(t / ENTER))) * (cur.size + 160);
+    const moved = Math.abs(cur.cx - prev.cx) > 1 && !cur.hidden && !prev.hidden;
+    const size = lerp(prev.size, cur.size, e);
+    return { i, cx: lerp(prev.cx, cur.cx, e), size, y: FOOT - size + lerp(hideOff(prev), hideOff(cur), e) + enter + (moved ? -80 * Math.sin(Math.PI * e) : 0),
+      look: lerp(prev.look, cur.look, e), pose: cur.pose, fromPose: prev.pose, k: i ? easeOut(clamp01((t - SCENES[i].t0) / POSE_T)) : 1 };
+  }
+  const ramaEl = $('#rama'), ramaBody = $('#rama-body');
+  function updateRama(t) {
+    const R = ramaAt(t);
+    ramaEl.style.transform = `translate(${(R.cx - R.size / 2).toFixed(2)}px,${R.y.toFixed(2)}px) scale(${(R.size / 580).toFixed(4)})`;
+    const fi = Math.min(AUDIO_ENV.length - 1, Math.max(0, Math.floor(t * FPS)));
+    const vol = AUDIO_ENV[fi] || 0;
+    const bob = vol > 0.15 ? -Math.abs(Math.sin(t * 18)) * (2 + vol * 3.5) : 0;
+    ramaBody.style.transform = `translate(${(Math.sin(t * 1.6) * 2.5).toFixed(2)}px,${(Math.sin(t * 2.8) * 2.5 + bob).toFixed(2)}px) scale(${(1 + vol * 0.008).toFixed(4)})`;
+    rv.render({ t, vol, viseme: RamaVoxel.viseme(fi, vol, R.pose), blink: RamaVoxel.blink(t), pose: R.pose, fromPose: R.fromPose, k: R.k, look: R.look });
+    return R;
+  }
+
+  // ---------- kontrak seek ----------
+  let curT = 0;
+  function seekTo(sec) {
+    curT = Math.max(0, Math.min(DURATION, +sec || 0));
+    tl.seek(curT, false);
+    updateRama(curT);
+    window.__onSeek && window.__onSeek(curT);
+  }
+  window.seekTo = seekTo;
+  window.OPENER = { ready: true, DURATION, FPS, WIDTH: 1080, HEIGHT: 1920, SCENES, SFX, seek: seekTo };
+
+  // ---------- Cek Aturan Video v2 ----------
+  const stage = $('#stage');
+  function rectIn(el) {
+    const v = stage.getBoundingClientRect(), r = el.getBoundingClientRect(), s = v.width / 1080;
+    return { x: (r.left - v.left) / s, y: (r.top - v.top) / s, w: r.width / s, h: r.height / s };
+  }
+  const SAFE = { x0: 80, y0: 180, x1: 950, y1: 1470 };
+  const inside = r => r.x >= SAFE.x0 - 0.5 && r.y >= SAFE.y0 - 0.5 && r.x + r.w <= SAFE.x1 + 0.5 && r.y + r.h <= SAFE.y1 + 0.5;
+  const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const r0 = n => Math.round(n);
+  function visibleOpacity(el) { let o = 1; for (let e = el; e && e !== stage; e = e.parentElement) o *= +getComputedStyle(e).opacity; return o; }
+  function textEls() {
+    return [...stage.querySelectorAll('*')].filter(el => !el.closest('#guides') && [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()))
+      .filter(el => { const r = rectIn(el); return r.w > 0 && r.h > 0 && visibleOpacity(el) > 0.05; });
+  }
+  function ramaBox() { const r = rectIn(ramaEl); return { x: r.x + r.w * 0.16, y: r.y + r.h * 0.1, w: r.w * 0.68, h: r.h * 0.9 }; }
+  const hashStr = s => { let h = 0; for (let i = 0; i < s.length; i += 61) h = (h * 31 + s.charCodeAt(i)) | 0; return h; };
+
+  window.runChecks = function runChecks() {
+    const out = [], add = (status, title, detail) => out.push({ status, title, detail });
+    const keepT = curT;
+
+    add(stage.offsetWidth === 1080 && stage.offsetHeight === 1920 ? 'pass' : 'fail', 'Kanvas 1080 × 1920', `terukur ${stage.offsetWidth} × ${stage.offsetHeight}`);
+    const sr = rectIn($('#safe'));
+    add(r0(sr.x) === 80 && r0(sr.y) === 180 && r0(sr.w) === 870 && r0(sr.h) === 1290 ? 'pass' : 'fail', 'Safe zone 80 / 180 / 130 / 450', `#safe = x${r0(sr.x)} y${r0(sr.y)} ${r0(sr.w)}×${r0(sr.h)}`);
+
+    // header
+    seekTo(Math.min(2, DURATION));
+    const pill = $('#topic-pill'), handle = $('.handle'), hr = rectIn($('.hdr'));
+    const hBad = [];
+    if (!/ChillDev/.test(handle.textContent) || !/@ramarvctr_/.test(handle.textContent)) hBad.push('handle harus berisi ChillDev + @ramarvctr_');
+    if (/\b\d{1,2}\s*\/\s*\d{1,2}\b/.test(pill.textContent)) hBad.push('pill memakai nomor slide');
+    if (document.querySelector('.story-progress-bar, .progress-seg')) hBad.push('ada progress bar slide');
+    if (r0(hr.y) !== 180) hBad.push(`header di y${r0(hr.y)}, harus 180`);
+    add(hBad.length ? 'fail' : 'pass', 'Header ramping: pill topik + ChillDev @ramarvctr_', hBad.join('<br>') || `"${pill.textContent}" · tanpa nomor slide`);
+    const clip = [pill, handle].filter(el => getComputedStyle(el).whiteSpace !== 'nowrap' || el.scrollWidth > el.clientWidth + 1);
+    add(clip.length ? 'fail' : 'pass', 'Pill & handle tidak terpotong (nowrap)', clip.map(e => `"${e.textContent.trim()}"`).join(', ') || 'aman');
+
+    // teks di safe zone + Rama tidak menutupi teks, dicek di akhir & awal tiap scene
+    const outside = [], cover = [], sizeBad = [];
+    SCENES.forEach((s, i) => {
+      for (const t of [s.t0 + Math.min(1.6, (s.t1 - s.t0) * 0.4), s.t1 - 0.5]) {
+        seekTo(t);
+        const tels = textEls(), rb = ramaBox(), R = RAMA[i];
+        tels.forEach(el => { const r = rectIn(el);
+          if (!inside(r)) outside.push(`${s.id} "${el.textContent.trim().slice(0, 22)}" (x${r0(r.x)}–${r0(r.x + r.w)}, y${r0(r.y)}–${r0(r.y + r.h)})`);
+          if (!R.hidden && hit(r, rb)) cover.push(`${s.id} "${el.textContent.trim().slice(0, 22)}"`); });
+      }
+      const R = RAMA[i]; if (!R.hidden && (R.size < 300 || R.size > 580)) sizeBad.push(`${s.id}: ${R.size}px`);
+    });
+    const uniq = a => [...new Set(a)];
+    add(outside.length ? 'fail' : 'pass', 'Semua teks di dalam safe zone', uniq(outside).slice(0, 6).join('<br>') || 'tidak ada teks di luar x 80–950 / y 180–1470');
+    add(sizeBad.length ? 'fail' : 'pass', 'Ukuran Rama 300–580 px', sizeBad.join(', ') || RAMA.map((r, i) => `${SCENES[i].id}:${r.hidden ? 'sembunyi' : r.size}`).join(' · '));
+    add(cover.length ? 'warn' : 'pass', 'Rama tidak menutupi teks', uniq(cover).slice(0, 6).join('<br>') || 'tidak ada tumpukan');
+
+    // perpindahan Rama bergerak, bukan teleport
+    const jumps = [];
+    SCENES.forEach((s, i) => { if (!i) return; const a = RAMA[i - 1], b = RAMA[i];
+      if (Math.abs(a.cx - b.cx) < 1 && a.hidden === b.hidden && a.size === b.size) return;
+      seekTo(s.t0 + MOVE / 2); const m = ramaAt(curT);
+      const mid = Math.abs(m.cx - (a.cx + b.cx) / 2) < Math.abs(a.cx - b.cx) / 2 + 1 && (a.hidden === b.hidden || (m.y > FOOT - m.size + 1));
+      if (!mid) jumps.push(s.id); });
+    add(jumps.length ? 'fail' : 'pass', 'Perpindahan Rama bergerak (bukan teleport)', jumps.join(', ') || `transisi ${MOVE}s di tiap pergantian posisi`);
+
+    // placeholder & struktur
+    const ph = document.querySelectorAll('[data-placeholder]').length;
+    add(ph ? 'fail' : 'pass', 'Dunia & teks sudah didesain (placeholder dihapus)', ph ? `${ph} elemen data-placeholder masih ada (#world / #copy)` : 'tidak ada placeholder');
+    const sections = stage.querySelectorAll('section, .scene, .slide').length;
+    add(sections >= 3 ? 'warn' : 'pass', 'Bukan slide deck (larangan anti-PPT #1)', sections >= 3 ? `${sections} section/.scene: pastikan adegan berganti karena dunia/kamera, bukan fade section` : 'tidak ada section yang di-toggle');
+
+    // tanpa CSS transition / keyframes
+    const anim = [...stage.querySelectorAll('*')].filter(el => { const cs = getComputedStyle(el);
+      return cs.transitionDuration.split(',').some(d => parseFloat(d) > 0) || (cs.animationName && cs.animationName !== 'none'); });
+    add(anim.length ? 'fail' : 'pass', 'Tidak ada CSS transition / @keyframes', anim.length ? `${anim.length} elemen` : '0 elemen');
+
+    // kode visual tanpa jam sistem
+    const BAD = ['Math.ran' + 'dom', 'Date.n' + 'ow', 'performance.n' + 'ow'];
+    const src = [...document.scripts].filter(s => !s.src && s.id !== 'preview-only').map(s => s.textContent).join('\n');
+    const found = BAD.filter(b => src.includes(b));
+    add(found.length ? 'fail' : 'pass', 'Tanpa jam sistem / acak di logika visual', found.join(', ') || 'bersih (loop preview dipisah)');
+
+    // deterministik
+    const snap = () => [ramaEl.style.transform, ramaBody.style.transform, hashStr(rv.canvas.toDataURL()),
+      ...[...stage.querySelectorAll('#world *, #copy *, .hdr')].map(e => e.style.transform + e.style.opacity)].join('|');
+    const probes = [0.5, ...SCENES.flatMap(s => [s.t0 + 0.12, s.t0 + 0.3, (s.t0 + s.t1) / 2])].filter(p => p <= DURATION);
+    let mismatch = 0;
+    probes.forEach(p => { seekTo(p); const a = snap(); seekTo(DURATION * 0.37); seekTo(0); seekTo(p); if (snap() !== a) mismatch++; });
+    add(mismatch ? 'fail' : 'pass', 'seekTo() deterministik (dunia + Rama)', `${probes.length - mismatch}/${probes.length} titik identik setelah seek acak`);
+
+    // pose & lip-sync
+    const poses = [...new Set(RAMA.filter(r => !r.hidden).map(r => r.pose))];
+    add(poses.length >= 2 ? 'pass' : 'warn', 'Pose Rama bervariasi', poses.join(', '));
+    const vset = new Set();
+    for (let f = 0; f < AUDIO_ENV.length; f++) vset.add(RamaVoxel.viseme(f, AUDIO_ENV[f] || 0, RAMA[sceneIdx(f / FPS)].pose));
+    add(vset.size >= 5 ? 'pass' : 'warn', 'Lip-sync memakai ≥ 5 viseme', [...vset].sort().join(', ') || 'envelope kosong');
+    add(AUDIO_ENV.length > 0 ? 'pass' : 'fail', 'Envelope audio ter-inline', `${AUDIO_ENV.length} frame (${(AUDIO_ENV.length / FPS).toFixed(1)} s)`);
+    const envGap = AUDIO_ENV.length / FPS - DURATION;
+    add(!AUDIO_ENV.length || Math.abs(envGap) < 3 ? 'pass' : 'warn', 'DURATION sesuai panjang VO', AUDIO_ENV.length ? `VO ${(AUDIO_ENV.length / FPS).toFixed(2)} s · DURATION ${DURATION} s` : 'belum ada VO');
+
+    seekTo(keepT);
+    const nP = out.filter(o => o.status === 'pass').length, nF = out.filter(o => o.status === 'fail').length, nW = out.filter(o => o.status === 'warn').length;
+    const sum = $('#summary'); sum.textContent = `${nP} lolos · ${nF} gagal · ${nW} peringatan`; sum.style.color = nF ? '#F87171' : nW ? '#FBBF24' : '#34D399';
+    $('#checks').innerHTML = out.map(o => `<div class="chk ${o.status}"><span class="ic">${o.status === 'pass' ? '✓' : o.status === 'fail' ? '✕' : '!'}</span><span>${o.title}</span><span class="dt">${o.detail}</span></div>`).join('');
+    window.RULE_CHECKS = out;
+    return out;
+  };
+
+  seekTo(Number(Q.get('t')) || 0);
+})();
+</script>
+<script id="preview-only">
+// Hanya untuk preview di browser (dilewati saat ?render=1): skala kanvas, putar VO, scrub, garis bantu, panel cek.
+(() => {
+  if (new URLSearchParams(location.search).has('render')) return;
+  const stage = document.getElementById('stage'), D = window.OPENER.DURATION;
+  const fit = () => { const k = Math.min((innerWidth - 440) / 1080, (innerHeight - 48) / 1920);
+    stage.style.transform = `translate(${Math.max(0, (innerWidth - 440 - 1080 * k) / 2)}px,0) scale(${k})`; };
+  fit(); addEventListener('resize', fit);
+  const audio = new Audio('vo.mp3'), play = document.getElementById('play'), scrub = document.getElementById('scrub'), clock = document.getElementById('clock');
+  let playing = false, t0 = 0, base = 0;
+  window.__onSeek = t => { scrub.value = Math.round(t / D * 1000); clock.textContent = t.toFixed(2) + ' s'; };
+  play.onclick = () => { playing = !playing; play.textContent = playing ? '❚❚ Jeda' : '▶ Putar';
+    if (playing) { base = +scrub.value / 1000 * D; t0 = performance.now(); audio.currentTime = base; audio.play().catch(() => {}); } else audio.pause(); };
+  scrub.oninput = () => { const t = +scrub.value / 1000 * D; window.seekTo(t); base = t; t0 = performance.now(); if (playing) audio.currentTime = t; };
+  addEventListener('keydown', e => { if (e.key === 'g' || e.key === 'G') stage.classList.toggle('show-guides'); if (e.key === ' ') { e.preventDefault(); play.click(); } });
+  (function loop() { if (playing) { const t = audio.duration && !audio.paused ? audio.currentTime : base + (performance.now() - t0) / 1000;
+      if (t >= D) { play.click(); window.seekTo(D); } else window.seekTo(t); } requestAnimationFrame(loop); })();
+  document.fonts.ready.then(() => window.runChecks());
+})();
+</script>
+</body>
+</html>
